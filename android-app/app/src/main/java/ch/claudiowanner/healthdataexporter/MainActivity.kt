@@ -3,6 +3,7 @@ package ch.claudiowanner.healthdataexporter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +17,7 @@ import ch.claudiowanner.healthdataexporter.ui.ExportScreen
 import ch.claudiowanner.healthdataexporter.ui.theme.HealthDataExporterTheme
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.LocalDate
 
 class MainActivity : ComponentActivity() {
     private val exportFileWriter = ExportFileWriter()
@@ -35,6 +37,36 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+    private val createDocumentLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.CreateDocument("application/json")
+        ) { uri ->
+            if (uri == null) {
+                statusText = "Saving export was cancelled."
+                return@registerForActivityResult
+            }
+
+            if (exportPreview == "No export loaded yet.") {
+                statusText = "No export is loaded yet."
+                return@registerForActivityResult
+            }
+
+            val result = exportFileWriter.writeJsonToUri(
+                context = this,
+                uri = uri,
+                jsonContent = exportPreview
+            )
+
+            result.fold(
+                onSuccess = {
+                    statusText = "Export saved to selected location successfully."
+                },
+                onFailure = {
+                    statusText = "Saving export failed: ${it.message}"
+                }
+            )
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -47,7 +79,8 @@ class MainActivity : ComponentActivity() {
                     exportPreview = exportPreview,
                     onRequestStepsPermission = { requestStepsPermission() },
                     onExportLast7DaysSteps = { exportLast7DaysSteps() },
-                    onLoadLatestExport = { loadLatestExport() }
+                    onLoadLatestExport = { loadLatestExport() },
+                    onSaveLatestExportToDevice = { saveLatestExportToDevice() }
                 )
             }
         }
@@ -142,5 +175,17 @@ class MainActivity : ComponentActivity() {
                 statusText = "Loading export failed: ${it.message}"
             }
         )
+    }
+
+    private fun saveLatestExportToDevice() {
+        if (exportPreview == "No export loaded yet.") {
+            statusText = "No export is loaded yet."
+            return
+        }
+
+        val today = LocalDate.now().toString()
+        val fileName = "steps-export-$today.json"
+
+        createDocumentLauncher.launch(fileName)
     }
 }

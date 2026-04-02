@@ -1,6 +1,7 @@
 package ch.claudiowanner.healthdataexporter.storage
 
 import android.content.Context
+import android.net.Uri
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
 import com.google.gson.GsonBuilder
 import java.io.File
@@ -37,6 +38,21 @@ class ExportFileWriter {
             val content = latestFile.readText()
 
             latestFile to content
+        }
+    }
+
+    fun writeJsonToUri(
+        context: Context,
+        uri: Uri,
+        jsonContent: String
+    ): Result<Unit> {
+        return runCatching {
+            val outputStream = context.contentResolver.openOutputStream(uri)
+                ?: error("Could not open output stream for selected file.")
+
+            outputStream.bufferedWriter().use { writer ->
+                writer.write(jsonContent)
+            }
         }
     }
 

@@ -23,7 +23,8 @@ fun ExportScreen(
     exportPreview: String,
     onRequestStepsPermission: () -> Unit,
     onExportLast7DaysSteps: () -> Unit,
-    onLoadLatestExport: () -> Unit
+    onLoadLatestExport: () -> Unit,
+    onSaveLatestExportToDevice: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -57,6 +58,10 @@ fun ExportScreen(
 
             Button(onClick = onLoadLatestExport) {
                 Text("Load latest export")
+            }
+
+            Button(onClick = onSaveLatestExportToDevice) {
+                Text("Save latest export to device")
             }
 
             Text(
