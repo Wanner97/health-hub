@@ -24,6 +24,13 @@ class ExportFileWriter {
                         unit = "count",
                         startTime = "2026-04-02T00:00:00Z",
                         endTime = "2026-04-02T23:59:59Z"
+                    ),
+                    HealthRecordExport(
+                        type = "heart-rate",
+                        value = 72,
+                        unit = "bpm",
+                        startTime = "2026-04-02T12:00:00Z",
+                        endTime = "2026-04-02T12:01:00Z"
                     )
                 )
             )
@@ -40,6 +47,25 @@ class ExportFileWriter {
             file.writeText(json)
 
             file
+        }
+    }
+
+    fun readLatestExport(context: Context): Result<Pair<File, String>> {
+        return runCatching {
+            val exportDirectory = File(context.filesDir, "exports")
+
+            if (!exportDirectory.exists() || !exportDirectory.isDirectory) {
+                error("No export directory found.")
+            }
+
+            val latestFile = exportDirectory
+                .listFiles { file -> file.isFile && file.extension == "json" }
+                ?.maxByOrNull { it.lastModified() }
+                ?: error("No export file found.")
+
+            val content = latestFile.readText()
+
+            latestFile to content
         }
     }
 }

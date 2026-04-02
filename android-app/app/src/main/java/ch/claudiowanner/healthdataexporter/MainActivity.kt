@@ -20,6 +20,11 @@ class MainActivity : ComponentActivity() {
                         exportFileWriter.writeTestExport(this).map { file ->
                             file.absolutePath
                         }
+                    },
+                    onLoadLatestExport = {
+                        exportFileWriter.readLatestExport(this).map { (file, content) ->
+                            file.absolutePath to content
+                        }
                     }
                 )
             }
