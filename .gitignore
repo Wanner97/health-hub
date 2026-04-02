@@ -1,0 +1,37 @@
+# --- Android / Gradle ---
+.gradle/
+build/
+app/build/
+*/build/
+
+# --- Local machine / SDK path ---
+local.properties
+
+# --- Android Studio / IntelliJ ---
+.idea/
+*.iml
+
+# --- Logs / temporary files ---
+*.log
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+
+# --- Android generated / captures ---
+captures/
+
+# --- Native / external build outputs ---
+.externalNativeBuild/
+.cxx/
+
+# --- Keystores / signing files ---
+*.jks
+*.keystore
+
+# --- Firebase / Google services (only ignore if secrets are used locally) ---
+# google-services.json
+
+# --- Kotlin / Java crash logs ---
+hs_err_pid*
+replay_pid*
