@@ -68,9 +68,11 @@ packages/
 *.snupkg
 
 # --- ASP.NET Core local secrets / certificates ---
-secrets.json
-appsettings.Development.json
+*.secrets.json
+*.appsettings.Development.json
 
 # --- Logs ---
 logs/
 *.log
+backend/HealthData/Api/Properties/launchSettings.json
+backend/HealthData/Api/appsettings.json
