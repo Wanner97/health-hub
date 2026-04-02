@@ -34,21 +34,6 @@ class HealthConnectManager(private val context: Context) {
         return granted.containsAll(PERMISSIONS)
     }
 
-    suspend fun readTodaySteps(): Long {
-        val zoneId = ZoneId.systemDefault()
-        val startOfDay = LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant()
-        val now = Instant.now()
-
-        return aggregateStepsBetween(startOfDay, now)
-    }
-
-    suspend fun readTodayStepExportRecord(): StepExportRecord {
-        val zoneId = ZoneId.systemDefault()
-        val today = LocalDate.now(zoneId)
-
-        return readStepExportRecordForDate(today)
-    }
-
     suspend fun readStepExportRecordsForLastDays(days: Int): List<StepExportRecord> {
         require(days > 0) { "days must be greater than 0." }
 
@@ -73,6 +58,7 @@ class HealthConnectManager(private val context: Context) {
         val steps = aggregateStepsBetween(start, endExclusive)
 
         return StepExportRecord(
+            date = date.toString(),
             count = steps,
             startTime = start.toString(),
             endTime = endExclusive.toString()

@@ -3,7 +3,6 @@ package ch.claudiowanner.healthdataexporter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,7 +11,6 @@ import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
-import ch.claudiowanner.healthdataexporter.model.StepExportRecord
 import ch.claudiowanner.healthdataexporter.storage.ExportFileWriter
 import ch.claudiowanner.healthdataexporter.ui.ExportScreen
 import ch.claudiowanner.healthdataexporter.ui.theme.HealthDataExporterTheme
@@ -23,17 +21,17 @@ class MainActivity : ComponentActivity() {
     private val exportFileWriter = ExportFileWriter()
     private lateinit var healthConnectManager: HealthConnectManager
 
-    private var healthConnectStatus by mutableStateOf("Health Connect not checked yet.")
-    private var stepsText by mutableStateOf("No step data loaded yet.")
+    private var statusText by mutableStateOf("No export created yet.")
+    private var exportPreview by mutableStateOf("No export loaded yet.")
 
     private val requestPermissions =
         registerForActivityResult(
             PermissionController.createRequestPermissionResultContract()
         ) { granted ->
-            if (granted.containsAll(HealthConnectManager.PERMISSIONS)) {
-                healthConnectStatus = "Steps permission granted."
+            statusText = if (granted.containsAll(HealthConnectManager.PERMISSIONS)) {
+                "Steps permission granted."
             } else {
-                healthConnectStatus = "Steps permission was not granted."
+                "Steps permission was not granted."
             }
         }
 
@@ -45,145 +43,54 @@ class MainActivity : ComponentActivity() {
         setContent {
             HealthDataExporterTheme {
                 ExportScreen(
-                    onCreateTestExport = {
-                        exportFileWriter.writeTestExport(this).map { file ->
-                            file.absolutePath
-                        }
-                    },
-                    onLoadLatestExport = {
-                        exportFileWriter.readLatestExport(this).map { (file, content) ->
-                            file.absolutePath to content
-                        }
-                    },
-                    onExportTodaySteps = { exportStatus, exportPreview ->
-                        exportTodaySteps(exportStatus, exportPreview)
-                    },
-                    onExportLast7DaysSteps = { exportStatus, exportPreview ->
-                        exportLast7DaysSteps(exportStatus, exportPreview)
-                    },
-                    onCheckHealthConnect = {
-                        healthConnectStatus = when (healthConnectManager.getSdkStatus()) {
-                            HealthConnectClient.SDK_AVAILABLE ->
-                                "Health Connect is available."
-
-                            HealthConnectClient.SDK_UNAVAILABLE ->
-                                "Health Connect is unavailable on this device."
-
-                            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED ->
-                                "Health Connect is installed, but requires an update."
-
-                            else ->
-                                "Health Connect status is unknown."
-                        }
-                    },
-                    onRequestStepsPermission = {
-                        when (healthConnectManager.getSdkStatus()) {
-                            HealthConnectClient.SDK_AVAILABLE -> {
-                                lifecycleScope.launch {
-                                    val alreadyGranted = healthConnectManager.hasAllPermissions()
-                                    if (alreadyGranted) {
-                                        healthConnectStatus = "Steps permission already granted."
-                                    } else {
-                                        requestPermissions.launch(HealthConnectManager.PERMISSIONS)
-                                    }
-                                }
-                            }
-
-                            HealthConnectClient.SDK_UNAVAILABLE -> {
-                                healthConnectStatus = "Health Connect is unavailable on this device."
-                            }
-
-                            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                                healthConnectStatus = "Health Connect requires an update before permissions can be requested."
-                            }
-
-                            else -> {
-                                healthConnectStatus = "Health Connect status is unknown."
-                            }
-                        }
-                    },
-                    onReadTodaySteps = {
-                        when (healthConnectManager.getSdkStatus()) {
-                            HealthConnectClient.SDK_AVAILABLE -> {
-                                lifecycleScope.launch {
-                                    try {
-                                        if (!healthConnectManager.hasAllPermissions()) {
-                                            healthConnectStatus = "Steps permission is missing."
-                                            return@launch
-                                        }
-
-                                        val steps = healthConnectManager.readTodaySteps()
-                                        healthConnectStatus = "Steps loaded successfully."
-                                        stepsText = "Today's steps: $steps"
-                                    } catch (e: Exception) {
-                                        healthConnectStatus = "Reading steps failed: ${e.message}"
-                                    }
-                                }
-                            }
-
-                            HealthConnectClient.SDK_UNAVAILABLE -> {
-                                healthConnectStatus = "Health Connect is unavailable on this device."
-                            }
-
-                            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                                healthConnectStatus = "Health Connect requires an update before steps can be read."
-                            }
-
-                            else -> {
-                                healthConnectStatus = "Health Connect status is unknown."
-                            }
-                        }
-                    },
-                    healthConnectStatus = healthConnectStatus,
-                    stepsText = stepsText
+                    statusText = statusText,
+                    exportPreview = exportPreview,
+                    onRequestStepsPermission = { requestStepsPermission() },
+                    onExportLast7DaysSteps = { exportLast7DaysSteps() },
+                    onLoadLatestExport = { loadLatestExport() }
                 )
             }
         }
     }
 
-    private fun exportTodaySteps(
-        exportStatus: MutableState<String>,
-        exportPreview: MutableState<String>
-    ) {
-        exportStepRecords(
-            exportStatus = exportStatus,
-            exportPreview = exportPreview,
-            successMessage = "Today's steps exported successfully"
-        ) {
-            listOf(healthConnectManager.readTodayStepExportRecord())
+    private fun requestStepsPermission() {
+        when (healthConnectManager.getSdkStatus()) {
+            HealthConnectClient.SDK_AVAILABLE -> {
+                lifecycleScope.launch {
+                    val alreadyGranted = healthConnectManager.hasAllPermissions()
+                    if (alreadyGranted) {
+                        statusText = "Steps permission already granted."
+                    } else {
+                        requestPermissions.launch(HealthConnectManager.PERMISSIONS)
+                    }
+                }
+            }
+
+            HealthConnectClient.SDK_UNAVAILABLE -> {
+                statusText = "Health Connect is unavailable on this device."
+            }
+
+            HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                statusText = "Health Connect requires an update before permissions can be requested."
+            }
+
+            else -> {
+                statusText = "Health Connect status is unknown."
+            }
         }
     }
 
-    private fun exportLast7DaysSteps(
-        exportStatus: MutableState<String>,
-        exportPreview: MutableState<String>
-    ) {
-        exportStepRecords(
-            exportStatus = exportStatus,
-            exportPreview = exportPreview,
-            successMessage = "Last 7 days exported successfully"
-        ) {
-            healthConnectManager.readStepExportRecordsForLastDays(7)
-        }
-    }
-
-    private fun exportStepRecords(
-        exportStatus: MutableState<String>,
-        exportPreview: MutableState<String>,
-        successMessage: String,
-        recordLoader: suspend () -> List<StepExportRecord>
-    ) {
+    private fun exportLast7DaysSteps() {
         lifecycleScope.launch {
             try {
                 when (healthConnectManager.getSdkStatus()) {
                     HealthConnectClient.SDK_AVAILABLE -> {
                         if (!healthConnectManager.hasAllPermissions()) {
-                            exportStatus.value =
-                                "Exporting step data failed: Steps permission is missing."
+                            statusText = "Exporting step data failed: Steps permission is missing."
                             return@launch
                         }
 
-                        val records = recordLoader()
+                        val records = healthConnectManager.readStepExportRecordsForLastDays(7)
 
                         val payload = ExportPayload(
                             exportVersion = 1,
@@ -196,34 +103,44 @@ class MainActivity : ComponentActivity() {
 
                         result.fold(
                             onSuccess = { (file, content) ->
-                                exportStatus.value = "$successMessage: ${file.absolutePath}"
-                                exportPreview.value = content
+                                statusText = "Last 7 days exported successfully: ${file.absolutePath}"
+                                exportPreview = content
                             },
                             onFailure = {
-                                exportStatus.value =
-                                    "Exporting step data failed: ${it.message}"
+                                statusText = "Exporting step data failed: ${it.message}"
                             }
                         )
                     }
 
                     HealthConnectClient.SDK_UNAVAILABLE -> {
-                        exportStatus.value =
-                            "Exporting step data failed: Health Connect is unavailable on this device."
+                        statusText = "Exporting step data failed: Health Connect is unavailable on this device."
                     }
 
                     HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                        exportStatus.value =
-                            "Exporting step data failed: Health Connect requires an update."
+                        statusText = "Exporting step data failed: Health Connect requires an update."
                     }
 
                     else -> {
-                        exportStatus.value =
-                            "Exporting step data failed: Health Connect status is unknown."
+                        statusText = "Exporting step data failed: Health Connect status is unknown."
                     }
                 }
             } catch (e: Exception) {
-                exportStatus.value = "Exporting step data failed: ${e.message}"
+                statusText = "Exporting step data failed: ${e.message}"
             }
         }
+    }
+
+    private fun loadLatestExport() {
+        val result = exportFileWriter.readLatestExport(this)
+
+        result.fold(
+            onSuccess = { (file, content) ->
+                statusText = "Latest export loaded: ${file.absolutePath}"
+                exportPreview = content
+            },
+            onFailure = {
+                statusText = "Loading export failed: ${it.message}"
+            }
+        )
     }
 }

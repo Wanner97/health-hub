@@ -8,6 +8,7 @@ data class ExportPayload(
 )
 
 data class StepExportRecord(
+    val date: String,
     val count: Long,
     val startTime: String,
     val endTime: String

@@ -2,34 +2,13 @@ package ch.claudiowanner.healthdataexporter.storage
 
 import android.content.Context
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
-import ch.claudiowanner.healthdataexporter.model.StepExportRecord
 import com.google.gson.GsonBuilder
 import java.io.File
-import java.time.Instant
 
 class ExportFileWriter {
     private val gson = GsonBuilder()
         .setPrettyPrinting()
         .create()
-
-    fun writeTestExport(context: Context): Result<File> {
-        return runCatching {
-            val payload = ExportPayload(
-                exportVersion = 1,
-                source = "manual-test",
-                exportedAt = Instant.now().toString(),
-                records = listOf(
-                    StepExportRecord(
-                        count = 8342,
-                        startTime = "2026-04-02T00:00:00Z",
-                        endTime = "2026-04-02T23:59:59Z"
-                    )
-                )
-            )
-
-            writeExportToFile(context, payload)
-        }
-    }
 
     fun writeExport(
         context: Context,
@@ -70,7 +49,7 @@ class ExportFileWriter {
             exportDirectory.mkdirs()
         }
 
-        val fileName = "health-export-${System.currentTimeMillis()}.json"
+        val fileName = "steps-export-${System.currentTimeMillis()}.json"
         val file = File(exportDirectory, fileName)
 
         val json = gson.toJson(payload)

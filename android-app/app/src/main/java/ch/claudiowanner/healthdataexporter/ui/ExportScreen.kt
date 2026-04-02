@@ -1,138 +1,83 @@
 package ch.claudiowanner.healthdataexporter.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun ExportScreen(
-    onCreateTestExport: () -> Result<String>,
-    onLoadLatestExport: () -> Result<Pair<String, String>>,
-    onExportTodaySteps: (MutableState<String>, MutableState<String>) -> Unit,
-    onExportLast7DaysSteps: (MutableState<String>, MutableState<String>) -> Unit,
-    onCheckHealthConnect: () -> Unit,
+    statusText: String,
+    exportPreview: String,
     onRequestStepsPermission: () -> Unit,
-    onReadTodaySteps: () -> Unit,
-    healthConnectStatus: String,
-    stepsText: String
+    onExportLast7DaysSteps: () -> Unit,
+    onLoadLatestExport: () -> Unit
 ) {
-    val exportStatus = remember { mutableStateOf("No export created yet.") }
-    val exportPreview = remember { mutableStateOf("No export loaded yet.") }
-
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .windowInsetsPadding(WindowInsets.safeDrawing)
     ) {
-        Text(
-            text = "Health Data Exporter",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Text(
-            text = "This app will later read health data and export it as JSON. For now, we test the export flow and start integrating Health Connect step by step.",
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Button(
-            onClick = {
-                val result = onCreateTestExport()
-                exportStatus.value = result.fold(
-                    onSuccess = { "Test export saved successfully: $it" },
-                    onFailure = { "Test export failed: ${it.message}" }
-                )
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Create test export")
-        }
+            Text(
+                text = "Health Data Exporter",
+                style = MaterialTheme.typography.headlineMedium
+            )
 
-        Button(
-            onClick = {
-                val result = onLoadLatestExport()
-                result.fold(
-                    onSuccess = { (path, content) ->
-                        exportStatus.value = "Latest export loaded: $path"
-                        exportPreview.value = content
-                    },
-                    onFailure = {
-                        exportStatus.value = "Loading export failed: ${it.message}"
-                    }
-                )
+            Text(
+                text = "This app exports the last 7 days of step data from Health Connect as JSON.",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Button(onClick = onRequestStepsPermission) {
+                Text("Request steps permission")
             }
-        ) {
-            Text("Load latest export")
-        }
 
-        Button(
-            onClick = {
-                onExportTodaySteps(exportStatus, exportPreview)
+            Button(onClick = onExportLast7DaysSteps) {
+                Text("Export last 7 days")
             }
-        ) {
-            Text("Export today's steps")
-        }
 
-        Button(
-            onClick = {
-                onExportLast7DaysSteps(exportStatus, exportPreview)
+            Button(onClick = onLoadLatestExport) {
+                Text("Load latest export")
             }
-        ) {
-            Text("Export last 7 days")
+
+            Text(
+                text = "Status",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = "Export preview",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                text = exportPreview,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
-
-        Text(
-            text = exportStatus.value,
-            style = MaterialTheme.typography.bodyMedium
-        )
-
-        Text(
-            text = "Export preview",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Text(
-            text = exportPreview.value,
-            style = MaterialTheme.typography.bodySmall
-        )
-
-        Text(
-            text = "Health Connect",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Button(onClick = onCheckHealthConnect) {
-            Text("Check Health Connect")
-        }
-
-        Button(onClick = onRequestStepsPermission) {
-            Text("Request steps permission")
-        }
-
-        Button(onClick = onReadTodaySteps) {
-            Text("Read today's steps")
-        }
-
-        Text(
-            text = healthConnectStatus,
-            style = MaterialTheme.typography.bodyMedium
-        )
-
-        Text(
-            text = stepsText,
-            style = MaterialTheme.typography.bodyLarge
-        )
     }
 }
