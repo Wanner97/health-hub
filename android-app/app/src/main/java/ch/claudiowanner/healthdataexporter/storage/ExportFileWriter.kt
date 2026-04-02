@@ -27,18 +27,18 @@ class ExportFileWriter {
                 )
             )
 
-            val exportDirectory = File(context.filesDir, "exports")
-            if (!exportDirectory.exists()) {
-                exportDirectory.mkdirs()
-            }
+            writeExportToFile(context, payload)
+        }
+    }
 
-            val fileName = "health-export-${System.currentTimeMillis()}.json"
-            val file = File(exportDirectory, fileName)
-
-            val json = gson.toJson(payload)
-            file.writeText(json)
-
-            file
+    fun writeExport(
+        context: Context,
+        payload: ExportPayload
+    ): Result<Pair<File, String>> {
+        return runCatching {
+            val file = writeExportToFile(context, payload)
+            val content = file.readText()
+            file to content
         }
     }
 
@@ -59,5 +59,23 @@ class ExportFileWriter {
 
             latestFile to content
         }
+    }
+
+    private fun writeExportToFile(
+        context: Context,
+        payload: ExportPayload
+    ): File {
+        val exportDirectory = File(context.filesDir, "exports")
+        if (!exportDirectory.exists()) {
+            exportDirectory.mkdirs()
+        }
+
+        val fileName = "health-export-${System.currentTimeMillis()}.json"
+        val file = File(exportDirectory, fileName)
+
+        val json = gson.toJson(payload)
+        file.writeText(json)
+
+        return file
     }
 }

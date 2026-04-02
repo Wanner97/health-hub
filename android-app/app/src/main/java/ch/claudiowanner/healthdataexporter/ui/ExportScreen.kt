@@ -10,6 +10,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 fun ExportScreen(
     onCreateTestExport: () -> Result<String>,
     onLoadLatestExport: () -> Result<Pair<String, String>>,
+    onExportTodaySteps: (MutableState<String>, MutableState<String>) -> Unit,
     onCheckHealthConnect: () -> Unit,
     onRequestStepsPermission: () -> Unit,
     onReadTodaySteps: () -> Unit,
@@ -49,8 +51,8 @@ fun ExportScreen(
             onClick = {
                 val result = onCreateTestExport()
                 exportStatus.value = result.fold(
-                    onSuccess = { "Export saved successfully: $it" },
-                    onFailure = { "Export failed: ${it.message}" }
+                    onSuccess = { "Test export saved successfully: $it" },
+                    onFailure = { "Test export failed: ${it.message}" }
                 )
             }
         ) {
@@ -72,6 +74,14 @@ fun ExportScreen(
             }
         ) {
             Text("Load latest export")
+        }
+
+        Button(
+            onClick = {
+                onExportTodaySteps(exportStatus, exportPreview)
+            }
+        ) {
+            Text("Export today's steps")
         }
 
         Text(
