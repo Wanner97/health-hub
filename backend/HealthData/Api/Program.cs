@@ -1,3 +1,7 @@
+using DataAccess;
+using DataAccess.Context;
+using DataAccess.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api
 {
@@ -7,28 +11,35 @@ namespace Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            ConfigureServices(builder);
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
 
             app.Run();
         }
+
+        private static void ConfigureServices(WebApplicationBuilder builder)
+        {
+            builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
+            builder.Services.AddDbContextFactory<AppDbContext>(options =>
+                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddScoped<IImportBatchDataAccess, ImportBatchDataAccess>();
+            builder.Services.AddScoped<IStepEntryDataAccess, StepEntryDataAccess>();
+        }
     }
 }
+
