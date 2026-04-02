@@ -21,6 +21,7 @@ fun ExportScreen(
     onCreateTestExport: () -> Result<String>,
     onLoadLatestExport: () -> Result<Pair<String, String>>,
     onExportTodaySteps: (MutableState<String>, MutableState<String>) -> Unit,
+    onExportLast7DaysSteps: (MutableState<String>, MutableState<String>) -> Unit,
     onCheckHealthConnect: () -> Unit,
     onRequestStepsPermission: () -> Unit,
     onReadTodaySteps: () -> Unit,
@@ -82,6 +83,14 @@ fun ExportScreen(
             }
         ) {
             Text("Export today's steps")
+        }
+
+        Button(
+            onClick = {
+                onExportLast7DaysSteps(exportStatus, exportPreview)
+            }
+        ) {
+            Text("Export last 7 days")
         }
 
         Text(

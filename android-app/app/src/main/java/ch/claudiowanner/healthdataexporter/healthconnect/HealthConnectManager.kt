@@ -39,34 +39,57 @@ class HealthConnectManager(private val context: Context) {
         val startOfDay = LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant()
         val now = Instant.now()
 
-        val response = client().aggregate(
-            AggregateRequest(
-                metrics = setOf(StepsRecord.COUNT_TOTAL),
-                timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
-            )
-        )
-
-        return response[StepsRecord.COUNT_TOTAL] ?: 0L
+        return aggregateStepsBetween(startOfDay, now)
     }
 
     suspend fun readTodayStepExportRecord(): StepExportRecord {
         val zoneId = ZoneId.systemDefault()
-        val startOfDay = LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant()
-        val now = Instant.now()
+        val today = LocalDate.now(zoneId)
 
-        val response = client().aggregate(
-            AggregateRequest(
-                metrics = setOf(StepsRecord.COUNT_TOTAL),
-                timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
-            )
-        )
+        return readStepExportRecordForDate(today)
+    }
 
-        val steps = response[StepsRecord.COUNT_TOTAL] ?: 0L
+    suspend fun readStepExportRecordsForLastDays(days: Int): List<StepExportRecord> {
+        require(days > 0) { "days must be greater than 0." }
+
+        val zoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(zoneId)
+
+        return (days - 1 downTo 0).map { offset ->
+            val date = today.minusDays(offset.toLong())
+            readStepExportRecordForDate(date)
+        }
+    }
+
+    private suspend fun readStepExportRecordForDate(date: LocalDate): StepExportRecord {
+        val zoneId = ZoneId.systemDefault()
+        val start = date.atStartOfDay(zoneId).toInstant()
+        val endExclusive = if (date == LocalDate.now(zoneId)) {
+            Instant.now()
+        } else {
+            date.plusDays(1).atStartOfDay(zoneId).toInstant()
+        }
+
+        val steps = aggregateStepsBetween(start, endExclusive)
 
         return StepExportRecord(
             count = steps,
-            startTime = startOfDay.toString(),
-            endTime = now.toString()
+            startTime = start.toString(),
+            endTime = endExclusive.toString()
         )
+    }
+
+    private suspend fun aggregateStepsBetween(
+        start: Instant,
+        end: Instant
+    ): Long {
+        val response = client().aggregate(
+            AggregateRequest(
+                metrics = setOf(StepsRecord.COUNT_TOTAL),
+                timeRangeFilter = TimeRangeFilter.between(start, end)
+            )
+        )
+
+        return response[StepsRecord.COUNT_TOTAL] ?: 0L
     }
 }
