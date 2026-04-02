@@ -53,6 +53,8 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.11.0")
 
+    implementation("androidx.health.connect:connect-client:1.1.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

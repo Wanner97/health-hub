@@ -18,9 +18,14 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ExportScreen(
     onCreateTestExport: () -> Result<String>,
-    onLoadLatestExport: () -> Result<Pair<String, String>>
+    onLoadLatestExport: () -> Result<Pair<String, String>>,
+    onCheckHealthConnect: () -> Unit,
+    onRequestStepsPermission: () -> Unit,
+    onReadTodaySteps: () -> Unit,
+    healthConnectStatus: String,
+    stepsText: String
 ) {
-    val status = remember { mutableStateOf("No export created yet.") }
+    val exportStatus = remember { mutableStateOf("No export created yet.") }
     val exportPreview = remember { mutableStateOf("No export loaded yet.") }
 
     Column(
@@ -36,14 +41,14 @@ fun ExportScreen(
         )
 
         Text(
-            text = "This app will later read health data and export it as JSON. For now, we test the export flow with sample data.",
+            text = "This app will later read health data and export it as JSON. For now, we test the export flow and start integrating Health Connect step by step.",
             style = MaterialTheme.typography.bodyLarge
         )
 
         Button(
             onClick = {
                 val result = onCreateTestExport()
-                status.value = result.fold(
+                exportStatus.value = result.fold(
                     onSuccess = { "Export saved successfully: $it" },
                     onFailure = { "Export failed: ${it.message}" }
                 )
@@ -57,11 +62,11 @@ fun ExportScreen(
                 val result = onLoadLatestExport()
                 result.fold(
                     onSuccess = { (path, content) ->
-                        status.value = "Latest export loaded: $path"
+                        exportStatus.value = "Latest export loaded: $path"
                         exportPreview.value = content
                     },
                     onFailure = {
-                        status.value = "Loading export failed: ${it.message}"
+                        exportStatus.value = "Loading export failed: ${it.message}"
                     }
                 )
             }
@@ -70,7 +75,7 @@ fun ExportScreen(
         }
 
         Text(
-            text = status.value,
+            text = exportStatus.value,
             style = MaterialTheme.typography.bodyMedium
         )
 
@@ -82,6 +87,33 @@ fun ExportScreen(
         Text(
             text = exportPreview.value,
             style = MaterialTheme.typography.bodySmall
+        )
+
+        Text(
+            text = "Health Connect",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Button(onClick = onCheckHealthConnect) {
+            Text("Check Health Connect")
+        }
+
+        Button(onClick = onRequestStepsPermission) {
+            Text("Request steps permission")
+        }
+
+        Button(onClick = onReadTodaySteps) {
+            Text("Read today's steps")
+        }
+
+        Text(
+            text = healthConnectStatus,
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Text(
+            text = stepsText,
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }

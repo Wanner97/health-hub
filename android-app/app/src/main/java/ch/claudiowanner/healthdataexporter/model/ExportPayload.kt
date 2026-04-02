@@ -1,15 +1,14 @@
 package ch.claudiowanner.healthdataexporter.model
 
 data class ExportPayload(
+    val exportVersion: Int,
     val source: String,
     val exportedAt: String,
-    val records: List<HealthRecordExport>
+    val records: List<StepExportRecord>
 )
 
-data class HealthRecordExport(
-    val type: String,
-    val value: Long,
-    val unit: String,
+data class StepExportRecord(
+    val count: Long,
     val startTime: String,
     val endTime: String
 )
