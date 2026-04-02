@@ -35,3 +35,42 @@ captures/
 # --- Kotlin / Java crash logs ---
 hs_err_pid*
 replay_pid*
+
+
+
+# --- .NET / C# / ASP.NET Core ---
+bin/
+obj/
+out/
+publish/
+
+# --- Visual Studio ---
+.vs/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# --- Rider / JetBrains ---
+.idea/
+*.DotSettings.user
+
+# --- Test / coverage ---
+TestResults/
+*.trx
+coverage/
+coverage-report/
+
+# --- NuGet / packages ---
+packages/
+*.nupkg
+*.snupkg
+
+# --- ASP.NET Core local secrets / certificates ---
+secrets.json
+appsettings.Development.json
+
+# --- Logs ---
+logs/
+*.log
