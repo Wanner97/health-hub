@@ -1,5 +1,6 @@
 package ch.claudiowanner.healthdataexporter
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.FileProvider
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
@@ -80,7 +82,8 @@ class MainActivity : ComponentActivity() {
                     onRequestStepsPermission = { requestStepsPermission() },
                     onExportLast7DaysSteps = { exportLast7DaysSteps() },
                     onLoadLatestExport = { loadLatestExport() },
-                    onSaveLatestExportToDevice = { saveLatestExportToDevice() }
+                    onSaveLatestExportToDevice = { saveLatestExportToDevice() },
+                    onShareLatestExport = { shareLatestExport() }
                 )
             }
         }
@@ -187,5 +190,32 @@ class MainActivity : ComponentActivity() {
         val fileName = "steps-export-$today.json"
 
         createDocumentLauncher.launch(fileName)
+    }
+
+    private fun shareLatestExport() {
+        val latestFile = exportFileWriter.getLatestExportFile(this)
+
+        if (latestFile == null) {
+            statusText = "No export file found to share."
+            return
+        }
+
+        val uri = FileProvider.getUriForFile(
+            this,
+            "ch.claudiowanner.healthdataexporter.fileprovider",
+            latestFile
+        )
+
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "application/json"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        startActivity(
+            Intent.createChooser(shareIntent, "Share latest export")
+        )
+
+        statusText = "Opened share sheet for latest export."
     }
 }

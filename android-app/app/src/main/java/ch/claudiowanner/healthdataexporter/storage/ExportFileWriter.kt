@@ -24,21 +24,24 @@ class ExportFileWriter {
 
     fun readLatestExport(context: Context): Result<Pair<File, String>> {
         return runCatching {
-            val exportDirectory = File(context.filesDir, "exports")
-
-            if (!exportDirectory.exists() || !exportDirectory.isDirectory) {
-                error("No export directory found.")
-            }
-
-            val latestFile = exportDirectory
-                .listFiles { file -> file.isFile && file.extension == "json" }
-                ?.maxByOrNull { it.lastModified() }
+            val latestFile = getLatestExportFile(context)
                 ?: error("No export file found.")
 
             val content = latestFile.readText()
-
             latestFile to content
         }
+    }
+
+    fun getLatestExportFile(context: Context): File? {
+        val exportDirectory = File(context.filesDir, "exports")
+
+        if (!exportDirectory.exists() || !exportDirectory.isDirectory) {
+            return null
+        }
+
+        return exportDirectory
+            .listFiles { file -> file.isFile && file.extension == "json" }
+            ?.maxByOrNull { it.lastModified() }
     }
 
     fun writeJsonToUri(
