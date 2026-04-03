@@ -29,7 +29,7 @@ namespace Logic
 
             Validate(dto);
 
-            var importBatch = new ImportBatch
+            var importBatch = new StepRecordsImportBatch
             {
                 Source = dto.Source,
                 ExportVersion = dto.ExportVersion,

@@ -14,14 +14,14 @@ namespace DataAccess
             _dbContextFactory = dbContextFactory;
         }
 
-        public ImportBatch CreateImportBatch(ImportBatch importBatch)
+        public StepRecordsImportBatch CreateImportBatch(StepRecordsImportBatch stepRecordsImportBatch)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                context.ImportBatches.Add(importBatch);
+                context.ImportBatches.Add(stepRecordsImportBatch);
                 context.SaveChanges();
 
-                return importBatch;
+                return stepRecordsImportBatch;
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace Common.Models
 {
-    public class ImportBatch
+    public class StepRecordsImportBatch
     {
         public int Id { get; set; }
 

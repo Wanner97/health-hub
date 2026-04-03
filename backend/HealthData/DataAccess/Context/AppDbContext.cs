@@ -10,7 +10,7 @@ namespace DataAccess.Context
         {
         }
 
-        public DbSet<ImportBatch> ImportBatches { get; set; }
+        public DbSet<StepRecordsImportBatch> ImportBatches { get; set; }
         public DbSet<StepEntry> StepEntries { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
