@@ -13,31 +13,21 @@ namespace DataAccess.Configurations
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
-            builder.Property(x => x.Source)
-                .HasColumnName("Source")
-                .HasMaxLength(100)
-                .IsUnicode()
-                .IsRequired();
+            builder.Property(x => x.Source).HasColumnName("Source").HasMaxLength(100).IsUnicode().IsRequired();
+            builder.Property(x => x.ExportVersion).HasColumnName("ExportVersion").IsRequired();
+            builder.Property(x => x.ExportedAtUtc).HasColumnName("ExportedAtUtc").IsRequired();
+            builder.Property(x => x.ImportedAtUtc).HasColumnName("ImportedAtUtc").IsRequired();
+            builder.Property(x => x.RangeStartUtc).HasColumnName("RangeStartUtc").IsRequired();
+            builder.Property(x => x.RangeEndUtc).HasColumnName("RangeEndUtc").IsRequired();
+            builder.Property(x => x.ReceivedRecordCount).HasColumnName("ReceivedRecordCount").IsRequired();
+            builder.Property(x => x.InsertedRecordCount).HasColumnName("InsertedRecordCount").IsRequired();
+            builder.Property(x => x.UpdatedRecordCount).HasColumnName("UpdatedRecordCount").IsRequired();
+            builder.Property(x => x.UnchangedRecordCount).HasColumnName("UnchangedRecordCount").IsRequired();
 
-            builder.Property(x => x.ExportVersion)
-                .HasColumnName("ExportVersion")
-                .IsRequired();
 
-            builder.Property(x => x.ExportedAt)
-                .HasColumnName("ExportedAt")
-                .IsRequired();
-
-            builder.Property(x => x.ImportedAt)
-                .HasColumnName("ImportedAt")
-                .IsRequired();
-
-            builder.Property(x => x.RecordCount)
-                .HasColumnName("RecordCount")
-                .IsRequired();
-
-            builder.HasMany(x => x.StepEntries)
-                .WithOne(x => x.ImportBatch)
-                .HasForeignKey(x => x.ImportBatchId)
+            builder.HasMany(x => x.ActivityDayEntries)
+                .WithOne(x => x.LastImportBatch)
+                .HasForeignKey(x => x.LastImportBatchId)
                 .IsRequired();
         }
     }

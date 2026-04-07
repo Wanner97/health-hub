@@ -76,3 +76,4 @@ frontend/dist-ssr/
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
+/backend/HealthData/Api/Logs

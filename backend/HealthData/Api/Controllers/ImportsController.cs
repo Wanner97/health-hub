@@ -7,29 +7,34 @@ namespace Api.Controllers
     [Route("api/[controller]")]
     public class ImportsController : ControllerBase
     {
-        private readonly IStepsImportLogic _stepsImportLogic;
+        private readonly IActivityImportLogic _activityImportLogic;
 
-        public ImportsController(IStepsImportLogic stepsImportLogic)
+        public ImportsController(IActivityImportLogic activityImportLogic)
         {
-            _stepsImportLogic = stepsImportLogic;
+            _activityImportLogic = activityImportLogic;
         }
 
-        [HttpPost("steps")]
-        public IActionResult ImportSteps(IFormFile file)
+        [HttpPost("activity")]
+        public IActionResult ImportActivity(IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
                 return BadRequest("No file uploaded.");
             }
 
-            using var stream = file.OpenReadStream();
-            var result = _stepsImportLogic.ImportSteps(stream);
-
-            return Ok(new
+            using (var stream = file.OpenReadStream())
             {
-                Message = "Steps imported successfully.",
-                RecordCount = result.RecordCount
-            });
+                var result = _activityImportLogic.ImportActivity(stream);
+
+                return Ok(new
+                {
+                    Message = "Activity import completed successfully.",
+                    ReceivedRecordCount = result.ReceivedRecordCount,
+                    InsertedRecordCount = result.InsertedRecordCount,
+                    UpdatedRecordCount = result.UpdatedRecordCount,
+                    UnchangedRecordCount = result.UnchangedRecordCount
+                });
+            }
         }
     }
 }

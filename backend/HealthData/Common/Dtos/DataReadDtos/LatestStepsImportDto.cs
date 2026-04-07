@@ -1,4 +1,4 @@
-﻿namespace Common.Dtos
+﻿namespace Common.Dtos.DataReadDtos
 {
     public class LatestStepsImportDto
     {

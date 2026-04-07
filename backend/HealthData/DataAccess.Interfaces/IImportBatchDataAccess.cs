@@ -4,8 +4,11 @@ namespace DataAccess.Interfaces
 {
     public interface IImportBatchDataAccess
     {
-        ImportBatch CreateImportBatch(ImportBatch importBatch);
-        bool ImportBatchExists(string source, int exportVersion, DateTimeOffset exportedAt);
-        ImportBatch? GetLatestImportBatch();
+        Dictionary<DateOnly, ActivityDay> GetExistingActivityDays(string source, IEnumerable<DateOnly> dates);
+
+        ImportBatch ApplyImport(
+            ImportBatch importBatch,
+            List<ActivityDay> insertedActivityDays,
+            List<ActivityDay> updatedActivityDays);
     }
 }

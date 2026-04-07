@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Common.Dtos
+namespace Common.Dtos.DataImportDtos
 {
-    public class StepsExportDto
+    public class ActivityExportDto
     {
         [JsonPropertyName("exportVersion")]
         public int ExportVersion { get; set; }
@@ -10,10 +10,16 @@ namespace Common.Dtos
         [JsonPropertyName("exportedAt")]
         public DateTimeOffset ExportedAt { get; set; }
 
+        [JsonPropertyName("rangeStart")]
+        public DateTimeOffset RangeStart { get; set; }
+
+        [JsonPropertyName("rangeEnd")]
+        public DateTimeOffset RangeEnd { get; set; }
+
         [JsonPropertyName("source")]
         public string Source { get; set; } = string.Empty;
 
         [JsonPropertyName("records")]
-        public List<StepRecordDto> Records { get; set; } = new List<StepRecordDto>();
+        public List<ActivityRecordDto> Records { get; set; } = new List<ActivityRecordDto>();
     }
 }

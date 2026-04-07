@@ -1,12 +1,9 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Common.Dtos
+namespace Common.Dtos.DataImportDtos
 {
-    public class StepRecordDto
+    public class ActivityRecordDto
     {
-        [JsonPropertyName("count")]
-        public int Count { get; set; }
-
         [JsonPropertyName("date")]
         public DateOnly Date { get; set; }
 
@@ -15,5 +12,11 @@ namespace Common.Dtos
 
         [JsonPropertyName("endTime")]
         public DateTimeOffset EndTime { get; set; }
+
+        [JsonPropertyName("steps")]
+        public int Steps { get; set; }
+
+        [JsonPropertyName("distanceMeters")]
+        public double DistanceMeters { get; set; }
     }
 }

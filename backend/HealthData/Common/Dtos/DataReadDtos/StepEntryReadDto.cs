@@ -1,13 +1,7 @@
-﻿namespace Common.Models
+﻿namespace Common.Dtos.DataReadDtos
 {
-    public class StepEntry
+    public class StepEntryReadDto
     {
-        public int Id { get; set; }
-
-        public int ImportBatchId { get; set; }
-
-        public ImportBatch ImportBatch { get; set; } = null!;
-
         public DateOnly Date { get; set; }
 
         public int Count { get; set; }

@@ -14,36 +14,60 @@ namespace DataAccess
             _dbContextFactory = dbContextFactory;
         }
 
-        public ImportBatch CreateImportBatch(ImportBatch importBatch)
+        public Dictionary<DateOnly, ActivityDay> GetExistingActivityDays(string source, IEnumerable<DateOnly> dates)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                context.ImportBatches.Add(importBatch);
-                context.SaveChanges();
+                var distinctDates = dates.Distinct().ToList();
 
-                return importBatch;
+                return context.ActivityDays
+                    .Where(x => x.Source == source && distinctDates.Contains(x.Date))
+                    .ToDictionary(x => x.Date, x => x);
             }
         }
 
-        public bool ImportBatchExists(string source, int exportVersion, DateTimeOffset exportedAt)
+        public ImportBatch ApplyImport(
+            ImportBatch importBatch,
+            List<ActivityDay> insertedActivityDays,
+            List<ActivityDay> updatedActivityDays)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                return context.ImportBatches.Any(x =>
-                    x.Source == source &&
-                    x.ExportVersion == exportVersion &&
-                    x.ExportedAt == exportedAt);
+                using (var transaction = context.Database.BeginTransaction())
+                {
+                    context.ImportBatches.Add(importBatch);
+                    context.SaveChanges();
+
+                    foreach (var insertedActivityDay in insertedActivityDays)
+                    {
+                        insertedActivityDay.LastImportBatchId = importBatch.Id;
+                        insertedActivityDay.LastImportBatch = importBatch;
+                        insertedActivityDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var updatedActivityDay in updatedActivityDays)
+                    {
+                        updatedActivityDay.LastImportBatchId = importBatch.Id;
+                        updatedActivityDay.LastImportBatch = importBatch;
+                        updatedActivityDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    if (insertedActivityDays.Count > 0)
+                    {
+                        context.ActivityDays.AddRange(insertedActivityDays);
+                    }
+
+                    if (updatedActivityDays.Count > 0)
+                    {
+                        context.ActivityDays.UpdateRange(updatedActivityDays);
+                    }
+
+                    context.SaveChanges();
+                    transaction.Commit();
+
+                    return importBatch;
+                }
             }
-        }
-
-        public ImportBatch? GetLatestImportBatch()
-        {
-            using var context = _dbContextFactory.CreateDbContext();
-
-            return context.ImportBatches
-                .Include(x => x.StepEntries)
-                .OrderByDescending(x => x.Id)
-                .FirstOrDefault();
         }
     }
 }

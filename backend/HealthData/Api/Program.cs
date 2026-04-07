@@ -1,9 +1,11 @@
+using Api.ExceptionHandling;
 using DataAccess;
 using DataAccess.Context;
 using DataAccess.Interfaces;
 using Logic;
 using Logic.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace Api
 {
@@ -11,25 +13,48 @@ namespace Api
     {
         public static void Main(string[] args)
         {
-            var builder = WebApplication.CreateBuilder(args);
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(new ConfigurationBuilder()
+                    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                    .AddJsonFile(
+                        $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json",
+                        optional: true,
+                        reloadOnChange: true)
+                    .Build())
+                .CreateLogger();
 
-            ConfigureServices(builder);
-
-            var app = builder.Build();
-
-            if (app.Environment.IsDevelopment())
+            try
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                Log.Information("Starting HealthData API");
+
+                var builder = WebApplication.CreateBuilder(args);
+
+                builder.Host.UseSerilog();
+                ConfigureServices(builder);
+
+                var app = builder.Build();
+
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                app.UseCors("FrontendPolicy");
+                app.UseHttpsRedirection();
+                app.UseAuthorization();
+                app.MapControllers();
+
+                app.Run();
             }
-
-            app.UseCors("FrontendPolicy");
-
-            app.UseHttpsRedirection();
-            app.UseAuthorization();
-            app.MapControllers();
-
-            app.Run();
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Application terminated unexpectedly");
+            }
+            finally
+            {
+                Log.CloseAndFlush();
+            }
         }
 
         private static void ConfigureServices(WebApplicationBuilder builder)
@@ -45,7 +70,13 @@ namespace Api
                 });
             });
 
-            builder.Services.AddControllers();
+            builder.Services.AddScoped<GlobalExceptionFilter>();
+
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add<GlobalExceptionFilter>();
+            });
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -54,8 +85,7 @@ namespace Api
 
             builder.Services.AddScoped<IImportBatchDataAccess, ImportBatchDataAccess>();
 
-            builder.Services.AddScoped<IStepsImportLogic, StepsImportLogic>();
-            builder.Services.AddScoped<IStepsReadLogic, StepsReadLogic>();
+            builder.Services.AddScoped<IActivityImportLogic, ActivityImportLogic>();
         }
     }
 }
