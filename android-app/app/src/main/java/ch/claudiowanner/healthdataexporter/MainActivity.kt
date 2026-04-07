@@ -33,9 +33,9 @@ class MainActivity : ComponentActivity() {
             PermissionController.createRequestPermissionResultContract()
         ) { granted ->
             statusText = if (granted.containsAll(HealthConnectManager.PERMISSIONS)) {
-                "Steps permission granted."
+                "Health permissions granted."
             } else {
-                "Steps permission was not granted."
+                "Not all requested permissions were granted."
             }
         }
 
@@ -79,8 +79,8 @@ class MainActivity : ComponentActivity() {
                 ExportScreen(
                     statusText = statusText,
                     exportPreview = exportPreview,
-                    onRequestStepsPermission = { requestStepsPermission() },
-                    onExportLast7DaysSteps = { exportLast7DaysSteps() },
+                    onRequestHealthPermissions = { requestHealthPermissions() },
+                    onExportFullHistory = { exportFullHistory() },
                     onLoadLatestExport = { loadLatestExport() },
                     onSaveLatestExportToDevice = { saveLatestExportToDevice() },
                     onShareLatestExport = { shareLatestExport() }
@@ -89,13 +89,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun requestStepsPermission() {
+    private fun requestHealthPermissions() {
         when (healthConnectManager.getSdkStatus()) {
             HealthConnectClient.SDK_AVAILABLE -> {
                 lifecycleScope.launch {
                     val alreadyGranted = healthConnectManager.hasAllPermissions()
                     if (alreadyGranted) {
-                        statusText = "Steps permission already granted."
+                        statusText = "Health permissions already granted."
                     } else {
                         requestPermissions.launch(HealthConnectManager.PERMISSIONS)
                     }
@@ -116,22 +116,29 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun exportLast7DaysSteps() {
+    private fun exportFullHistory() {
         lifecycleScope.launch {
             try {
                 when (healthConnectManager.getSdkStatus()) {
                     HealthConnectClient.SDK_AVAILABLE -> {
                         if (!healthConnectManager.hasAllPermissions()) {
-                            statusText = "Exporting step data failed: Steps permission is missing."
+                            statusText = "Export failed: required permissions are missing."
                             return@launch
                         }
 
-                        val records = healthConnectManager.readStepExportRecordsForLastDays(7)
+                        val records = healthConnectManager.readActivityExportRecordsForFullHistory()
+
+                        if (records.isEmpty()) {
+                            statusText = "No step or distance data found."
+                            return@launch
+                        }
 
                         val payload = ExportPayload(
-                            exportVersion = 1,
+                            exportVersion = 2,
                             source = "health-connect",
                             exportedAt = Instant.now().toString(),
+                            rangeStart = records.first().startTime,
+                            rangeEnd = records.last().endTime,
                             records = records
                         )
 
@@ -139,29 +146,29 @@ class MainActivity : ComponentActivity() {
 
                         result.fold(
                             onSuccess = { (file, content) ->
-                                statusText = "Last 7 days exported successfully: ${file.absolutePath}"
+                                statusText = "Full history exported successfully: ${file.absolutePath}"
                                 exportPreview = content
                             },
                             onFailure = {
-                                statusText = "Exporting step data failed: ${it.message}"
+                                statusText = "Export failed: ${it.message}"
                             }
                         )
                     }
 
                     HealthConnectClient.SDK_UNAVAILABLE -> {
-                        statusText = "Exporting step data failed: Health Connect is unavailable on this device."
+                        statusText = "Export failed: Health Connect is unavailable on this device."
                     }
 
                     HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                        statusText = "Exporting step data failed: Health Connect requires an update."
+                        statusText = "Export failed: Health Connect requires an update."
                     }
 
                     else -> {
-                        statusText = "Exporting step data failed: Health Connect status is unknown."
+                        statusText = "Export failed: Health Connect status is unknown."
                     }
                 }
             } catch (e: Exception) {
-                statusText = "Exporting step data failed: ${e.message}"
+                statusText = "Export failed: ${e.message}"
             }
         }
     }
@@ -187,7 +194,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val today = LocalDate.now().toString()
-        val fileName = "steps-export-$today.json"
+        val fileName = "activity-export-$today.json"
 
         createDocumentLauncher.launch(fileName)
     }

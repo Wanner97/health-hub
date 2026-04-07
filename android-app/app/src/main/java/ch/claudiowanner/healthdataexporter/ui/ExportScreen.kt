@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 fun ExportScreen(
     statusText: String,
     exportPreview: String,
-    onRequestStepsPermission: () -> Unit,
-    onExportLast7DaysSteps: () -> Unit,
+    onRequestHealthPermissions: () -> Unit,
+    onExportFullHistory: () -> Unit,
     onLoadLatestExport: () -> Unit,
     onSaveLatestExportToDevice: () -> Unit,
     onShareLatestExport: () -> Unit
@@ -45,16 +45,16 @@ fun ExportScreen(
             )
 
             Text(
-                text = "This app exports the last 7 days of step data from Health Connect as JSON.",
+                text = "This app exports steps and distance from Health Connect as JSON.",
                 style = MaterialTheme.typography.bodyLarge
             )
 
-            Button(onClick = onRequestStepsPermission) {
-                Text("Request steps permission")
+            Button(onClick = onRequestHealthPermissions) {
+                Text("Request health permissions")
             }
 
-            Button(onClick = onExportLast7DaysSteps) {
-                Text("Export last 7 days")
+            Button(onClick = onExportFullHistory) {
+                Text("Export full history")
             }
 
             Button(onClick = onLoadLatestExport) {

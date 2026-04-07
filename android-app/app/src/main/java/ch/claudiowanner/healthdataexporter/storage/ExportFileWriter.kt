@@ -68,7 +68,7 @@ class ExportFileWriter {
             exportDirectory.mkdirs()
         }
 
-        val fileName = "steps-export-${System.currentTimeMillis()}.json"
+        val fileName = "activity-export-${System.currentTimeMillis()}.json"
         val file = File(exportDirectory, fileName)
 
         val json = gson.toJson(payload)

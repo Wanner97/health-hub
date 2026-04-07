@@ -4,12 +4,15 @@ data class ExportPayload(
     val exportVersion: Int,
     val source: String,
     val exportedAt: String,
-    val records: List<StepExportRecord>
+    val rangeStart: String,
+    val rangeEnd: String,
+    val records: List<ActivityDayExportRecord>
 )
 
-data class StepExportRecord(
+data class ActivityDayExportRecord(
     val date: String,
-    val count: Long,
+    val steps: Long,
+    val distanceMeters: Double,
     val startTime: String,
     val endTime: String
 )
