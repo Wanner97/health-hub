@@ -4,6 +4,7 @@
 .DS_Store
 Thumbs.db
 *.log
+/backend/HealthData/Api/Logs
 
 # =========================
 # JetBrains / VS Code / VS
@@ -76,4 +77,3 @@ frontend/dist-ssr/
 frontend/.env
 frontend/.env.*
 !frontend/.env.example
-/backend/HealthData/Api/Logs
