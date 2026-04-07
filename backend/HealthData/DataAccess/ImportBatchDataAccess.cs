@@ -35,5 +35,15 @@ namespace DataAccess
                     x.ExportedAt == exportedAt);
             }
         }
+
+        public ImportBatch? GetLatestImportBatch()
+        {
+            using var context = _dbContextFactory.CreateDbContext();
+
+            return context.ImportBatches
+                .Include(x => x.StepEntries)
+                .OrderByDescending(x => x.Id)
+                .FirstOrDefault();
+        }
     }
 }

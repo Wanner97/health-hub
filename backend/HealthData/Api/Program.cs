@@ -42,6 +42,7 @@ namespace Api
             builder.Services.AddScoped<IImportBatchDataAccess, ImportBatchDataAccess>();
 
             builder.Services.AddScoped<IStepsImportLogic, StepsImportLogic>();
+            builder.Services.AddScoped<IStepsReadLogic, StepsReadLogic>();
         }
     }
 }

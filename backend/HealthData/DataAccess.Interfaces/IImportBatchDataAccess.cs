@@ -6,5 +6,6 @@ namespace DataAccess.Interfaces
     {
         ImportBatch CreateImportBatch(ImportBatch importBatch);
         bool ImportBatchExists(string source, int exportVersion, DateTimeOffset exportedAt);
+        ImportBatch? GetLatestImportBatch();
     }
 }
