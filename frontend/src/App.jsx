@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { getLatestSteps } from './api/stepsApi';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import SummaryCard from './components/SummaryCard';
+import StepsTable from './components/StepsTable';
+import {
+  calculateAverageSteps,
+  calculateTotalSteps,
+  formatDate,
+  formatDateTime,
+  formatNumber,
+  getHighestStepEntry,
+  getLowestStepEntry,
+} from './utils/stepsUtils';
 
 function App() {
   const [stepsData, setStepsData] = useState(null);
@@ -11,36 +20,44 @@ function App() {
 
   useEffect(() => {
     async function fetchLatestSteps() {
-    try {
-      setIsLoading(true);
-      setErrorMessage('');
+      try {
+        setIsLoading(true);
+        setErrorMessage('');
 
-      const data = await getLatestSteps();
-      setStepsData(data);
-    } catch (error) {
-      console.error('Fehler beim Laden der Steps:', error);
-      setErrorMessage('Die Steps-Daten konnten nicht geladen werden.');
-    } finally {
-      setIsLoading(false);
+        const data = await getLatestSteps();
+        setStepsData(data);
+      } catch (error) {
+        console.error('Fehler beim Laden der Steps:', error);
+        setErrorMessage('Die Steps-Daten konnten nicht geladen werden.');
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }
 
-  fetchLatestSteps();
+    fetchLatestSteps();
   }, []);
 
   const totalSteps = useMemo(() => {
-    if (!stepsData?.stepEntries) {
-      return 0;
-    }
+    return calculateTotalSteps(stepsData?.stepEntries);
+  }, [stepsData]);
 
-    return stepsData.stepEntries.reduce((sum, entry) => sum + entry.count, 0);
+  const averageSteps = useMemo(() => {
+    return calculateAverageSteps(stepsData?.stepEntries);
+  }, [stepsData]);
+
+  const highestEntry = useMemo(() => {
+    return getHighestStepEntry(stepsData?.stepEntries);
+  }, [stepsData]);
+
+  const lowestEntry = useMemo(() => {
+    return getLowestStepEntry(stepsData?.stepEntries);
   }, [stepsData]);
 
   return (
     <main className="app">
       <div className="container">
         <h1>Health Hub</h1>
-        <p className="subtitle">Erster React-Durchstich mit Backend-Anbindung</p>
+        <p className="subtitle">Erster React-Durchstich mit sauberer Struktur</p>
 
         {isLoading && <p>Lade Daten...</p>}
 
@@ -49,61 +66,32 @@ function App() {
         {!isLoading && !errorMessage && stepsData && (
           <>
             <section className="summary-grid">
-              <article className="card">
-                <h2>Quelle</h2>
-                <p>{stepsData.source}</p>
-              </article>
-
-              <article className="card">
-                <h2>Export Version</h2>
-                <p>{stepsData.exportVersion}</p>
-              </article>
-
-              <article className="card">
-                <h2>Record Count</h2>
-                <p>{stepsData.recordCount}</p>
-              </article>
-
-              <article className="card">
-                <h2>Total Steps</h2>
-                <p>{totalSteps}</p>
-              </article>
-
-              <article className="card">
-                <h2>Exported At</h2>
-                <p>{new Date(stepsData.exportedAt).toLocaleString()}</p>
-              </article>
-
-              <article className="card">
-                <h2>Imported At</h2>
-                <p>{new Date(stepsData.importedAt).toLocaleString()}</p>
-              </article>
+              <SummaryCard title="Quelle" value={stepsData.source} />
+              <SummaryCard title="Export Version" value={stepsData.exportVersion} />
+              <SummaryCard title="Record Count" value={formatNumber(stepsData.recordCount)} />
+              <SummaryCard title="Total Steps" value={formatNumber(totalSteps)} />
+              <SummaryCard title="Average per Day" value={formatNumber(averageSteps)} />
+              <SummaryCard
+                title="Highest Day"
+                value={
+                  highestEntry
+                  ? `${formatDate(highestEntry.date)} – ${formatNumber(highestEntry.count)}`
+                  : '-'
+                }
+              />
+              <SummaryCard
+                title="Lowest Day"
+                value={
+                  lowestEntry
+                  ? `${formatDate(lowestEntry.date)} – ${formatNumber(lowestEntry.count)}`
+                  : '-'
+                }
+              />
+              <SummaryCard title="Exported At" value={formatDateTime(stepsData.exportedAt)} />
+              <SummaryCard title="Imported At" value={formatDateTime(stepsData.importedAt)} />
             </section>
 
-            <section className="table-section">
-              <h2>Step Entries</h2>
-
-              <table>
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Count</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stepsData.stepEntries.map((entry) => (
-                    <tr key={entry.date}>
-                      <td>{entry.date}</td>
-                      <td>{entry.count}</td>
-                      <td>{new Date(entry.startTime).toLocaleString()}</td>
-                      <td>{new Date(entry.endTime).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
+            <StepsTable stepEntries={stepsData.stepEntries} />
           </>
         )}
       </div>

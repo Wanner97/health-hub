@@ -33,12 +33,14 @@ body {
 h1 {
   margin-top: 0;
   margin-bottom: 8px;
+  text-align: center;
 }
 
 .subtitle {
   margin-top: 0;
   margin-bottom: 32px;
   color: #9ca3af;
+  text-align: center;
 }
 
 .summary-grid {
@@ -76,6 +78,7 @@ h1 {
 .table-section h2 {
   margin-top: 0;
   color: #93c5fd;
+  text-align: center;
 }
 
 table {
