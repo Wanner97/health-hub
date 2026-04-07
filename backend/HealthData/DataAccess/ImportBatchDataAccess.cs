@@ -14,14 +14,25 @@ namespace DataAccess
             _dbContextFactory = dbContextFactory;
         }
 
-        public StepRecordsImportBatch CreateImportBatch(StepRecordsImportBatch stepRecordsImportBatch)
+        public ImportBatch CreateImportBatch(ImportBatch importBatch)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                context.ImportBatches.Add(stepRecordsImportBatch);
+                context.ImportBatches.Add(importBatch);
                 context.SaveChanges();
 
-                return stepRecordsImportBatch;
+                return importBatch;
+            }
+        }
+
+        public bool ImportBatchExists(string source, int exportVersion, DateTimeOffset exportedAt)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                return context.ImportBatches.Any(x =>
+                    x.Source == source &&
+                    x.ExportVersion == exportVersion &&
+                    x.ExportedAt == exportedAt);
             }
         }
     }

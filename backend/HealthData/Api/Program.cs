@@ -1,6 +1,8 @@
 using DataAccess;
 using DataAccess.Context;
 using DataAccess.Interfaces;
+using Logic;
+using Logic.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api
@@ -38,7 +40,8 @@ namespace Api
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IImportBatchDataAccess, ImportBatchDataAccess>();
-            builder.Services.AddScoped<IStepEntryDataAccess, StepEntryDataAccess>();
+
+            builder.Services.AddScoped<IStepsImportLogic, StepsImportLogic>();
         }
     }
 }

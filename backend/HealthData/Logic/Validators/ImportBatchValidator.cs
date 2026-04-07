@@ -4,18 +4,22 @@ using FluentValidation;
 
 namespace Logic.Validators
 {
-    public class StepRecordsImportBatchValidator : AbstractValidator<StepRecordsImportBatch>
+    public class ImportBatchValidator : AbstractValidator<ImportBatch>
     {
-        public StepRecordsImportBatchValidator(bool idIsRequired)
+        public ImportBatchValidator(bool idIsRequired)
         {
             if (idIsRequired)
             {
                 RuleFor(x => x.Id).GreaterThan(0);
             }
             
-            RuleFor(x => x.ExportVersion).GreaterThanOrEqualTo(Const.LatestExportVersion);
+            RuleFor(x => x.ExportVersion).Equal(Const.LatestExportVersion);
             RuleFor(x => x.Source).NotEmpty();
             RuleFor(x => x.RecordCount).GreaterThan(0);
+            RuleFor(x => x.RecordCount).Must((batch, recordCount) => recordCount == batch.StepEntries.Count);
+
+            RuleForEach(x => x.StepEntries).SetValidator(new StepEntryValidator(false));
+
             RuleFor(x => x.StepEntries).Must(HaveUniqueDates);
         }
         

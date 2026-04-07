@@ -1,7 +1,9 @@
-﻿namespace Logic.Interfaces
+﻿using Common.Models;
+
+namespace Logic.Interfaces
 {
     public interface IStepsImportLogic
     {
-        void ImportSteps(Stream stream);
+        ImportBatch ImportSteps(Stream stream);
     }
 }

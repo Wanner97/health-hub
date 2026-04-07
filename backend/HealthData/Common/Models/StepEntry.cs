@@ -6,7 +6,7 @@
 
         public int ImportBatchId { get; set; }
 
-        public StepRecordsImportBatch StepRecordsImportBatch { get; set; } = null!;
+        public ImportBatch ImportBatch { get; set; } = null!;
 
         public DateOnly Date { get; set; }
 

@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace DataAccess.Configurations
 {
-    public class ImportBatchConfiguration : IEntityTypeConfiguration<StepRecordsImportBatch>
+    public class ImportBatchConfiguration : IEntityTypeConfiguration<ImportBatch>
     {
-        public void Configure(EntityTypeBuilder<StepRecordsImportBatch> builder)
+        public void Configure(EntityTypeBuilder<ImportBatch> builder)
         {
             builder.ToTable("ImportBatch");
 
@@ -36,7 +36,7 @@ namespace DataAccess.Configurations
                 .IsRequired();
 
             builder.HasMany(x => x.StepEntries)
-                .WithOne(x => x.StepRecordsImportBatch)
+                .WithOne(x => x.ImportBatch)
                 .HasForeignKey(x => x.ImportBatchId)
                 .IsRequired();
         }

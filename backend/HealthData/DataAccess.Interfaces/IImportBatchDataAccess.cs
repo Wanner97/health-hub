@@ -4,6 +4,7 @@ namespace DataAccess.Interfaces
 {
     public interface IImportBatchDataAccess
     {
-        StepRecordsImportBatch CreateImportBatch(StepRecordsImportBatch stepRecordsImportBatch);
+        ImportBatch CreateImportBatch(ImportBatch importBatch);
+        bool ImportBatchExists(string source, int exportVersion, DateTimeOffset exportedAt);
     }
 }

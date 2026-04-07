@@ -14,7 +14,6 @@ namespace Logic.Validators
             
             RuleFor(x => x.Count).GreaterThanOrEqualTo(0);
             RuleFor(x => x.StartTime).LessThan(x => x.EndTime);
-            RuleFor(x => x.EndTime).GreaterThan(x => x.StartTime);
         }
     }   
 }

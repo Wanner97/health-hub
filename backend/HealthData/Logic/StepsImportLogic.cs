@@ -2,7 +2,9 @@
 using Common.Models;
 using DataAccess.Interfaces;
 using Logic.Interfaces;
+using Logic.Validators;
 using System.Text.Json;
+using FluentValidation;
 
 namespace Logic
 {
@@ -15,7 +17,7 @@ namespace Logic
             _importBatchDataAccess = importBatchDataAccess;
         }
 
-        public void ImportSteps(Stream stream)
+        public ImportBatch ImportSteps(Stream stream)
         {
             using var reader = new StreamReader(stream);
             var json = reader.ReadToEnd();
@@ -24,12 +26,10 @@ namespace Logic
 
             if (dto == null)
             {
-                throw new InvalidOperationException("Die JSON-Datei konnte nicht deserialisiert werden.");
+                throw new InvalidOperationException("The JSON file could not be deserialized.");
             }
 
-            Validate(dto);
-
-            var importBatch = new StepRecordsImportBatch
+            var importBatch = new ImportBatch
             {
                 Source = dto.Source,
                 ExportVersion = dto.ExportVersion,
@@ -45,48 +45,14 @@ namespace Logic
                 }).ToList()
             };
 
-            _importBatchDataAccess.CreateImportBatch(importBatch);
-        }
+            new ImportBatchValidator(false).ValidateAndThrow(importBatch);
 
-        private static void Validate(StepsExportDto dto)
-        {
-            if (dto.ExportVersion != 1)
+            if (_importBatchDataAccess.ImportBatchExists(importBatch.Source, importBatch.ExportVersion, importBatch.ExportedAt))
             {
-                throw new InvalidOperationException("ExportVersion wird nicht unterstützt.");
+                throw new ValidationException("This import is already in the database.");
             }
 
-            if (string.IsNullOrWhiteSpace(dto.Source))
-            {
-                throw new InvalidOperationException("Source darf nicht leer sein.");
-            }
-
-            if (dto.Records == null || dto.Records.Count == 0)
-            {
-                throw new InvalidOperationException("Es wurden keine Step-Records gefunden.");
-            }
-
-            foreach (var record in dto.Records)
-            {
-                if (record.Count < 0)
-                {
-                    throw new InvalidOperationException("Count darf nicht negativ sein.");
-                }
-
-                if (record.StartTime >= record.EndTime)
-                {
-                    throw new InvalidOperationException("StartTime muss vor EndTime liegen.");
-                }
-            }
-
-            var duplicateDates = dto.Records
-                .GroupBy(x => x.Date)
-                .Where(g => g.Count() > 1)
-                .ToList();
-
-            if (duplicateDates.Count > 0)
-            {
-                throw new InvalidOperationException("Die Datei enthält doppelte Datumswerte.");
-            }
+            return _importBatchDataAccess.CreateImportBatch(importBatch);
         }
     }
 }
