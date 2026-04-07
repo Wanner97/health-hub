@@ -84,8 +84,10 @@ namespace Api
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IImportBatchDataAccess, ImportBatchDataAccess>();
+            builder.Services.AddScoped<IActivityDayDataAccess, ActivityDayDataAccess>();
 
             builder.Services.AddScoped<IActivityImportLogic, ActivityImportLogic>();
+            builder.Services.AddScoped<IActivityDayReadLogic, ActivityDayReadLogic>();
         }
     }
 }
