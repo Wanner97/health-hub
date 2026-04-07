@@ -23,6 +23,8 @@ namespace Api
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("FrontendPolicy");
+
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
@@ -32,6 +34,17 @@ namespace Api
 
         private static void ConfigureServices(WebApplicationBuilder builder)
         {
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("FrontendPolicy", policy =>
+                {
+                    policy
+                        .WithOrigins("http://localhost:5173")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

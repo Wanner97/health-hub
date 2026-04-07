@@ -1,78 +1,78 @@
-# --- Android / Gradle ---
-.gradle/
-build/
-app/build/
-*/build/
-
-# --- Local machine / SDK path ---
-local.properties
-
-# --- Android Studio / IntelliJ ---
-.idea/
-*.iml
-
-# --- Logs / temporary files ---
-*.log
-
-# --- OS files ---
+# =========================
+# General / OS
+# =========================
 .DS_Store
 Thumbs.db
+*.log
 
-# --- Android generated / captures ---
-captures/
+# =========================
+# JetBrains / VS Code / VS
+# =========================
+.idea/
+.vscode/
+.vs/
+*.iml
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.DotSettings.user
 
-# --- Native / external build outputs ---
-.externalNativeBuild/
-.cxx/
-
-# --- Keystores / signing files ---
+# =========================
+# Android / Gradle
+# =========================
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/*/build/
+android-app/local.properties
+android-app/captures/
+android-app/.externalNativeBuild/
+android-app/.cxx/
+android-app/.kotlin/
 *.jks
 *.keystore
-
-# --- Firebase / Google services (only ignore if secrets are used locally) ---
-# google-services.json
-
-# --- Kotlin / Java crash logs ---
 hs_err_pid*
 replay_pid*
 
-
-
-# --- .NET / C# / ASP.NET Core ---
-bin/
-obj/
-out/
-publish/
-
-# --- Visual Studio ---
-.vs/
-*.user
-*.rsuser
-*.suo
-*.userosscache
-*.sln.docstates
-
-# --- Rider / JetBrains ---
-.idea/
-*.DotSettings.user
-
-# --- Test / coverage ---
+# =========================
+# .NET / ASP.NET Core
+# =========================
+**/bin/
+**/obj/
+**/out/
+**/publish/
 TestResults/
 *.trx
 coverage/
 coverage-report/
-
-# --- NuGet / packages ---
 packages/
 *.nupkg
 *.snupkg
 
-# --- ASP.NET Core local secrets / certificates ---
+# =========================
+# Local config / secrets
+# =========================
+**/appsettings.Development.json
+**/appsettings.Local.json
 *.secrets.json
-*.appsettings.Development.json
 
-# --- Logs ---
-logs/
-*.log
-backend/HealthData/Api/Properties/launchSettings.json
-backend/HealthData/Api/appsettings.json
+# =========================
+# SQLite / local databases
+# =========================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# =========================
+# Frontend / Node / Vite
+# =========================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
