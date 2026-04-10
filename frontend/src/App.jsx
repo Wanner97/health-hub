@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { getActivityDays } from './api/activityDaysApi';
+import { getChartData } from './utils/activityDays/chartData';
+import ActivityBarChart from './components/activityDays/ActivityBarChart';
 import ActivityDaysTable from './components/activityDays/ActivityDaysTable';
 import ActivityStatsSummary from './components/activityDays/ActivityStatsSummary';
 import PeriodSelector from './components/activityDays/PeriodSelector';
 import ViewModeToggle from './components/activityDays/ViewModeToggle';
-import { PERIODS, formatDateForInput, getPeriodLabel, getRangeFromPeriod } from './utils/activityDays/periodUtils';
-import { formatKilometersFromMeters, formatNumber } from './utils/activityDays/formatters';
+import { PERIODS, formatDateForInput, getRangeFromPeriod } from './utils/activityDays/periodUtils';
+import {
+  formatKilometersFromMeters,
+  formatNumber,
+  formatRangeLabel,
+} from './utils/activityDays/formatters';
 import {
   calculateAverageDistanceMeters,
   calculateAverageSteps,
@@ -26,13 +32,15 @@ function App() {
   const [activityDays, setActivityDays] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const selectedRange = useMemo(() => {
+    return getRangeFromPeriod(period, endDate);
+  }, [period, endDate]);
 
-  async function loadActivityDays(nextPeriod, nextEndDate) {
+  async function loadActivityDays(range) {
     try {
       setIsLoading(true);
       setErrorMessage('');
 
-      const range = getRangeFromPeriod(nextPeriod, nextEndDate);
       const data = await getActivityDays(range);
 
       const sorted = sortActivityDaysByDate(data);
@@ -48,8 +56,8 @@ function App() {
   }
 
   useEffect(() => {
-    loadActivityDays(period, endDate);
-  }, [period, endDate]);
+    loadActivityDays(selectedRange);
+  }, [selectedRange]);
 
   const totalSteps = useMemo(() => {
     return calculateTotalSteps(activityDays);
@@ -69,6 +77,10 @@ function App() {
     }
 
     return sortActivityDaysByDateDesc(activityDays);
+  }, [period, activityDays]);
+
+  const chartData = useMemo(() => {
+    return getChartData(period, activityDays);
   }, [period, activityDays]);
 
   return (
@@ -95,7 +107,7 @@ function App() {
         {!isLoading && !errorMessage && (
           <>
             <ActivityStatsSummary
-              periodLabel={getPeriodLabel(period)}
+              rangeLabel={formatRangeLabel(period, selectedRange.from, selectedRange.to)}
               dayCount={formatNumber(activityDays.length)}
               averageSteps={formatNumber(averageSteps)}
               averageDistance={formatKilometersFromMeters(averageDistance)}
@@ -103,10 +115,7 @@ function App() {
             />
 
             {viewMode === 'stats' && (
-              <section className="placeholder-section">
-                <h2>Statistikansicht</h2>
-                <p>Here will the diagram be implemented</p>
-              </section>
+              <ActivityBarChart period={period} data={chartData} />
             )}
 
             {viewMode === 'table' && (

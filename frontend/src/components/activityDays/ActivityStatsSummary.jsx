@@ -1,7 +1,7 @@
 import SummaryCard from '../SummaryCard';
 
 function ActivityStatsSummary({
-  periodLabel,
+  rangeLabel,
   dayCount,
   averageSteps,
   averageDistance,
@@ -9,7 +9,7 @@ function ActivityStatsSummary({
 }) {
   return (
     <section className="summary-grid">
-      <SummaryCard title="Zeitraum" value={periodLabel} />
+      <SummaryCard title="Zeitraum" value={rangeLabel} />
       <SummaryCard title="Tage im Datensatz" value={dayCount} />
       <SummaryCard title="Ø Schritte / Tag" value={averageSteps} />
       <SummaryCard title="Ø km / Tag" value={averageDistance} />
