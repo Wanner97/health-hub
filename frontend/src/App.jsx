@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { getActivityDays } from './api/activityDaysApi';
-import ActivityDaysTable from './components/ActivityDaysTable';
-import SummaryCard from './components/SummaryCard';
+import ActivityDaysTable from './components/activityDays/ActivityDaysTable';
+import ActivityStatsSummary from './components/activityDays/ActivityStatsSummary';
+import PeriodSelector from './components/activityDays/PeriodSelector';
+import ViewModeToggle from './components/activityDays/ViewModeToggle';
 import { PERIODS, formatDateForInput, getPeriodLabel, getRangeFromPeriod } from './utils/activityDays/periodUtils';
 import { formatKilometersFromMeters, formatNumber } from './utils/activityDays/formatters';
 import {
@@ -20,6 +22,7 @@ import {
 function App() {
   const [period, setPeriod] = useState(PERIODS.SEVEN_DAYS);
   const [endDate, setEndDate] = useState(formatDateForInput(new Date()));
+  const [viewMode, setViewMode] = useState('stats');
   const [activityDays, setActivityDays] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -74,58 +77,41 @@ function App() {
         <h1>Health Hub</h1>
         <p className="subtitle">Schritte mit umschaltbaren Statistikzeiträumen</p>
 
-        <section className="filter-bar">
-          <div className="period-tabs">
-            <button
-              type="button"
-              className={period === PERIODS.SEVEN_DAYS ? 'active' : ''}
-              onClick={() => setPeriod(PERIODS.SEVEN_DAYS)}
-            >
-              7 Tage
-            </button>
+        <PeriodSelector
+          period={period}
+          endDate={endDate}
+          onPeriodChange={setPeriod}
+          onEndDateChange={setEndDate}
+        />
 
-            <button
-              type="button"
-              className={period === PERIODS.THIRTY_ONE_DAYS ? 'active' : ''}
-              onClick={() => setPeriod(PERIODS.THIRTY_ONE_DAYS)}
-            >
-              31 Tage
-            </button>
-
-            <button
-              type="button"
-              className={period === PERIODS.TWELVE_MONTHS ? 'active' : ''}
-              onClick={() => setPeriod(PERIODS.TWELVE_MONTHS)}
-            >
-              12 Monate
-            </button>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="endDate">Bis</label>
-            <input
-              id="endDate"
-              type="date"
-              value={endDate}
-              onChange={(event) => setEndDate(event.target.value)}
-            />
-          </div>
-        </section>
+        <ViewModeToggle
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+        />
 
         {isLoading && <p>Lade Daten...</p>}
         {errorMessage && <p className="error">{errorMessage}</p>}
 
         {!isLoading && !errorMessage && (
           <>
-            <section className="summary-grid">
-              <SummaryCard title="Zeitraum" value={getPeriodLabel(period)} />
-              <SummaryCard title="Tage im Datensatz" value={formatNumber(activityDays.length)} />
-              <SummaryCard title="Ø Schritte / Tag" value={formatNumber(averageSteps)} />
-              <SummaryCard title="Ø km / Tag" value={formatKilometersFromMeters(averageDistance)} />
-              <SummaryCard title="Schritte insgesamt" value={formatNumber(totalSteps)} />
-            </section>
+            <ActivityStatsSummary
+              periodLabel={getPeriodLabel(period)}
+              dayCount={formatNumber(activityDays.length)}
+              averageSteps={formatNumber(averageSteps)}
+              averageDistance={formatKilometersFromMeters(averageDistance)}
+              totalSteps={formatNumber(totalSteps)}
+            />
 
-            <ActivityDaysTable rows={displayRows} period={period} />
+            {viewMode === 'stats' && (
+              <section className="placeholder-section">
+                <h2>Statistikansicht</h2>
+                <p>Here will the diagram be implemented</p>
+              </section>
+            )}
+
+            {viewMode === 'table' && (
+              <ActivityDaysTable rows={displayRows} period={period} />
+            )}
           </>
         )}
       </div>

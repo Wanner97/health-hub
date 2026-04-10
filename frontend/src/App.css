@@ -172,3 +172,35 @@ th {
   font-weight: bold;
   margin-bottom: 16px;
 }
+
+.view-mode-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.view-mode-toggle button {
+  padding: 10px 16px;
+  border: 1px solid #374151;
+  border-radius: 999px;
+  background-color: #111827;
+  color: #f3f4f6;
+  cursor: pointer;
+}
+
+.view-mode-toggle button.active {
+  background-color: #374151;
+  font-weight: bold;
+}
+
+.placeholder-section {
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.placeholder-section h2 {
+  margin-top: 0;
+  color: #93c5fd;
+}
