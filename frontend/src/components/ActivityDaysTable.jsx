@@ -1,31 +1,64 @@
+import { PERIODS } from '../utils/activityDays/periodUtils';
 import {
   formatDate,
   formatDateTimeUtc,
-  formatMeters,
+  formatKilometersFromMeters,
+  formatMonthLabel,
   formatNumber,
-} from '../utils/activityDayUtils';
+} from '../utils/activityDays/formatters';
 
-function ActivityDaysTable({ activityDays }) {
+function ActivityDaysTable({ rows, period }) {
+  if (period === PERIODS.TWELVE_MONTHS) {
+    return (
+      <section className="table-section">
+        <h2>Monatsübersicht</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Monat</th>
+              <th>Ø Schritte / Tag</th>
+              <th>Ø km / Tag</th>
+              <th>Schritte gesamt</th>
+              <th>Tage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((month) => (
+              <tr key={month.monthKey}>
+                <td>{formatMonthLabel(month.monthKey)}</td>
+                <td>{formatNumber(month.averageSteps)}</td>
+                <td>{formatKilometersFromMeters(month.averageDistanceMeters)}</td>
+                <td>{formatNumber(month.totalSteps)}</td>
+                <td>{formatNumber(month.dayCount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    );
+  }
+
   return (
     <section className="table-section">
-      <h2>Activity Days</h2>
+      <h2>Aktivitätstage</h2>
 
       <table>
         <thead>
           <tr>
             <th>Datum</th>
             <th>Schritte</th>
-            <th>Distanz (m)</th>
+            <th>Distanz (km)</th>
             <th>Start (UTC)</th>
             <th>Ende (UTC)</th>
           </tr>
         </thead>
         <tbody>
-          {activityDays.map((day) => (
+          {rows.map((day) => (
             <tr key={day.date}>
               <td>{formatDate(day.date)}</td>
               <td>{formatNumber(day.steps)}</td>
-              <td>{formatMeters(day.distanceMeters)}</td>
+              <td>{formatKilometersFromMeters(day.distanceMeters)}</td>
               <td>{formatDateTimeUtc(day.startTimeUtc)}</td>
               <td>{formatDateTimeUtc(day.endTimeUtc)}</td>
             </tr>

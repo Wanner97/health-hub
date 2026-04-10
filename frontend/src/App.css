@@ -46,8 +46,9 @@ h1 {
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
   gap: 16px;
-  align-items: end;
+  align-items: center;
   margin-bottom: 24px;
   padding: 16px;
   background-color: #1f2937;
@@ -90,6 +91,26 @@ h1 {
 
 .filter-actions button[type='button'] {
   background-color: #374151;
+}
+
+.period-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.period-tabs button {
+  padding: 10px 16px;
+  border: 1px solid #374151;
+  border-radius: 999px;
+  background-color: #111827;
+  color: #f3f4f6;
+  cursor: pointer;
+}
+
+.period-tabs button.active {
+  background-color: #374151;
+  font-weight: bold;
 }
 
 .summary-grid {
