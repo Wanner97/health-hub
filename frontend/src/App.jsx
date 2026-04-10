@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import './App.css';
 import { getActivityDays } from './api/activityDaysApi';
 import { getChartData } from './utils/activityDays/chartData';
 import ActivityBarChart from './components/activityDays/ActivityBarChart';

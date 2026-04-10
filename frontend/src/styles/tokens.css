@@ -1,0 +1,39 @@
+:root {
+  --font-family-base: Arial, Helvetica, sans-serif;
+
+  --color-bg-app: #111827;
+  --color-surface: #1f2937;
+  --color-control: #0f172a;
+  --color-control-active: #374151;
+  --color-border: #374151;
+
+  --color-text: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-text-soft: #cbd5e1;
+  --color-accent: #93c5fd;
+
+  --color-bar: #94a3b8;
+  --color-bar-active: #cbd5e1;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 28px;
+
+  --container-max-width: 1280px;
+  --chart-height: 320px;
+  --chart-label-gutter: 56px;
+
+  --transition-fast: 0.15s ease;
+}
