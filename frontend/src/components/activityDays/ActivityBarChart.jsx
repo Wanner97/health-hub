@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { PERIODS } from '../../utils/activityDays/periodUtils';
 import {
   formatDate,
@@ -45,7 +46,26 @@ function buildGuideValues(chartMax) {
   return values;
 }
 
+function getDetailsLabel(item, period) {
+  if (period === PERIODS.TWELVE_MONTHS) {
+    const [year] = item.fullLabel.split('-');
+    return `${formatMonthLabel(item.fullLabel)} ${year}`;
+  }
+
+  return formatDate(item.fullLabel);
+}
+
+function getDetailsValue(item, period) {
+  if (period === PERIODS.TWELVE_MONTHS) {
+    return `Ø ${formatNumber(item.averageSteps)} Schritte / Tag`;
+  }
+
+  return `${formatNumber(item.steps)} Schritte`;
+}
+
 function ActivityBarChart({ period, data }) {
+  const [activeItem, setActiveItem] = useState(null);
+
   if (!data?.length) {
     return (
       <section className="chart-section">
@@ -62,14 +82,6 @@ function ActivityBarChart({ period, data }) {
 
   function getBarHeight(value) {
     return `${(value / chartMax) * 100}%`;
-  }
-
-  function getTooltip(item) {
-    if (period === PERIODS.TWELVE_MONTHS) {
-      return `${formatMonthLabel(item.fullLabel)} · Ø ${formatNumber(item.averageSteps)} Schritte`;
-    }
-
-    return `${formatDate(item.fullLabel)} · ${formatNumber(item.steps)} Schritte`;
   }
 
   function shouldShowLabel(index) {
@@ -105,12 +117,14 @@ function ActivityBarChart({ period, data }) {
           <div className="bar-chart-columns">
             {data.map((item) => {
               const value = item[valueKey] ?? 0;
+              const isActive = activeItem?.key === item.key;
 
               return (
                 <div
                   key={item.key}
-                  className="bar-column-wrapper"
-                  title={getTooltip(item)}
+                  className={`bar-column-wrapper ${isActive ? 'is-active' : ''}`}
+                  onMouseEnter={() => setActiveItem(item)}
+                  onMouseLeave={() => setActiveItem(null)}
                 >
                   <div
                     className="bar-fill"
@@ -129,6 +143,17 @@ function ActivityBarChart({ period, data }) {
             </div>
           ))}
         </div>
+
+        {activeItem && (
+          <div className="chart-details">
+            <div className="chart-details-label">
+              {getDetailsLabel(activeItem, period)}
+            </div>
+            <div className="chart-details-value">
+              {getDetailsValue(activeItem, period)}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
