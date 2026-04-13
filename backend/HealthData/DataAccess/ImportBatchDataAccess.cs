@@ -14,6 +14,16 @@ namespace DataAccess
             _dbContextFactory = dbContextFactory;
         }
 
+        public ImportBatch? GetLatestImportBatch()
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                return context.ImportBatches
+                    .OrderByDescending(x => x.ImportedAtUtc)
+                    .FirstOrDefault();
+            }
+        }
+
         public List<ImportBatch> GetImportBatches(DateOnly? from, DateOnly? to)
         {
             using (var context = _dbContextFactory.CreateDbContext())

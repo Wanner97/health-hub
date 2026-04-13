@@ -14,6 +14,16 @@ namespace DataAccess
             _dbContextFactory = dbContextFactory;
         }
 
+        public ActivityDay? GetLatestActivityDay()
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                return context.ActivityDays
+                    .OrderByDescending(x => x.Date)
+                    .FirstOrDefault();
+            }
+        }
+
         public List<ActivityDay> GetActivityDays(DateOnly? from, DateOnly? to)
         {
             using (var context = _dbContextFactory.CreateDbContext())

@@ -4,6 +4,7 @@ namespace DataAccess.Interfaces
 {
     public interface IImportBatchDataAccess
     {
+        ImportBatch? GetLatestImportBatch();
         List<ImportBatch> GetImportBatches(DateOnly? from, DateOnly? to);
         Dictionary<DateOnly, ActivityDay> GetExistingActivityDays(string source, IEnumerable<DateOnly> dates);
 

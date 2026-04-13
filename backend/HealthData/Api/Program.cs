@@ -88,6 +88,7 @@ namespace Api
 
             builder.Services.AddScoped<IImportBatchLogic, ImportBatchLogic>();
             builder.Services.AddScoped<IActivityDayReadLogic, ActivityDayReadLogic>();
+            builder.Services.AddScoped<IHomepageDashboardLogic, HomepageDashboardLogic>();
         }
     }
 }
