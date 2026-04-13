@@ -117,3 +117,11 @@ export function formatDateTimeUtc(value) {
 
   return new Date(`${value}Z`).toLocaleString('de-CH');
 }
+
+export function formatDateUtcDateOnly(value) {
+  if (!value) {
+    return '-';
+  }
+
+  return new Date(`${value}Z`).toLocaleDateString('de-CH');
+}
