@@ -1,19 +1,20 @@
 :root {
   --font-family-base: Arial, Helvetica, sans-serif;
 
-  --color-bg-app: #111827;
-  --color-surface: #1f2937;
-  --color-control: #0f172a;
-  --color-control-active: #374151;
-  --color-border: #374151;
+  --color-bg-app: #202020;
+  --color-surface: #525252;
+  --color-control: #161616;
+  --color-control-active: #a0a0a0;
+  --color-border: #575757;
 
   --color-text: #f3f4f6;
   --color-text-muted: #9ca3af;
   --color-text-soft: #cbd5e1;
   --color-accent: #93c5fd;
 
-  --color-bar: #94a3b8;
-  --color-bar-active: #cbd5e1;
+  --color-accent-steps: #2bb336;
+
+  --color-bar: #c0c0c0;
 
   --radius-sm: 8px;
   --radius-md: 12px;
