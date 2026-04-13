@@ -1,6 +1,7 @@
 ﻿using Common.Dtos.DataReadDtos;
 using DataAccess.Interfaces;
 using Logic.Interfaces;
+using Logic.Mappers;
 
 namespace Logic
 {
@@ -17,14 +18,7 @@ namespace Logic
         {
             var activityDays = _activityDayDataAccess.GetActivityDays(from, to);
 
-            return activityDays.Select(x => new ActivityDayReadDto
-            {
-                Date = x.Date,
-                Steps = x.Steps,
-                DistanceMeters = x.DistanceMeters,
-                StartTimeUtc = x.StartTimeUtc,
-                EndTimeUtc = x.EndTimeUtc
-            }).ToList();
+            return ActivityDayReadMapper.MapToReadDtos(activityDays);
         }
     }
 }

@@ -14,6 +14,30 @@ namespace DataAccess
             _dbContextFactory = dbContextFactory;
         }
 
+        public List<ImportBatch> GetImportBatches(DateOnly? from, DateOnly? to)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                var query = context.ImportBatches.AsQueryable();
+
+                if (from.HasValue)
+                {
+                    var fromDateTimeUtc = from.Value.ToDateTime(TimeOnly.MinValue);
+                    query = query.Where(x => x.ImportedAtUtc >= fromDateTimeUtc);
+                }
+
+                if (to.HasValue)
+                {
+                    var toDateTimeUtc = to.Value.ToDateTime(TimeOnly.MaxValue);
+                    query = query.Where(x => x.ImportedAtUtc <= toDateTimeUtc);
+                }
+
+                return query
+                    .OrderByDescending(x => x.ImportedAtUtc)
+                    .ToList();
+            }
+        }
+
         public Dictionary<DateOnly, ActivityDay> GetExistingActivityDays(string source, IEnumerable<DateOnly> dates)
         {
             using (var context = _dbContextFactory.CreateDbContext())

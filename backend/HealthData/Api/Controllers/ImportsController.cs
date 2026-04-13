@@ -7,11 +7,11 @@ namespace Api.Controllers
     [Route("api/[controller]")]
     public class ImportsController : ControllerBase
     {
-        private readonly IActivityImportLogic _activityImportLogic;
+        private readonly IImportBatchLogic _importBatchLogic;
 
-        public ImportsController(IActivityImportLogic activityImportLogic)
+        public ImportsController(IImportBatchLogic importBatchLogic)
         {
-            _activityImportLogic = activityImportLogic;
+            _importBatchLogic = importBatchLogic;
         }
 
         [HttpPost("activity")]
@@ -24,7 +24,7 @@ namespace Api.Controllers
 
             using (var stream = file.OpenReadStream())
             {
-                var result = _activityImportLogic.ImportActivity(stream);
+                var result = _importBatchLogic.ImportActivity(stream);
 
                 return Ok(new
                 {

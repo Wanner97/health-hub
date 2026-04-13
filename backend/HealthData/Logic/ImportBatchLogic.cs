@@ -6,17 +6,25 @@ using Logic.Interfaces;
 using Logic.Mappers;
 using Logic.Validators;
 using System.Text.Json;
+using Common.Dtos.DataReadDtos;
 using Logic.Helpers;
 
 namespace Logic
 {
-    public class ActivityImportLogic : IActivityImportLogic
+    public class ImportBatchLogic : IImportBatchLogic
     {
         private readonly IImportBatchDataAccess _importBatchDataAccess;
 
-        public ActivityImportLogic(IImportBatchDataAccess importBatchDataAccess)
+        public ImportBatchLogic(IImportBatchDataAccess importBatchDataAccess)
         {
             _importBatchDataAccess = importBatchDataAccess;
+        }
+
+        public List<ImportBatchReadDto> GetImportBatches(DateOnly? from, DateOnly? to)
+        {
+            var importBatches = _importBatchDataAccess.GetImportBatches(from, to);
+
+            return ImportBatchReadMapper.MapToReadDtos(importBatches);
         }
 
         public ImportBatch ImportActivity(Stream stream)
