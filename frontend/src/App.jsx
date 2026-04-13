@@ -1,74 +1,29 @@
-import ActivityBarChart from './components/activityDays/ActivityBarChart';
-import ActivityDaysTable from './components/activityDays/ActivityDaysTable';
-import ActivityStatsSummary from './components/activityDays/ActivityStatsSummary';
-import PeriodSelector from './components/activityDays/PeriodSelector';
-import ViewModeToggle from './components/activityDays/ViewModeToggle';
-import { VIEW_MODES } from './constants/viewModes';
-import { useActivityDaysDashboard } from './hooks/useActivityDaysDashboard';
-import {
-  formatKilometersFromMeters,
-  formatNumber,
-  formatRangeLabel,
-} from './utils/activityDays/formatters';
+import { useState } from 'react';
+import ActivityDaysPage from './components/activityDays/ActivityDaysPage';
+import HomeSectionSelector from './components/home/HomeSectionSelector';
+import ImportBatchesPage from './components/importBatches/ImportBatchesPage';
+import { APP_SECTIONS } from './constants/appSections';
 
 function App() {
-  const {
-    period,
-    setPeriod,
-    endDate,
-    setEndDate,
-    viewMode,
-    setViewMode,
-    isLoading,
-    errorMessage,
-    selectedRange,
-    dayCount,
-    totalSteps,
-    averageSteps,
-    averageDistance,
-    displayRows,
-    chartData,
-  } = useActivityDaysDashboard();
+  const [currentSection, setCurrentSection] = useState(APP_SECTIONS.HOME);
+
+  function goHome() {
+    setCurrentSection(APP_SECTIONS.HOME);
+  }
 
   return (
     <main className="app">
       <div className="container">
-        <h1>Health Hub</h1>
-        <p className="subtitle">Schritte mit umschaltbaren Statistikzeiträumen</p>
+        {currentSection === APP_SECTIONS.HOME && (
+          <HomeSectionSelector onSelectSection={setCurrentSection} />
+        )}
 
-        <PeriodSelector
-          period={period}
-          endDate={endDate}
-          onPeriodChange={setPeriod}
-          onEndDateChange={setEndDate}
-        />
+        {currentSection === APP_SECTIONS.ACTIVITY_DAYS && (
+          <ActivityDaysPage onBack={goHome} />
+        )}
 
-        <ViewModeToggle
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-        />
-
-        {isLoading && <p>Lade Daten...</p>}
-        {errorMessage && <p className="error">{errorMessage}</p>}
-
-        {!isLoading && !errorMessage && (
-          <>
-            <ActivityStatsSummary
-              rangeLabel={formatRangeLabel(period, selectedRange.from, selectedRange.to)}
-              dayCount={formatNumber(dayCount)}
-              averageSteps={formatNumber(averageSteps)}
-              averageDistance={formatKilometersFromMeters(averageDistance)}
-              totalSteps={formatNumber(totalSteps)}
-            />
-
-            {viewMode === VIEW_MODES.STATS && (
-              <ActivityBarChart period={period} data={chartData} />
-            )}
-
-            {viewMode === VIEW_MODES.TABLE && (
-              <ActivityDaysTable rows={displayRows} period={period} />
-            )}
-          </>
+        {currentSection === APP_SECTIONS.IMPORT_BATCHES && (
+          <ImportBatchesPage onBack={goHome} />
         )}
       </div>
     </main>
