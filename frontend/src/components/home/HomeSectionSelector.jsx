@@ -39,7 +39,7 @@ function HomeSectionSelector({ onSelectSection }) {
   return (
     <section className="home-section">
       <h1>Health Hub</h1>
-      <p className="subtitle">Übersicht über die aktuellsten Daten im System.</p>
+      <p className="subtitle">some sample text</p>
 
       {errorMessage && <p className="error">{errorMessage}</p>}
 

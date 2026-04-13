@@ -6,12 +6,9 @@ import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
-import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import ch.claudiowanner.healthdataexporter.model.ActivityDayExportRecord
-import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.Period
 import java.time.ZoneId
 
@@ -19,6 +16,7 @@ class HealthConnectManager(private val context: Context) {
 
     companion object {
         const val PROVIDER_PACKAGE_NAME = "com.google.android.apps.healthdata"
+
         private const val READ_HEALTH_DATA_HISTORY =
             "android.permission.health.READ_HEALTH_DATA_HISTORY"
 
@@ -42,28 +40,12 @@ class HealthConnectManager(private val context: Context) {
         return granted.containsAll(PERMISSIONS)
     }
 
-    suspend fun readTodaySteps(): Long {
-        val zoneId = ZoneId.systemDefault()
-        val startOfDay = LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant()
-        val now = Instant.now()
-
-        val response = client().aggregate(
-            AggregateRequest(
-                metrics = setOf(StepsRecord.COUNT_TOTAL),
-                timeRangeFilter = TimeRangeFilter.between(startOfDay, now)
-            )
-        )
-
-        return response[StepsRecord.COUNT_TOTAL] ?: 0L
-    }
-
     suspend fun readActivityExportRecordsForFullHistory(): List<ActivityDayExportRecord> {
         val zoneId = ZoneId.systemDefault()
         val overallStart = LocalDate.of(2000, 1, 1)
         val overallEndExclusive = LocalDate.now(zoneId).plusDays(1)
 
         val allResults = mutableListOf<ActivityDayExportRecord>()
-
         var chunkStart = overallStart
 
         while (chunkStart < overallEndExclusive) {
@@ -79,8 +61,7 @@ class HealthConnectManager(private val context: Context) {
             chunkStart = chunkEndExclusive
         }
 
-        return allResults
-            .sortedBy { it.date }
+        return allResults.sortedBy { it.date }
     }
 
     private suspend fun readActivityExportRecordsForRange(

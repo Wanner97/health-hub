@@ -34,12 +34,12 @@ function ActivityDaysPage({ onBack }) {
     <section>
       <div className="page-header">
         <button type="button" className="back-button" onClick={onBack}>
-          ← Zurück zur Startseite
+          ← Zurück zum Dashboard
         </button>
       </div>
 
       <h1>Health Hub</h1>
-      <p className="subtitle">Schritte mit umschaltbaren Statistikzeiträumen</p>
+      <p className="subtitle">Schritte</p>
 
       <PeriodSelector
         period={period}

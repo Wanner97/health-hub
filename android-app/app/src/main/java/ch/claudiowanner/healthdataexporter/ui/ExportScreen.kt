@@ -20,7 +20,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ExportScreen(
     statusText: String,
-    exportPreview: String,
+    exportPreview: String?,
+    isBusy: Boolean,
     onRequestHealthPermissions: () -> Unit,
     onExportFullHistory: () -> Unit,
     onLoadLatestExport: () -> Unit,
@@ -49,23 +50,38 @@ fun ExportScreen(
                 style = MaterialTheme.typography.bodyLarge
             )
 
-            Button(onClick = onRequestHealthPermissions) {
+            Button(
+                onClick = onRequestHealthPermissions,
+                enabled = !isBusy
+            ) {
                 Text("Request health permissions")
             }
 
-            Button(onClick = onExportFullHistory) {
+            Button(
+                onClick = onExportFullHistory,
+                enabled = !isBusy
+            ) {
                 Text("Export full history")
             }
 
-            Button(onClick = onLoadLatestExport) {
+            Button(
+                onClick = onLoadLatestExport,
+                enabled = !isBusy
+            ) {
                 Text("Load latest export")
             }
 
-            Button(onClick = onSaveLatestExportToDevice) {
+            Button(
+                onClick = onSaveLatestExportToDevice,
+                enabled = !isBusy
+            ) {
                 Text("Save latest export to device")
             }
 
-            Button(onClick = onShareLatestExport) {
+            Button(
+                onClick = onShareLatestExport,
+                enabled = !isBusy
+            ) {
                 Text("Share latest export")
             }
 
@@ -85,7 +101,7 @@ fun ExportScreen(
             )
 
             Text(
-                text = exportPreview,
+                text = exportPreview ?: "No export loaded yet.",
                 style = MaterialTheme.typography.bodySmall
             )
         }

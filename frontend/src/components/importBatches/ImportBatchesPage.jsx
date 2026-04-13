@@ -8,13 +8,13 @@ function ImportBatchesPage({ onBack }) {
     <section>
       <div className="page-header">
         <button type="button" className="back-button" onClick={onBack}>
-          ← Zurück zur Startseite
+          ← Zurück zum Dashboard
         </button>
       </div>
 
       <h1>Import-Batches</h1>
       <p className="subtitle">
-        Übersicht über importierte Datenpakete und deren Verarbeitung.
+        Übersicht über importierte Datenpakete und deren Verarbeitung
       </p>
 
       {isLoading && <p>Lade Import-Batches...</p>}
