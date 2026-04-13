@@ -1,4 +1,4 @@
-import { PERIODS } from './periodUtils';
+import { PERIODS } from '../../constants/activityDays';
 
 const MONTH_NAMES = {
   '01': 'Januar',
@@ -52,21 +52,30 @@ export function formatDate(value) {
   return `${day}.${month}.${year}`;
 }
 
-export function formatLongDate(value) {
-  if (!value) {
+export function formatShortMonth(monthKey) {
+  if (!monthKey) {
     return '-';
   }
 
-  const [year, month, day] = value.split('-');
-  return `${day}. ${MONTH_NAMES[month]} ${year}`;
+  const [, month] = monthKey.split('-');
+  return MONTH_SHORT_NAMES[month] ?? month;
 }
 
-export function formatMonthYear(value) {
-  if (!value) {
+export function formatMonthLabel(monthKey) {
+  if (!monthKey) {
     return '-';
   }
 
-  const [year, month] = value.split('-');
+  const [year] = monthKey.split('-');
+  return `${formatShortMonth(monthKey)} ${year}`;
+}
+
+export function formatMonthDetailsLabel(monthKey) {
+  if (!monthKey) {
+    return '-';
+  }
+
+  const [year, month] = monthKey.split('-');
   return `${MONTH_NAMES[month]} ${year}`;
 }
 
@@ -75,8 +84,8 @@ export function formatShortMonthYear(value) {
     return '-';
   }
 
-  const [year, month] = value.split('-');
-  return `${MONTH_SHORT_NAMES[month]} ${year}`;
+  const [year] = value.split('-');
+  return `${formatShortMonth(value)} ${year}`;
 }
 
 export function formatRangeLabel(period, from, to) {
@@ -107,13 +116,4 @@ export function formatDateTimeUtc(value) {
   }
 
   return new Date(`${value}Z`).toLocaleString('de-CH');
-}
-
-export function formatMonthLabel(monthKey) {
-  if (!monthKey) {
-    return '-';
-  }
-
-  const [year, month] = monthKey.split('-');
-  return `${month}.${year}`;
 }

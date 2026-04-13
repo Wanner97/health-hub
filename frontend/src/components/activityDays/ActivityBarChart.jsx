@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { PERIODS } from '../../utils/activityDays/periodUtils';
+import { PERIODS } from '../../constants/activityDays';
 import {
   formatDate,
-  formatMonthLabel,
+  formatMonthDetailsLabel,
   formatNumber,
 } from '../../utils/activityDays/formatters';
 
@@ -48,8 +48,7 @@ function buildGuideValues(chartMax) {
 
 function getDetailsLabel(item, period) {
   if (period === PERIODS.TWELVE_MONTHS) {
-    const [year] = item.fullLabel.split('-');
-    return `${formatMonthLabel(item.fullLabel)} ${year}`;
+    return formatMonthDetailsLabel(item.fullLabel);
   }
 
   return formatDate(item.fullLabel);

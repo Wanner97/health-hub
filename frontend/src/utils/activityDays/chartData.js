@@ -1,29 +1,9 @@
-import { PERIODS } from './periodUtils';
+import { PERIODS } from '../../constants/activityDays';
+import { formatShortMonth } from './formatters';
 
 function getDayOfMonthLabel(dateString) {
   const [, , day] = dateString.split('-');
   return day;
-}
-
-function getMonthShortLabel(monthKey) {
-  const [, month] = monthKey.split('-');
-
-  const labels = {
-    '01': 'Jan',
-    '02': 'Feb',
-    '03': 'Mär',
-    '04': 'Apr',
-    '05': 'Mai',
-    '06': 'Jun',
-    '07': 'Jul',
-    '08': 'Aug',
-    '09': 'Sep',
-    '10': 'Okt',
-    '11': 'Nov',
-    '12': 'Dez',
-  };
-
-  return labels[month] ?? month;
 }
 
 export function buildDailyChartData(activityDays) {
@@ -70,7 +50,7 @@ export function buildMonthlyChartData(activityDays) {
     .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
     .map((month) => ({
       key: month.monthKey,
-      label: getMonthShortLabel(month.monthKey),
+      label: formatShortMonth(month.monthKey),
       fullLabel: month.monthKey,
       averageSteps: Math.round(month.totalSteps / month.dayCount),
       averageDistanceMeters: month.totalDistanceMeters / month.dayCount,

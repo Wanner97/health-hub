@@ -1,8 +1,4 @@
-export const PERIODS = {
-  SEVEN_DAYS: '7d',
-  THIRTY_ONE_DAYS: '31d',
-  TWELVE_MONTHS: '12m',
-};
+import { PERIODS } from '../../constants/activityDays';
 
 export function formatDateForInput(date) {
   const year = date.getFullYear();
@@ -65,20 +61,4 @@ export function getRangeFromPeriod(period, endDateString) {
   }
 
   throw new Error(`Unknown period: ${period}`);
-}
-
-export function getPeriodLabel(period) {
-  if (period === PERIODS.SEVEN_DAYS) {
-    return '7 Tage';
-  }
-
-  if (period === PERIODS.THIRTY_ONE_DAYS) {
-    return '31 Tage';
-  }
-
-  if (period === PERIODS.TWELVE_MONTHS) {
-    return '12 Monate';
-  }
-
-  return '-';
 }

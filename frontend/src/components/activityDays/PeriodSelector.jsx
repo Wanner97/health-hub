@@ -1,4 +1,4 @@
-import { PERIODS } from '../../utils/activityDays/periodUtils';
+import { PERIODS } from '../../constants/activityDays';
 
 function PeriodSelector({ period, endDate, onPeriodChange, onEndDateChange }) {
   return (
