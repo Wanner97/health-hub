@@ -4,10 +4,16 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
+import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
+import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import ch.claudiowanner.healthdataexporter.model.ActivityDayExportRecord
+import ch.claudiowanner.healthdataexporter.model.SleepSessionExportRecord
+import ch.claudiowanner.healthdataexporter.model.SleepStageExportRecord
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneId
@@ -23,6 +29,7 @@ class HealthConnectManager(private val context: Context) {
         val PERMISSIONS = setOf(
             HealthPermission.getReadPermission(StepsRecord::class),
             HealthPermission.getReadPermission(DistanceRecord::class),
+            HealthPermission.getReadPermission(SleepSessionRecord::class),
             READ_HEALTH_DATA_HISTORY
         )
     }
@@ -40,16 +47,20 @@ class HealthConnectManager(private val context: Context) {
         return granted.containsAll(PERMISSIONS)
     }
 
-    suspend fun readActivityExportRecordsForFullHistory(): List<ActivityDayExportRecord> {
+    suspend fun readActivityExportRecords(
+        startDateInclusive: LocalDate,
+        endDateExclusive: LocalDate
+    ): List<ActivityDayExportRecord> {
+        require(startDateInclusive < endDateExclusive) {
+            "startDateInclusive must be before endDateExclusive."
+        }
+
         val zoneId = ZoneId.systemDefault()
-        val overallStart = LocalDate.of(2000, 1, 1)
-        val overallEndExclusive = LocalDate.now(zoneId).plusDays(1)
-
         val allResults = mutableListOf<ActivityDayExportRecord>()
-        var chunkStart = overallStart
+        var chunkStart = startDateInclusive
 
-        while (chunkStart < overallEndExclusive) {
-            val chunkEndExclusive = minOf(chunkStart.plusDays(365), overallEndExclusive)
+        while (chunkStart < endDateExclusive) {
+            val chunkEndExclusive = minOf(chunkStart.plusDays(365), endDateExclusive)
 
             val chunkResults = readActivityExportRecordsForRange(
                 startDateInclusive = chunkStart,
@@ -62,6 +73,54 @@ class HealthConnectManager(private val context: Context) {
         }
 
         return allResults.sortedBy { it.date }
+    }
+
+    suspend fun readSleepSessions(
+        startInstant: Instant,
+        endInstant: Instant
+    ): List<SleepSessionExportRecord> {
+        require(startInstant < endInstant) {
+            "startInstant must be before endInstant."
+        }
+
+        val allResults = mutableListOf<SleepSessionExportRecord>()
+        var pageToken: String? = null
+
+        do {
+            val response = client().readRecords(
+                ReadRecordsRequest(
+                    recordType = SleepSessionRecord::class,
+                    timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
+                    pageSize = 1000,
+                    pageToken = pageToken
+                )
+            )
+
+            val mapped = response.records.map { session ->
+                SleepSessionExportRecord(
+                    startTime = session.startTime.toString(),
+                    endTime = session.endTime.toString(),
+                    durationMinutes = Duration.between(
+                        session.startTime,
+                        session.endTime
+                    ).toMinutes(),
+                    title = session.title,
+                    notes = session.notes,
+                    stages = session.stages.map { stage ->
+                        SleepStageExportRecord(
+                            startTime = stage.startTime.toString(),
+                            endTime = stage.endTime.toString(),
+                            stage = mapSleepStage(stage.stage)
+                        )
+                    }
+                )
+            }
+
+            allResults.addAll(mapped)
+            pageToken = response.pageToken
+        } while (pageToken != null)
+
+        return allResults.sortedBy { it.startTime }
     }
 
     private suspend fun readActivityExportRecordsForRange(
@@ -101,6 +160,19 @@ class HealthConnectManager(private val context: Context) {
                 startTime = startInstant.toString(),
                 endTime = endInstant.toString()
             )
+        }
+    }
+
+    private fun mapSleepStage(stageType: Int): String {
+        return when (stageType) {
+            SleepSessionRecord.STAGE_TYPE_UNKNOWN -> "unknown"
+            SleepSessionRecord.STAGE_TYPE_AWAKE -> "awake"
+            SleepSessionRecord.STAGE_TYPE_SLEEPING -> "sleeping"
+            SleepSessionRecord.STAGE_TYPE_OUT_OF_BED -> "out_of_bed"
+            SleepSessionRecord.STAGE_TYPE_LIGHT -> "light"
+            SleepSessionRecord.STAGE_TYPE_DEEP -> "deep"
+            SleepSessionRecord.STAGE_TYPE_REM -> "rem"
+            else -> "unknown"
         }
     }
 }

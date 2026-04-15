@@ -3,11 +3,13 @@ package ch.claudiowanner.healthdataexporter.storage
 import android.content.Context
 import android.net.Uri
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonObject
 import java.io.File
 
 class ExportFileWriter {
-    private val gson = GsonBuilder()
+    private val gson: Gson = GsonBuilder()
         .setPrettyPrinting()
         .create()
 
@@ -68,12 +70,47 @@ class ExportFileWriter {
             exportDirectory.mkdirs()
         }
 
-        val fileName = "activity-export-${System.currentTimeMillis()}.json"
+        val fileName = "health-export-${System.currentTimeMillis()}.json"
         val file = File(exportDirectory, fileName)
 
-        val json = gson.toJson(payload)
+        val json = buildOrderedExportJson(payload)
         file.writeText(json)
 
         return file
+    }
+
+    private fun buildOrderedExportJson(payload: ExportPayload): String {
+        val root = JsonObject()
+
+        // Export-wide metadata first
+        root.addProperty("exportVersion", payload.exportVersion)
+        root.addProperty("source", payload.source)
+        root.addProperty("exportedAt", payload.exportedAt)
+        root.addProperty("exportType", payload.exportType)
+
+        if (payload.rangeDays != null) {
+            root.addProperty("rangeDays", payload.rangeDays)
+        } else {
+            root.add("rangeDays", null)
+        }
+
+        root.addProperty("rangeStart", payload.rangeStart)
+        root.addProperty("rangeEnd", payload.rangeEnd)
+
+        // Clusters after metadata
+        val clusters = JsonObject()
+
+        val activity = JsonObject()
+        activity.add("records", gson.toJsonTree(payload.clusters.activity.records))
+
+        val sleep = JsonObject()
+        sleep.add("sessions", gson.toJsonTree(payload.clusters.sleep.sessions))
+
+        clusters.add("activity", activity)
+        clusters.add("sleep", sleep)
+
+        root.add("clusters", clusters)
+
+        return gson.toJson(root)
     }
 }

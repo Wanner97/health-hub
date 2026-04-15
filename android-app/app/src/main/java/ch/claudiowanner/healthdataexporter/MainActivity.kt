@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
@@ -13,7 +14,6 @@ import ch.claudiowanner.healthdataexporter.ui.ExportScreen
 import ch.claudiowanner.healthdataexporter.ui.ExportViewModel
 import ch.claudiowanner.healthdataexporter.ui.theme.HealthDataExporterTheme
 import kotlinx.coroutines.launch
-import androidx.health.connect.client.PermissionController
 
 class MainActivity : ComponentActivity() {
     private lateinit var viewModel: ExportViewModel
@@ -52,6 +52,9 @@ class MainActivity : ComponentActivity() {
                     isBusy = uiState.isBusy,
                     onRequestHealthPermissions = { requestHealthPermissions() },
                     onExportFullHistory = { viewModel.exportFullHistory() },
+                    onExportLast7Days = { viewModel.exportLastDays(7) },
+                    onExportLast31Days = { viewModel.exportLastDays(31) },
+                    onExportLast62Days = { viewModel.exportLastDays(62) },
                     onLoadLatestExport = { viewModel.loadLatestExport() },
                     onSaveLatestExportToDevice = { saveLatestExportToDevice() },
                     onShareLatestExport = { shareLatestExport() }

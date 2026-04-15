@@ -9,12 +9,16 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
+import ch.claudiowanner.healthdataexporter.model.ActivityExportCluster
+import ch.claudiowanner.healthdataexporter.model.ExportClusters
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
+import ch.claudiowanner.healthdataexporter.model.SleepExportCluster
 import ch.claudiowanner.healthdataexporter.storage.ExportFileWriter
 import kotlinx.coroutines.launch
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 class ExportViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext = application.applicationContext
@@ -64,66 +68,25 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun exportFullHistory() {
-        viewModelScope.launch {
-            setBusy(true)
+        exportHistory(
+            exportType = "full_history",
+            rangeDays = null,
+            startDateInclusive = LocalDate.of(2000, 1, 1)
+        )
+    }
 
-            try {
-                when (healthConnectManager.getSdkStatus()) {
-                    HealthConnectClient.SDK_AVAILABLE -> {
-                        if (!healthConnectManager.hasAllPermissions()) {
-                            updateStatus("Export failed: required permissions are missing.")
-                            return@launch
-                        }
+    fun exportLastDays(days: Int) {
+        require(days > 0) { "days must be greater than 0." }
 
-                        val records = healthConnectManager.readActivityExportRecordsForFullHistory()
+        val zoneId = ZoneId.systemDefault()
+        val today = LocalDate.now(zoneId)
+        val startDateInclusive = today.minusDays((days - 1).toLong())
 
-                        if (records.isEmpty()) {
-                            updateStatus("No step or distance data found.")
-                            return@launch
-                        }
-
-                        val payload = ExportPayload(
-                            exportVersion = 2,
-                            source = "health-connect",
-                            exportedAt = Instant.now().toString(),
-                            rangeStart = records.first().startTime,
-                            rangeEnd = records.last().endTime,
-                            records = records
-                        )
-
-                        val result = exportFileWriter.writeExport(appContext, payload)
-
-                        result.fold(
-                            onSuccess = { (file, content) ->
-                                uiState = uiState.copy(
-                                    statusText = "Full history exported successfully: ${file.absolutePath}",
-                                    exportPreview = content
-                                )
-                            },
-                            onFailure = {
-                                updateStatus("Export failed: ${it.message}")
-                            }
-                        )
-                    }
-
-                    HealthConnectClient.SDK_UNAVAILABLE -> {
-                        updateStatus("Export failed: Health Connect is unavailable on this device.")
-                    }
-
-                    HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                        updateStatus("Export failed: Health Connect requires an update.")
-                    }
-
-                    else -> {
-                        updateStatus("Export failed: Health Connect status is unknown.")
-                    }
-                }
-            } catch (e: Exception) {
-                updateStatus("Export failed: ${e.message}")
-            } finally {
-                setBusy(false)
-            }
-        }
+        exportHistory(
+            exportType = "rolling_window",
+            rangeDays = days,
+            startDateInclusive = startDateInclusive
+        )
     }
 
     fun loadLatestExport() {
@@ -153,7 +116,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
     fun suggestedExportFileName(): String {
         val today = LocalDate.now().toString()
-        return "activity-export-$today.json"
+        return "health-export-$today.json"
     }
 
     fun onSaveCancelled() {
@@ -195,6 +158,107 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
     fun onShareSheetOpened() {
         updateStatus("Opened share sheet for latest export.")
+    }
+
+    private fun exportHistory(
+        exportType: String,
+        rangeDays: Int?,
+        startDateInclusive: LocalDate
+    ) {
+        viewModelScope.launch {
+            setBusy(true)
+
+            try {
+                when (healthConnectManager.getSdkStatus()) {
+                    HealthConnectClient.SDK_AVAILABLE -> {
+                        if (!healthConnectManager.hasAllPermissions()) {
+                            updateStatus("Export failed: required permissions are missing.")
+                            return@launch
+                        }
+
+                        val zoneId = ZoneId.systemDefault()
+                        val now = Instant.now()
+                        val today = LocalDate.now(zoneId)
+                        val endDateExclusive = today.plusDays(1)
+
+                        val activityRecords = healthConnectManager.readActivityExportRecords(
+                            startDateInclusive = startDateInclusive,
+                            endDateExclusive = endDateExclusive
+                        )
+
+                        val sleepSessions = healthConnectManager.readSleepSessions(
+                            startInstant = startDateInclusive.atStartOfDay(zoneId).toInstant(),
+                            endInstant = now
+                        )
+
+                        if (activityRecords.isEmpty() && sleepSessions.isEmpty()) {
+                            updateStatus("No activity or sleep data found.")
+                            return@launch
+                        }
+
+                        val payload = ExportPayload(
+                            exportVersion = 3,
+                            source = "health-connect",
+                            exportedAt = now.toString(),
+                            exportType = exportType,
+                            rangeDays = rangeDays,
+                            rangeStart = startDateInclusive.atStartOfDay(zoneId).toInstant().toString(),
+                            rangeEnd = now.toString(),
+                            clusters = ExportClusters(
+                                activity = ActivityExportCluster(
+                                    records = activityRecords
+                                ),
+                                sleep = SleepExportCluster(
+                                    sessions = sleepSessions
+                                )
+                            )
+                        )
+
+                        val result = exportFileWriter.writeExport(appContext, payload)
+
+                        result.fold(
+                            onSuccess = { (file, content) ->
+                                uiState = uiState.copy(
+                                    statusText = buildSuccessMessage(exportType, rangeDays, file.absolutePath),
+                                    exportPreview = content
+                                )
+                            },
+                            onFailure = {
+                                updateStatus("Export failed: ${it.message}")
+                            }
+                        )
+                    }
+
+                    HealthConnectClient.SDK_UNAVAILABLE -> {
+                        updateStatus("Export failed: Health Connect is unavailable on this device.")
+                    }
+
+                    HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                        updateStatus("Export failed: Health Connect requires an update.")
+                    }
+
+                    else -> {
+                        updateStatus("Export failed: Health Connect status is unknown.")
+                    }
+                }
+            } catch (e: Exception) {
+                updateStatus("Export failed: ${e.message}")
+            } finally {
+                setBusy(false)
+            }
+        }
+    }
+
+    private fun buildSuccessMessage(
+        exportType: String,
+        rangeDays: Int?,
+        path: String
+    ): String {
+        return when (exportType) {
+            "full_history" -> "Full history exported successfully: $path"
+            "rolling_window" -> "Last ${rangeDays ?: "?"} days exported successfully: $path"
+            else -> "Export completed successfully: $path"
+        }
     }
 
     private fun updateStatus(message: String) {

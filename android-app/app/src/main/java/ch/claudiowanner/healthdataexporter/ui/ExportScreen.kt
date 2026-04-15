@@ -24,6 +24,9 @@ fun ExportScreen(
     isBusy: Boolean,
     onRequestHealthPermissions: () -> Unit,
     onExportFullHistory: () -> Unit,
+    onExportLast7Days: () -> Unit,
+    onExportLast31Days: () -> Unit,
+    onExportLast62Days: () -> Unit,
     onLoadLatestExport: () -> Unit,
     onSaveLatestExportToDevice: () -> Unit,
     onShareLatestExport: () -> Unit
@@ -46,7 +49,7 @@ fun ExportScreen(
             )
 
             Text(
-                text = "This app exports steps and distance from Health Connect as JSON.",
+                text = "This app exports activity data and sleep sessions from Health Connect as JSON.",
                 style = MaterialTheme.typography.bodyLarge
             )
 
@@ -62,6 +65,27 @@ fun ExportScreen(
                 enabled = !isBusy
             ) {
                 Text("Export full history")
+            }
+
+            Button(
+                onClick = onExportLast7Days,
+                enabled = !isBusy
+            ) {
+                Text("Export last 7 days")
+            }
+
+            Button(
+                onClick = onExportLast31Days,
+                enabled = !isBusy
+            ) {
+                Text("Export last 31 days")
+            }
+
+            Button(
+                onClick = onExportLast62Days,
+                enabled = !isBusy
+            ) {
+                Text("Export last 62 days")
             }
 
             Button(
