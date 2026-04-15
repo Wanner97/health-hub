@@ -1,4 +1,4 @@
-import { PERIODS } from '../../constants/activityDays';
+import { PERIODS } from '../../constants/periods';
 import {
   addDays,
   addMonths,

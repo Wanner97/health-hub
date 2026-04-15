@@ -3,8 +3,9 @@ import { useHomepageDashboard } from '../../hooks/useHomepageDashboard';
 import {
   formatDate,
   formatDateUtcDateOnly,
-  formatNumber,
-} from '../../utils/activityDays/formatters';
+} from '../../utils/date/dateFormatters';
+import { formatDurationMinutes } from '../../utils/duration/durationFormatters';
+import { formatNumber } from '../../utils/number/numberFormatters';
 
 function buildImportSubtitle(latestImport) {
   if (!latestImport) {
@@ -30,16 +31,36 @@ function buildStepsSubtitle(latestActivityDay) {
   return `am ${formatDate(latestActivityDay.date)}`;
 }
 
+function buildSleepTitle(latestSleepSession) {
+  if (!latestSleepSession) {
+    return 'Kein Schlafdatensatz';
+  }
+
+  return `${formatDurationMinutes(latestSleepSession.durationMinutes)} Schlaf`;
+}
+
+function buildSleepSubtitle(latestSleepSession) {
+  if (!latestSleepSession) {
+    return 'Kein aktueller Schlafdatensatz vorhanden.';
+  }
+
+  const startDate = formatDateUtcDateOnly(latestSleepSession.startTimeUtc);
+  const endDate = formatDateUtcDateOnly(latestSleepSession.endTimeUtc);
+
+  return `vom ${startDate} auf den ${endDate}`;
+}
+
 function HomeSectionSelector({ onSelectSection }) {
   const { dashboard, isLoading, errorMessage } = useHomepageDashboard();
 
   const latestImport = dashboard?.latestImport ?? null;
   const latestActivityDay = dashboard?.latestActivityDay ?? null;
+  const latestSleepSession = dashboard?.latestSleepSession ?? null;
 
   return (
     <section className="home-section">
       <h1>Health Hub</h1>
-      <p className="subtitle">some sample text</p>
+      <p className="subtitle">Übersicht über die aktuellsten Daten im System.</p>
 
       {errorMessage && <p className="error">{errorMessage}</p>}
 
@@ -71,6 +92,23 @@ function HomeSectionSelector({ onSelectSection }) {
             {isLoading
               ? 'Bitte warten...'
               : buildStepsSubtitle(latestActivityDay)}
+          </p>
+        </button>
+
+        <button
+          type="button"
+          className="home-card home-card--sleep"
+          onClick={() => onSelectSection(APP_SECTIONS.SLEEP_SESSIONS)}
+        >
+          <h2>
+            {isLoading
+              ? 'Schlafdaten werden geladen...'
+              : buildSleepTitle(latestSleepSession)}
+          </h2>
+          <p>
+            {isLoading
+              ? 'Bitte warten...'
+              : buildSleepSubtitle(latestSleepSession)}
           </p>
         </button>
       </div>

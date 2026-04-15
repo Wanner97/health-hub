@@ -5,10 +5,11 @@ import './styles/base.css';
 import './styles/activityDays.css';
 import './styles/appSections.css';
 import './styles/importBatches.css';
+import './styles/sleepSessions.css';
 import App from './App.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,
-)
+);

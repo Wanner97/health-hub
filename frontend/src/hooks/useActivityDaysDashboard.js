@@ -1,17 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getActivityDays } from '../api/activityDaysApi';
 import { getChartData } from '../utils/activityDays/chartData';
-import { PERIODS } from '../constants/activityDays';
+import { PERIODS } from '../constants/periods';
 import { VIEW_MODES } from '../constants/viewModes';
 import {
   calculateAverageDistanceMeters,
   calculateAverageSteps,
   calculateTotalSteps,
 } from '../utils/activityDays/calculations';
-import {
-  formatDateForInput,
-  getRangeFromPeriod,
-} from '../utils/activityDays/periodUtils';
+import { getRangeFromPeriod } from '../utils/periods/periodRangeUtils';
+import { formatDateForInput } from '../utils/date/dateHelpers';
 import {
   buildMonthlyAverageRows,
   fillMissingDays,

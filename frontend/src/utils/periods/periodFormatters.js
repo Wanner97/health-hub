@@ -1,4 +1,4 @@
-import { PERIODS } from '../../constants/activityDays';
+import { PERIODS } from '../../constants/periods';
 import { MONTH_SHORT_NAMES } from '../../constants/months';
 import { formatShortMonthYear } from '../date/dateFormatters';
 

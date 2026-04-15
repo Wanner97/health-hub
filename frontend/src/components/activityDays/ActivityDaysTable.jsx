@@ -1,11 +1,13 @@
-import { PERIODS } from '../../constants/activityDays';
+import { PERIODS } from '../../constants/periods';
 import {
   formatDate,
   formatDateTimeUtc,
-  formatKilometersFromMeters,
   formatMonthLabel,
+} from '../../utils/date/dateFormatters';
+import {
+  formatKilometersFromMeters,
   formatNumber,
-} from '../../utils/activityDays/formatters';
+} from '../../utils/number/numberFormatters';
 
 function ActivityDaysTable({ rows, period }) {
   if (period === PERIODS.TWELVE_MONTHS) {

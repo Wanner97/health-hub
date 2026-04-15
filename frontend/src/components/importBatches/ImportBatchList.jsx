@@ -1,7 +1,5 @@
-import {
-  formatDateTimeUtc,
-  formatNumber,
-} from '../../utils/activityDays/formatters';
+import { formatDateTimeUtc } from '../../utils/date/dateFormatters';
+import { formatNumber } from '../../utils/number/numberFormatters';
 
 function ImportBatchList({ batches }) {
   if (!batches?.length) {

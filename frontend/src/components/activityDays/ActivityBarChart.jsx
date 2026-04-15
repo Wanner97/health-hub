@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { PERIODS } from '../../constants/activityDays';
+import { PERIODS } from '../../constants/periods';
 import {
   formatDate,
   formatMonthDetailsLabel,
-  formatNumber,
-} from '../../utils/activityDays/formatters';
+} from '../../utils/date/dateFormatters';
+import { formatNumber } from '../../utils/number/numberFormatters';
 
 function getNiceStep(maxValue) {
   if (maxValue <= 0) {

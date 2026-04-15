@@ -1,0 +1,4 @@
+.sleep-page .card h2,
+.sleep-page .table-section h2 {
+  color: var(--color-accent);
+}

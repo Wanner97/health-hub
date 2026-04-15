@@ -1,15 +1,15 @@
 import ActivityBarChart from './ActivityBarChart';
 import ActivityDaysTable from './ActivityDaysTable';
 import ActivityStatsSummary from './ActivityStatsSummary';
-import PeriodSelector from './PeriodSelector';
+import PeriodSelector from '../PeriodSelector';
 import ViewModeToggle from './ViewModeToggle';
 import { VIEW_MODES } from '../../constants/viewModes';
 import { useActivityDaysDashboard } from '../../hooks/useActivityDaysDashboard';
+import { formatRangeLabel } from '../../utils/periods/periodFormatters';
 import {
   formatKilometersFromMeters,
   formatNumber,
-  formatRangeLabel,
-} from '../../utils/activityDays/formatters';
+} from '../../utils/number/numberFormatters';
 
 function ActivityDaysPage({ onBack }) {
   const {

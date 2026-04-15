@@ -1,5 +1,5 @@
-import { PERIODS } from '../../constants/activityDays';
-import { formatShortMonth } from './formatters';
+import { PERIODS } from '../../constants/periods';
+import { formatShortMonth } from '../date/dateFormatters';
 
 function getDayOfMonthLabel(dateString) {
   const [, , day] = dateString.split('-');

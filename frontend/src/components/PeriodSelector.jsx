@@ -1,4 +1,4 @@
-import { PERIODS } from '../../constants/periods';
+import { PERIODS } from '../constants/periods';
 
 function PeriodSelector({ period, endDate, onPeriodChange, onEndDateChange }) {
   return (
