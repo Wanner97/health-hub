@@ -6,7 +6,7 @@ namespace Logic.Mappers
 {
     public static class HomepageDashboardMapper
     {
-        public static HomepageDashboardDto MapToHomepageDashboardDto(ImportBatch? latestImportBatch, ActivityDay? latestActivityDay)
+        public static HomepageDashboardDto MapToHomepageDashboardDto(ImportBatch? latestImportBatch, ActivityDay? latestActivityDay, SleepSession? latestSleepSession)
         {
             return new HomepageDashboardDto
             {
@@ -24,7 +24,14 @@ namespace Logic.Mappers
                 {
                     Date = latestActivityDay.Date,
                     Steps = latestActivityDay.Steps
-                }
+                },
+
+                LatestSleepSession = latestSleepSession == null ? null : new LatestSleepSessionSummaryDto
+                {
+                StartTimeUtc = latestSleepSession.StartTimeUtc,
+                EndTimeUtc = latestSleepSession.EndTimeUtc,
+                DurationMinutes = latestSleepSession.DurationMinutes
+            }
             };
         }
     }

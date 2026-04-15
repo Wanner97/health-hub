@@ -9,23 +9,28 @@ namespace Logic
     {
         private readonly IImportBatchDataAccess _importBatchDataAccess;
         private readonly IActivityDayDataAccess _activityDayDataAccess;
+        private readonly ISleepSessionDataAccess _sleepSessionDataAccess;
 
         public HomepageDashboardLogic(
             IImportBatchDataAccess importBatchDataAccess,
-            IActivityDayDataAccess activityDayDataAccess)
+            IActivityDayDataAccess activityDayDataAccess,
+            ISleepSessionDataAccess sleepSessionDataAccess)
         {
             _importBatchDataAccess = importBatchDataAccess;
             _activityDayDataAccess = activityDayDataAccess;
+            _sleepSessionDataAccess = sleepSessionDataAccess;
         }
 
         public HomepageDashboardDto GetHomepageDashboard()
         {
             var latestImportBatch = _importBatchDataAccess.GetLatestImportBatch();
             var latestActivityDay = _activityDayDataAccess.GetLatestActivityDay();
+            var latestSleepSession = _sleepSessionDataAccess.GetLatestSleepSession();
 
             return HomepageDashboardMapper.MapToHomepageDashboardDto(
                 latestImportBatch,
-                latestActivityDay);
+                latestActivityDay,
+                latestSleepSession);
         }
     }
 }
