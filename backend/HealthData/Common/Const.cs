@@ -2,5 +2,5 @@ namespace Common;
 
 public class Const
 {
-    public const int LatestExportVersion = 2;
+    public const int LatestExportVersion = 3;
 }

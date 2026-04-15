@@ -14,8 +14,8 @@ namespace Api.Controllers
             _importBatchLogic = importBatchLogic;
         }
 
-        [HttpPost("activity")]
-        public IActionResult ImportActivity(IFormFile file)
+        [HttpPost("health")]
+        public IActionResult ImportHealthData(IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
@@ -24,11 +24,11 @@ namespace Api.Controllers
 
             using (var stream = file.OpenReadStream())
             {
-                var result = _importBatchLogic.ImportActivity(stream);
+                var result = _importBatchLogic.ImportHealthData(stream);
 
                 return Ok(new
                 {
-                    Message = "Activity import completed successfully.",
+                    Message = "Health data import completed successfully.",
                     ReceivedRecordCount = result.ReceivedRecordCount,
                     InsertedRecordCount = result.InsertedRecordCount,
                     UpdatedRecordCount = result.UpdatedRecordCount,

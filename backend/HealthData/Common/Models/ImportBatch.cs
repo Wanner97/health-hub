@@ -23,7 +23,11 @@
         public string Source { get; set; } = string.Empty;
 
         public int ExportVersion { get; set; }
-        
-        public List<ActivityDay> ActivityDayEntries { get; set; } = new List<ActivityDay>();
+
+        public string ExportType { get; set; } = string.Empty;
+
+        public List<ActivityDay> ActivityDayEntries { get; set; } = new();
+
+        public List<SleepSession> SleepSessionEntries { get; set; } = new();
     }
 }

@@ -15,35 +15,68 @@ namespace Logic.Validators
 
             RuleFor(x => x.ExportVersion).Equal(Const.LatestExportVersion);
             RuleFor(x => x.Source).NotEmpty();
+            RuleFor(x => x.ExportType).NotEmpty();
+
             RuleFor(x => x.ExportedAtUtc).NotEmpty();
             RuleFor(x => x.ImportedAtUtc).NotEmpty();
             RuleFor(x => x.RangeStartUtc).LessThan(x => x.RangeEndUtc);
+
             RuleFor(x => x.ReceivedRecordCount).GreaterThan(0);
             RuleFor(x => x.InsertedRecordCount).GreaterThanOrEqualTo(0);
             RuleFor(x => x.UpdatedRecordCount).GreaterThanOrEqualTo(0);
             RuleFor(x => x.UnchangedRecordCount).GreaterThanOrEqualTo(0);
-            RuleFor(x => x.ActivityDayEntries).NotNull().Must(x => x.Count > 0).WithMessage("No activity records were found.");
+
+            RuleFor(x => x).Must(HaveAtLeastOneImportEntry).WithMessage("No import records were found.");
 
             RuleFor(x => x.ReceivedRecordCount)
                 .Must((batch, receivedRecordCount) =>
-                    batch.ActivityDayEntries != null &&
-                    receivedRecordCount == batch.ActivityDayEntries.Count)
-                .WithMessage("ReceivedRecordCount does not match the number of activity records.");
+                    receivedRecordCount ==
+                    (batch.ActivityDayEntries?.Count ?? 0) +
+                    (batch.SleepSessionEntries?.Count ?? 0))
+                .WithMessage("ReceivedRecordCount does not match the number of imported records.");
 
             RuleForEach(x => x.ActivityDayEntries).SetValidator(new ActivityDayValidator(false));
 
-            RuleFor(x => x.ActivityDayEntries).Must(HaveUniqueDates).WithMessage("The import contains duplicate dates.");
+            RuleForEach(x => x.SleepSessionEntries).SetValidator(new SleepSessionValidator(false));
+
+            RuleFor(x => x.ActivityDayEntries)
+                .Must(HaveUniqueDates)
+                .When(x => x.ActivityDayEntries != null && x.ActivityDayEntries.Count > 0)
+                .WithMessage("The import contains duplicate activity dates.");
+
+            RuleFor(x => x.SleepSessionEntries)
+                .Must(HaveUniqueStartTimes)
+                .When(x => x.SleepSessionEntries != null && x.SleepSessionEntries.Count > 0)
+                .WithMessage("The import contains duplicate sleep session start times after consolidation.");
+        }
+
+        private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
+        {
+            return (importBatch.ActivityDayEntries?.Count ?? 0) > 0
+                   || (importBatch.SleepSessionEntries?.Count ?? 0) > 0;
         }
 
         private static bool HaveUniqueDates(ICollection<ActivityDay>? activityDayEntries)
         {
             if (activityDayEntries == null)
             {
-                return false;
+                return true;
             }
 
             return activityDayEntries
                 .GroupBy(x => x.Date)
+                .All(g => g.Count() == 1);
+        }
+
+        private static bool HaveUniqueStartTimes(ICollection<SleepSession>? sleepSessionEntries)
+        {
+            if (sleepSessionEntries == null)
+            {
+                return true;
+            }
+
+            return sleepSessionEntries
+                .GroupBy(x => x.StartTimeUtc)
                 .All(g => g.Count() == 1);
         }
     }

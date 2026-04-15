@@ -6,6 +6,6 @@ namespace Logic.Interfaces
     public interface IImportBatchLogic
     {
         List<ImportBatchReadDto> GetImportBatches(DateOnly? from, DateOnly? to);
-        ImportBatch ImportActivity(Stream stream);
+        ImportBatch ImportHealthData(Stream stream);
     }
 }

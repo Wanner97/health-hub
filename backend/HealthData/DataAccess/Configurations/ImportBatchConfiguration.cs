@@ -15,6 +15,7 @@ namespace DataAccess.Configurations
 
             builder.Property(x => x.Source).HasColumnName("Source").HasMaxLength(100).IsUnicode().IsRequired();
             builder.Property(x => x.ExportVersion).HasColumnName("ExportVersion").IsRequired();
+            builder.Property(x => x.ExportType).HasColumnName("ExportType").HasMaxLength(50).IsUnicode().IsRequired();
             builder.Property(x => x.ExportedAtUtc).HasColumnName("ExportedAtUtc").IsRequired();
             builder.Property(x => x.ImportedAtUtc).HasColumnName("ImportedAtUtc").IsRequired();
             builder.Property(x => x.RangeStartUtc).HasColumnName("RangeStartUtc").IsRequired();
@@ -24,8 +25,12 @@ namespace DataAccess.Configurations
             builder.Property(x => x.UpdatedRecordCount).HasColumnName("UpdatedRecordCount").IsRequired();
             builder.Property(x => x.UnchangedRecordCount).HasColumnName("UnchangedRecordCount").IsRequired();
 
-
             builder.HasMany(x => x.ActivityDayEntries)
+                .WithOne(x => x.LastImportBatch)
+                .HasForeignKey(x => x.LastImportBatchId)
+                .IsRequired();
+
+            builder.HasMany(x => x.SleepSessionEntries)
                 .WithOne(x => x.LastImportBatch)
                 .HasForeignKey(x => x.LastImportBatchId)
                 .IsRequired();

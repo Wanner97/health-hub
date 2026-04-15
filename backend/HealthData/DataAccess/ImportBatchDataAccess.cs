@@ -60,10 +60,25 @@ namespace DataAccess
             }
         }
 
+        public Dictionary<DateTime, SleepSession> GetExistingSleepSessions(string source, IEnumerable<DateTime> startTimes)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                var distinctStartTimes = startTimes.Distinct().ToList();
+
+                return context.SleepSessions
+                    .Include(x => x.SleepStages)
+                    .Where(x => x.Source == source && distinctStartTimes.Contains(x.StartTimeUtc))
+                    .ToDictionary(x => x.StartTimeUtc, x => x);
+            }
+        }
+
         public ImportBatch ApplyImport(
             ImportBatch importBatch,
             List<ActivityDay> insertedActivityDays,
-            List<ActivityDay> updatedActivityDays)
+            List<ActivityDay> updatedActivityDays,
+            List<SleepSession> insertedSleepSessions,
+            List<SleepSession> updatedSleepSessions)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
@@ -86,6 +101,20 @@ namespace DataAccess
                         updatedActivityDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
                     }
 
+                    foreach (var insertedSleepSession in insertedSleepSessions)
+                    {
+                        insertedSleepSession.LastImportBatchId = importBatch.Id;
+                        insertedSleepSession.LastImportBatch = importBatch;
+                        insertedSleepSession.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var updatedSleepSession in updatedSleepSessions)
+                    {
+                        updatedSleepSession.LastImportBatchId = importBatch.Id;
+                        updatedSleepSession.LastImportBatch = importBatch;
+                        updatedSleepSession.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
                     if (insertedActivityDays.Count > 0)
                     {
                         context.ActivityDays.AddRange(insertedActivityDays);
@@ -94,6 +123,45 @@ namespace DataAccess
                     if (updatedActivityDays.Count > 0)
                     {
                         context.ActivityDays.UpdateRange(updatedActivityDays);
+                    }
+
+                    if (insertedSleepSessions.Count > 0)
+                    {
+                        context.SleepSessions.AddRange(insertedSleepSessions);
+                    }
+
+                    if (updatedSleepSessions.Count > 0)
+                    {
+                        var updatedSleepSessionIds = updatedSleepSessions
+                            .Select(x => x.Id)
+                            .ToList();
+
+                        var existingSleepStages = context.SleepStages
+                            .Where(x => updatedSleepSessionIds.Contains(x.SleepSessionId));
+
+                        context.SleepStages.RemoveRange(existingSleepStages);
+
+                        var replacementSleepStages = new List<SleepStage>();
+
+                        foreach (var updatedSleepSession in updatedSleepSessions)
+                        {
+                            var newSleepStages = updatedSleepSession.SleepStages.ToList();
+
+                            updatedSleepSession.SleepStages = new List<SleepStage>();
+
+                            context.SleepSessions.Update(updatedSleepSession);
+
+                            foreach (var newSleepStage in newSleepStages)
+                            {
+                                newSleepStage.SleepSessionId = updatedSleepSession.Id;
+                                replacementSleepStages.Add(newSleepStage);
+                            }
+                        }
+
+                        if (replacementSleepStages.Count > 0)
+                        {
+                            context.SleepStages.AddRange(replacementSleepStages);
+                        }
                     }
 
                     context.SaveChanges();

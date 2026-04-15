@@ -12,6 +12,8 @@ namespace DataAccess.Context
 
         public DbSet<ImportBatch> ImportBatches { get; set; }
         public DbSet<ActivityDay> ActivityDays { get; set; }
+        public DbSet<SleepSession> SleepSessions { get; set; }
+        public DbSet<SleepStage> SleepStages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
