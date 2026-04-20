@@ -48,6 +48,14 @@
   border-color: var(--color-accent-steps);
 }
 
+.home-card--sleep h2 {
+  color: var(--color-accent-sleep);
+}
+
+.home-card--sleep:hover {
+  border-color: var(--color-accent-sleep);
+}
+
 .page-header {
   display: flex;
   justify-content: flex-start;

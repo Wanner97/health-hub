@@ -1,7 +1,10 @@
 import PeriodSelector from '../PeriodSelector';
+import ViewModeToggle from '../activityDays/ViewModeToggle';
+import SleepBarChart from './SleepBarChart';
 import SleepSessionsSummary from './SleepSessionsSummary';
 import SleepSessionsTable from './SleepSessionsTable';
 import { useSleepSessions } from '../../hooks/useSleepSessions';
+import { VIEW_MODES } from '../../constants/viewModes';
 import { formatRangeLabel } from '../../utils/periods/periodFormatters';
 import { formatDurationMinutes } from '../../utils/duration/durationFormatters';
 import { formatNumber } from '../../utils/number/numberFormatters';
@@ -12,6 +15,8 @@ function SleepSessionsPage({ onBack }) {
     setPeriod,
     endDate,
     setEndDate,
+    viewMode,
+    setViewMode,
     isLoading,
     errorMessage,
     selectedRange,
@@ -20,6 +25,7 @@ function SleepSessionsPage({ onBack }) {
     averageSleepMinutes,
     totalSessionCount,
     displayRows,
+    chartData,
   } = useSleepSessions();
 
   return (
@@ -40,6 +46,11 @@ function SleepSessionsPage({ onBack }) {
         onEndDateChange={setEndDate}
       />
 
+      <ViewModeToggle
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+
       {isLoading && <p>Lade Schlafdaten...</p>}
       {errorMessage && <p className="error">{errorMessage}</p>}
 
@@ -53,7 +64,13 @@ function SleepSessionsPage({ onBack }) {
             totalSleep={formatDurationMinutes(totalSleepMinutes)}
           />
 
-          <SleepSessionsTable rows={displayRows} period={period} />
+          {viewMode === VIEW_MODES.STATS && (
+            <SleepBarChart period={period} data={chartData} />
+          )}
+
+          {viewMode === VIEW_MODES.TABLE && (
+            <SleepSessionsTable rows={displayRows} period={period} />
+          )}
         </>
       )}
     </section>

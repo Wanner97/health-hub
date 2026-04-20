@@ -1,4 +1,296 @@
 .sleep-page .card h2,
-.sleep-page .table-section h2 {
-  color: var(--color-accent);
+.sleep-page .table-section h2,
+.sleep-page .chart-header h2 {
+  color: var(--color-accent-sleep);
+}
+
+.sleep-page .chart-guide {
+  border-top-color: var(--color-accent-sleep);
+}
+
+.sleep-page .chart-guide-label {
+  color: var(--color-accent-sleep);
+}
+
+.sleep-page .chart-details-value {
+  color: var(--color-accent-sleep);
+}
+
+.sleep-bar-fill--monthly {
+  background-color: var(--color-bar);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-fill--monthly,
+.sleep-bar-column-wrapper:hover .sleep-bar-fill--monthly {
+  background-color: var(--color-accent-sleep);
+}
+
+.sleep-bar-fill-stack {
+  width: 72%;
+  max-width: 24px;
+  min-height: 4px;
+  border-radius: var(--radius-pill) var(--radius-pill) 6px 6px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background-color: var(--color-sleep-unknown);
+}
+
+.sleep-bar-segment--awake,
+.sleep-bar-segment--rem,
+.sleep-bar-segment--light,
+.sleep-bar-segment--deep,
+.sleep-bar-segment--unknown {
+  background-color: var(--color-bar);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-segment--awake,
+.sleep-bar-column-wrapper:hover .sleep-bar-segment--awake {
+  background-color: var(--color-sleep-awake);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-segment--rem,
+.sleep-bar-column-wrapper:hover .sleep-bar-segment--rem {
+  background-color: var(--color-sleep-rem);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-segment--light,
+.sleep-bar-column-wrapper:hover .sleep-bar-segment--light {
+  background-color: var(--color-sleep-light);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-segment--deep,
+.sleep-bar-column-wrapper:hover .sleep-bar-segment--deep {
+  background-color: var(--color-sleep-deep);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-segment--unknown,
+.sleep-bar-column-wrapper:hover .sleep-bar-segment--unknown {
+  background-color: var(--color-sleep-unknown);
+}
+
+.sleep-bar-column-wrapper.is-active .sleep-bar-fill-stack,
+.sleep-bar-column-wrapper:hover .sleep-bar-fill-stack {
+  filter: brightness(1.1);
+}
+
+.sleep-chart-details {
+  min-height: 420px;
+}
+
+.sleep-chart-details-header {
+  margin-bottom: var(--space-4);
+}
+
+.sleep-chart-details-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.sleep-detail-row {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-control);
+}
+
+.sleep-detail-label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+.sleep-detail-value {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sleep-stage-preview {
+  display: flex;
+  width: 100%;
+  height: 18px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-4);
+  background-color: var(--color-sleep-unknown);
+}
+
+.sleep-stage-preview-segment--awake {
+  background-color: var(--color-sleep-awake);
+}
+
+.sleep-stage-preview-segment--rem {
+  background-color: var(--color-sleep-rem);
+}
+
+.sleep-stage-preview-segment--light {
+  background-color: var(--color-sleep-light);
+}
+
+.sleep-stage-preview-segment--deep {
+  background-color: var(--color-sleep-deep);
+}
+
+.sleep-stage-preview-segment--unknown {
+  background-color: var(--color-sleep-unknown);
+}
+
+.sleep-phase-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.sleep-phase-stat-label {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+}
+
+.sleep-phase-stat-value {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+}
+
+.sleep-phase-stat-value--awake {
+  color: var(--color-sleep-awake);
+}
+
+.sleep-phase-stat-value--rem {
+  color: var(--color-sleep-rem);
+}
+
+.sleep-phase-stat-value--light {
+  color: var(--color-sleep-light);
+}
+
+.sleep-phase-stat-value--deep {
+  color: var(--color-sleep-deep);
+}
+
+.sleep-phase-timeline-wrapper {
+  margin-top: var(--space-2);
+}
+
+.sleep-stage-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sleep-stage-timeline-chart {
+  position: relative;
+  height: 260px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.sleep-stage-timeline-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.18);
+  z-index: 1;
+}
+
+.sleep-stage-timeline-segment {
+  position: absolute;
+  z-index: 2;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.sleep-stage-timeline-segment:hover,
+.sleep-stage-timeline-segment.is-active {
+  background-color: var(--color-bar);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.sleep-stage-timeline-segment--awake {
+  background-color: var(--color-sleep-awake);
+}
+
+.sleep-stage-timeline-segment--rem {
+  background-color: var(--color-sleep-rem);
+}
+
+.sleep-stage-timeline-segment--light {
+  background-color: var(--color-sleep-light);
+}
+
+.sleep-stage-timeline-segment--deep {
+  background-color: var(--color-sleep-deep);
+}
+
+.sleep-stage-timeline-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+}
+
+.sleep-stage-segment-details {
+  min-height: 76px;
+  padding: var(--space-3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 255, 255, 0.02);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.sleep-stage-segment-details--empty .sleep-stage-segment-details-label,
+.sleep-stage-segment-details--empty .sleep-stage-segment-details-value {
+  color: transparent;
+}
+
+.sleep-stage-segment-details-label {
+  font-size: var(--font-size-md);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.sleep-stage-segment-details-value {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.sleep-stage-segment-details-value--awake {
+  color: var(--color-sleep-awake);
+}
+
+.sleep-stage-segment-details-value--rem {
+  color: var(--color-sleep-rem);
+}
+
+.sleep-stage-segment-details-value--light {
+  color: var(--color-sleep-light);
+}
+
+.sleep-stage-segment-details-value--deep {
+  color: var(--color-sleep-deep);
+}
+
+.sleep-no-phase-data {
+  margin-top: var(--space-2);
+  color: var(--color-accent-sleep);
 }

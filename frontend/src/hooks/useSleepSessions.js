@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PERIODS } from '../constants/periods';
+import { VIEW_MODES } from '../constants/viewModes';
 import { getSleepSessions } from '../api/sleepSessionsApi';
 import { formatDateForInput } from '../utils/date/dateHelpers';
 import { getRangeFromPeriod } from '../utils/periods/periodRangeUtils';
+import { getSleepChartData } from '../utils/sleepSessions/chartData';
 import {
   calculateAverageSleepMinutes,
   calculateTotalSessionCount,
@@ -16,6 +18,7 @@ import {
 export function useSleepSessions() {
   const [period, setPeriod] = useState(PERIODS.SEVEN_DAYS);
   const [endDate, setEndDate] = useState(formatDateForInput(new Date()));
+  const [viewMode, setViewMode] = useState(VIEW_MODES.STATS);
   const [sessions, setSessions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -69,6 +72,10 @@ export function useSleepSessions() {
     return sleepDayRows;
   }, [period, sleepDayRows]);
 
+  const chartData = useMemo(() => {
+    return getSleepChartData(period, displayRows);
+  }, [period, displayRows]);
+
   const dayCount = sleepDayRows.length;
 
   const totalSleepMinutes = useMemo(() => {
@@ -88,6 +95,8 @@ export function useSleepSessions() {
     setPeriod,
     endDate,
     setEndDate,
+    viewMode,
+    setViewMode,
     isLoading,
     errorMessage,
     selectedRange,
@@ -96,5 +105,6 @@ export function useSleepSessions() {
     averageSleepMinutes,
     totalSessionCount,
     displayRows,
+    chartData,
   };
 }

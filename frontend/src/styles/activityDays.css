@@ -202,11 +202,12 @@ th {
   position: relative;
   z-index: 2;
   height: 100%;
-  width: 100%;
+  width: auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(18px, 1fr));
   gap: var(--space-2);
   align-items: end;
+  box-sizing: border-box;
 }
 
 .bar-column-wrapper {
@@ -255,6 +256,11 @@ th {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.chart-details--empty .chart-details-label,
+.chart-details--empty .chart-details-value {
+  color: transparent;
 }
 
 .chart-details-label {

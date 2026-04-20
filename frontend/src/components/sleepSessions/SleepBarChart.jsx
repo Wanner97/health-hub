@@ -1,14 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PERIODS } from '../../constants/periods';
-import {
-  formatDate,
-  formatMonthDetailsLabel,
-} from '../../utils/date/dateFormatters';
-import { formatNumber } from '../../utils/number/numberFormatters';
+import { formatDurationMinutes } from '../../utils/duration/durationFormatters';
+import SleepPhaseDetails from './SleepPhaseDetails';
 
 function getNiceStep(maxValue) {
   if (maxValue <= 0) {
-    return 1000;
+    return 60;
   }
 
   const roughStep = maxValue / 4;
@@ -46,28 +43,54 @@ function buildGuideValues(chartMax) {
   return values;
 }
 
-function getDetailsLabel(item, period) {
-  if (!item) {
-    return '';
-  }
-
+function getValueForItem(item, period) {
   if (period === PERIODS.TWELVE_MONTHS) {
-    return formatMonthDetailsLabel(item.fullLabel);
+    return item.averageSleepMinutes ?? 0;
   }
 
-  return formatDate(item.fullLabel);
+  return item.totalDurationMinutes ?? 0;
 }
 
-function getDetailsValue(item, period) {
-  if (!item) {
-    return '';
-  }
+function buildDailySegments(item) {
+  const totalDurationMinutes = item.totalDurationMinutes ?? 0;
 
-  if (period === PERIODS.TWELVE_MONTHS) {
-    return `Ø ${formatNumber(item.averageSteps)} Schritte / Tag`;
-  }
+  const awakeMinutes = item.awakeMinutes ?? 0;
+  const remMinutes = item.remMinutes ?? 0;
+  const lightMinutes = item.lightMinutes ?? 0;
+  const deepMinutes = item.deepMinutes ?? 0;
 
-  return `${formatNumber(item.steps)} Schritte`;
+  const knownMinutes =
+    awakeMinutes + remMinutes + lightMinutes + deepMinutes;
+
+  const unknownMinutes = Math.max(0, totalDurationMinutes - knownMinutes);
+
+  return [
+    {
+      key: 'awake',
+      minutes: awakeMinutes,
+      className: 'sleep-bar-segment--awake',
+    },
+    {
+      key: 'rem',
+      minutes: remMinutes,
+      className: 'sleep-bar-segment--rem',
+    },
+    {
+      key: 'light',
+      minutes: lightMinutes,
+      className: 'sleep-bar-segment--light',
+    },
+    {
+      key: 'deep',
+      minutes: deepMinutes,
+      className: 'sleep-bar-segment--deep',
+    },
+    {
+      key: 'unknown',
+      minutes: unknownMinutes,
+      className: 'sleep-bar-segment--unknown',
+    },
+  ].filter((segment) => segment.minutes > 0);
 }
 
 function ActivityBarChart({ period, data }) {
@@ -80,9 +103,10 @@ function ActivityBarChart({ period, data }) {
 
   useEffect(() => {
     function handleDocumentMouseDown(event) {
-      const clickedBar = event.target.closest('.bar-column-wrapper');
+      const clickedBar = event.target.closest('.sleep-bar-column-wrapper');
+      const clickedDetails = event.target.closest('.sleep-chart-details');
 
-      if (!clickedBar) {
+      if (!clickedBar && !clickedDetails) {
         setHoveredItem(null);
         setSelectedItem(null);
       }
@@ -98,14 +122,13 @@ function ActivityBarChart({ period, data }) {
   if (!data?.length) {
     return (
       <section className="chart-section">
-        <h2>Schrittverlauf</h2>
+        <h2>Schlafverlauf</h2>
         <p>Keine Daten vorhanden.</p>
       </section>
     );
   }
 
-  const valueKey = period === PERIODS.TWELVE_MONTHS ? 'averageSteps' : 'steps';
-  const maxValue = Math.max(...data.map((item) => item[valueKey] ?? 0), 1);
+  const maxValue = Math.max(...data.map((item) => getValueForItem(item, period)), 1);
   const chartMax = getChartMax(maxValue);
   const guideValues = buildGuideValues(chartMax);
 
@@ -136,9 +159,9 @@ function ActivityBarChart({ period, data }) {
   }
 
   return (
-    <section className="chart-section">
+    <section className="chart-section sleep-chart-section">
       <div className="chart-header">
-        <h2>Schrittverlauf</h2>
+        <h2>Schlafverlauf</h2>
       </div>
 
       <div className="chart-body">
@@ -149,27 +172,58 @@ function ActivityBarChart({ period, data }) {
               className="chart-guide"
               style={{ bottom: `${(value / chartMax) * 100}%` }}
             >
-              <span className="chart-guide-label">{formatNumber(value)}</span>
+              <span className="chart-guide-label">
+                {formatDurationMinutes(value)}
+              </span>
             </div>
           ))}
 
           <div className="bar-chart-columns">
             {data.map((item) => {
-              const value = item[valueKey] ?? 0;
+              const totalValue = getValueForItem(item, period);
               const isActive = displayedItem?.key === item.key;
+
+              if (period === PERIODS.TWELVE_MONTHS) {
+                return (
+                  <div
+                    key={item.key}
+                    className={`bar-column-wrapper sleep-bar-column-wrapper ${isActive ? 'is-active' : ''}`}
+                    onMouseEnter={() => setHoveredItem(item)}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    onClick={() => handleBarClick(item)}
+                  >
+                    <div
+                      className="bar-fill sleep-bar-fill--monthly"
+                      style={{ height: getBarHeight(totalValue) }}
+                    />
+                  </div>
+                );
+              }
+
+              const segments = buildDailySegments(item);
 
               return (
                 <div
                   key={item.key}
-                  className={`bar-column-wrapper ${isActive ? 'is-active' : ''}`}
+                  className={`bar-column-wrapper sleep-bar-column-wrapper ${isActive ? 'is-active' : ''}`}
                   onMouseEnter={() => setHoveredItem(item)}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={() => handleBarClick(item)}
                 >
                   <div
-                    className="bar-fill"
-                    style={{ height: getBarHeight(value) }}
-                  />
+                    className="sleep-bar-fill-stack"
+                    style={{ height: getBarHeight(totalValue) }}
+                  >
+                    {segments.map((segment) => (
+                      <div
+                        key={segment.key}
+                        className={`sleep-bar-segment ${segment.className}`}
+                        style={{
+                          height: `${(segment.minutes / totalValue) * 100}%`,
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               );
             })}
@@ -184,16 +238,7 @@ function ActivityBarChart({ period, data }) {
           ))}
         </div>
 
-        <div
-          className={`chart-details ${displayedItem ? '' : 'chart-details--empty'}`}
-        >
-          <div className="chart-details-label">
-            {getDetailsLabel(displayedItem, period)}
-          </div>
-          <div className="chart-details-value">
-            {getDetailsValue(displayedItem, period)}
-          </div>
-        </div>
+        <SleepPhaseDetails item={displayedItem} period={period} />
       </div>
     </section>
   );

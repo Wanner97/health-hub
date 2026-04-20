@@ -10,9 +10,16 @@
   --color-text: #f3f4f6;
   --color-text-muted: #9ca3af;
   --color-text-soft: #cbd5e1;
-  --color-accent: #93c5fd;
+  --color-accent: #ffffff;
 
   --color-accent-steps: #2bb336;
+  --color-accent-sleep: #93c5fd;
+
+  --color-sleep-awake: #f59e0b;
+  --color-sleep-rem: #98f0fc;
+  --color-sleep-light: #21bcff;
+  --color-sleep-deep: #006fca;
+  --color-sleep-unknown: #6b7280;
 
   --color-bar: #c0c0c0;
 
@@ -34,7 +41,7 @@
 
   --container-max-width: 1280px;
   --chart-height: 320px;
-  --chart-label-gutter: 56px;
+  --chart-label-gutter: 88px;
 
   --transition-fast: 0.15s ease;
 }
