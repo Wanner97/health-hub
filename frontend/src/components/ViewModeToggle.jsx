@@ -1,4 +1,4 @@
-import { VIEW_MODES } from '../../constants/viewModes';
+import { VIEW_MODES } from '../constants/viewModes';
 
 function ViewModeToggle({ viewMode, onViewModeChange }) {
   return (

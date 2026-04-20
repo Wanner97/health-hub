@@ -1,50 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
 import { PERIODS } from '../../constants/periods';
 import {
   formatDate,
   formatMonthDetailsLabel,
 } from '../../utils/date/dateFormatters';
 import { formatNumber } from '../../utils/number/numberFormatters';
-
-function getNiceStep(maxValue) {
-  if (maxValue <= 0) {
-    return 1000;
-  }
-
-  const roughStep = maxValue / 4;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
-  const normalized = roughStep / magnitude;
-
-  let niceNormalized;
-
-  if (normalized <= 1) {
-    niceNormalized = 1;
-  } else if (normalized <= 2) {
-    niceNormalized = 2;
-  } else if (normalized <= 5) {
-    niceNormalized = 5;
-  } else {
-    niceNormalized = 10;
-  }
-
-  return niceNormalized * magnitude;
-}
-
-function getChartMax(maxValue) {
-  const step = getNiceStep(maxValue);
-  return Math.ceil(maxValue / step) * step;
-}
-
-function buildGuideValues(chartMax) {
-  const step = getNiceStep(chartMax);
-  const values = [];
-
-  for (let value = 0; value <= chartMax; value += step) {
-    values.push(value);
-  }
-
-  return values;
-}
+import {
+  buildGuideValues,
+  getChartMax,
+} from '../../utils/charts/scaleUtils';
+import { shouldShowChartLabel } from '../../utils/charts/labelUtils';
+import { useSelectableChartItem } from '../../hooks/useSelectableChartItem';
 
 function getDetailsLabel(item, period) {
   if (!item) {
@@ -71,29 +36,14 @@ function getDetailsValue(item, period) {
 }
 
 function ActivityBarChart({ period, data }) {
-  const [hoveredItem, setHoveredItem] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
-
-  const displayedItem = useMemo(() => {
-    return hoveredItem ?? selectedItem;
-  }, [hoveredItem, selectedItem]);
-
-  useEffect(() => {
-    function handleDocumentMouseDown(event) {
-      const clickedBar = event.target.closest('.bar-column-wrapper');
-
-      if (!clickedBar) {
-        setHoveredItem(null);
-        setSelectedItem(null);
-      }
-    }
-
-    document.addEventListener('mousedown', handleDocumentMouseDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleDocumentMouseDown);
-    };
-  }, []);
+  const {
+    displayedItem,
+    handleItemMouseEnter,
+    handleItemMouseLeave,
+    handleItemClick,
+  } = useSelectableChartItem({
+    resetSelectors: ['.bar-column-wrapper'],
+  });
 
   if (!data?.length) {
     return (
@@ -106,33 +56,11 @@ function ActivityBarChart({ period, data }) {
 
   const valueKey = period === PERIODS.TWELVE_MONTHS ? 'averageSteps' : 'steps';
   const maxValue = Math.max(...data.map((item) => item[valueKey] ?? 0), 1);
-  const chartMax = getChartMax(maxValue);
-  const guideValues = buildGuideValues(chartMax);
+  const chartMax = getChartMax(maxValue, 1000);
+  const guideValues = buildGuideValues(chartMax, 1000);
 
   function getBarHeight(value) {
     return `${(value / chartMax) * 100}%`;
-  }
-
-  function shouldShowLabel(index) {
-    if (period === PERIODS.SEVEN_DAYS) {
-      return true;
-    }
-
-    if (period === PERIODS.THIRTY_ONE_DAYS) {
-      return index % 3 === 0 || index === data.length - 1;
-    }
-
-    return true;
-  }
-
-  function handleBarClick(item) {
-    setSelectedItem((currentSelectedItem) => {
-      if (currentSelectedItem?.key === item.key) {
-        return null;
-      }
-
-      return item;
-    });
   }
 
   return (
@@ -162,9 +90,9 @@ function ActivityBarChart({ period, data }) {
                 <div
                   key={item.key}
                   className={`bar-column-wrapper ${isActive ? 'is-active' : ''}`}
-                  onMouseEnter={() => setHoveredItem(item)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => handleBarClick(item)}
+                  onMouseEnter={() => handleItemMouseEnter(item)}
+                  onMouseLeave={handleItemMouseLeave}
+                  onClick={() => handleItemClick(item)}
                 >
                   <div
                     className="bar-fill"
@@ -179,7 +107,7 @@ function ActivityBarChart({ period, data }) {
         <div className="bar-chart-labels">
           {data.map((item, index) => (
             <div key={`${item.key}-label`} className="bar-label">
-              {shouldShowLabel(index) ? item.label : ''}
+              {shouldShowChartLabel(period, index, data.length) ? item.label : ''}
             </div>
           ))}
         </div>

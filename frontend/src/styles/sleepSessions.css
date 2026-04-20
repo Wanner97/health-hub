@@ -83,34 +83,6 @@
   margin-bottom: var(--space-4);
 }
 
-.sleep-chart-details-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.sleep-detail-row {
-  padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-control);
-}
-
-.sleep-detail-label {
-  display: block;
-  margin-bottom: var(--space-1);
-  font-size: var(--font-size-md);
-  color: var(--color-text-muted);
-}
-
-.sleep-detail-value {
-  display: block;
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
 .sleep-stage-preview {
   display: flex;
   width: 100%;

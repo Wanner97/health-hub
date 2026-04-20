@@ -1,5 +1,6 @@
 import { PERIODS } from '../../constants/periods';
 import { formatShortMonth } from '../date/dateFormatters';
+import { buildMonthlyActivityAggregates } from './monthlyAggregates';
 
 function getDayOfMonthLabel(dateString) {
   const [, , day] = dateString.split('-');
@@ -25,36 +26,16 @@ export function buildMonthlyChartData(activityDays) {
     return [];
   }
 
-  const monthMap = new Map();
-
-  for (const day of activityDays) {
-    const monthKey = day.date.slice(0, 7);
-
-    if (!monthMap.has(monthKey)) {
-      monthMap.set(monthKey, {
-        monthKey,
-        totalSteps: 0,
-        totalDistanceMeters: 0,
-        dayCount: 0,
-      });
-    }
-
-    const currentMonth = monthMap.get(monthKey);
-
-    currentMonth.totalSteps += day.steps ?? 0;
-    currentMonth.totalDistanceMeters += day.distanceMeters ?? 0;
-    currentMonth.dayCount += 1;
-  }
-
-  return [...monthMap.values()]
+  return buildMonthlyActivityAggregates(activityDays)
     .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
     .map((month) => ({
       key: month.monthKey,
       label: formatShortMonth(month.monthKey),
       fullLabel: month.monthKey,
-      averageSteps: Math.round(month.totalSteps / month.dayCount),
-      averageDistanceMeters: month.totalDistanceMeters / month.dayCount,
+      averageSteps: month.averageSteps,
+      averageDistanceMeters: month.averageDistanceMeters,
       totalSteps: month.totalSteps,
+      totalDistanceMeters: month.totalDistanceMeters,
       dayCount: month.dayCount,
     }));
 }

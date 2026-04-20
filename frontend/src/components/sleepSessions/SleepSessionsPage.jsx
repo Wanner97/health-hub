@@ -1,5 +1,5 @@
 import PeriodSelector from '../PeriodSelector';
-import ViewModeToggle from '../activityDays/ViewModeToggle';
+import ViewModeToggle from '../ViewModeToggle';
 import SleepBarChart from './SleepBarChart';
 import SleepSessionsSummary from './SleepSessionsSummary';
 import SleepSessionsTable from './SleepSessionsTable';

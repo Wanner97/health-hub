@@ -1,47 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
 import { PERIODS } from '../../constants/periods';
 import { formatDurationMinutes } from '../../utils/duration/durationFormatters';
+import {
+  buildGuideValues,
+  getChartMax,
+} from '../../utils/charts/scaleUtils';
+import { shouldShowChartLabel } from '../../utils/charts/labelUtils';
+import { useSelectableChartItem } from '../../hooks/useSelectableChartItem';
 import SleepPhaseDetails from './SleepPhaseDetails';
-
-function getNiceStep(maxValue) {
-  if (maxValue <= 0) {
-    return 60;
-  }
-
-  const roughStep = maxValue / 4;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
-  const normalized = roughStep / magnitude;
-
-  let niceNormalized;
-
-  if (normalized <= 1) {
-    niceNormalized = 1;
-  } else if (normalized <= 2) {
-    niceNormalized = 2;
-  } else if (normalized <= 5) {
-    niceNormalized = 5;
-  } else {
-    niceNormalized = 10;
-  }
-
-  return niceNormalized * magnitude;
-}
-
-function getChartMax(maxValue) {
-  const step = getNiceStep(maxValue);
-  return Math.ceil(maxValue / step) * step;
-}
-
-function buildGuideValues(chartMax) {
-  const step = getNiceStep(chartMax);
-  const values = [];
-
-  for (let value = 0; value <= chartMax; value += step) {
-    values.push(value);
-  }
-
-  return values;
-}
 
 function getValueForItem(item, period) {
   if (period === PERIODS.TWELVE_MONTHS) {
@@ -93,31 +58,15 @@ function buildDailySegments(item) {
   ].filter((segment) => segment.minutes > 0);
 }
 
-function ActivityBarChart({ period, data }) {
-  const [hoveredItem, setHoveredItem] = useState(null);
-  const [selectedItem, setSelectedItem] = useState(null);
-
-  const displayedItem = useMemo(() => {
-    return hoveredItem ?? selectedItem;
-  }, [hoveredItem, selectedItem]);
-
-  useEffect(() => {
-    function handleDocumentMouseDown(event) {
-      const clickedBar = event.target.closest('.sleep-bar-column-wrapper');
-      const clickedDetails = event.target.closest('.sleep-chart-details');
-
-      if (!clickedBar && !clickedDetails) {
-        setHoveredItem(null);
-        setSelectedItem(null);
-      }
-    }
-
-    document.addEventListener('mousedown', handleDocumentMouseDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handleDocumentMouseDown);
-    };
-  }, []);
+function SleepBarChart({ period, data }) {
+  const {
+    displayedItem,
+    handleItemMouseEnter,
+    handleItemMouseLeave,
+    handleItemClick,
+  } = useSelectableChartItem({
+    resetSelectors: ['.sleep-bar-column-wrapper', '.sleep-chart-details'],
+  });
 
   if (!data?.length) {
     return (
@@ -129,33 +78,11 @@ function ActivityBarChart({ period, data }) {
   }
 
   const maxValue = Math.max(...data.map((item) => getValueForItem(item, period)), 1);
-  const chartMax = getChartMax(maxValue);
-  const guideValues = buildGuideValues(chartMax);
+  const chartMax = getChartMax(maxValue, 60);
+  const guideValues = buildGuideValues(chartMax, 60);
 
   function getBarHeight(value) {
     return `${(value / chartMax) * 100}%`;
-  }
-
-  function shouldShowLabel(index) {
-    if (period === PERIODS.SEVEN_DAYS) {
-      return true;
-    }
-
-    if (period === PERIODS.THIRTY_ONE_DAYS) {
-      return index % 3 === 0 || index === data.length - 1;
-    }
-
-    return true;
-  }
-
-  function handleBarClick(item) {
-    setSelectedItem((currentSelectedItem) => {
-      if (currentSelectedItem?.key === item.key) {
-        return null;
-      }
-
-      return item;
-    });
   }
 
   return (
@@ -187,10 +114,12 @@ function ActivityBarChart({ period, data }) {
                 return (
                   <div
                     key={item.key}
-                    className={`bar-column-wrapper sleep-bar-column-wrapper ${isActive ? 'is-active' : ''}`}
-                    onMouseEnter={() => setHoveredItem(item)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    onClick={() => handleBarClick(item)}
+                    className={`bar-column-wrapper sleep-bar-column-wrapper ${
+                      isActive ? 'is-active' : ''
+                    }`}
+                    onMouseEnter={() => handleItemMouseEnter(item)}
+                    onMouseLeave={handleItemMouseLeave}
+                    onClick={() => handleItemClick(item)}
                   >
                     <div
                       className="bar-fill sleep-bar-fill--monthly"
@@ -205,10 +134,12 @@ function ActivityBarChart({ period, data }) {
               return (
                 <div
                   key={item.key}
-                  className={`bar-column-wrapper sleep-bar-column-wrapper ${isActive ? 'is-active' : ''}`}
-                  onMouseEnter={() => setHoveredItem(item)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => handleBarClick(item)}
+                  className={`bar-column-wrapper sleep-bar-column-wrapper ${
+                    isActive ? 'is-active' : ''
+                  }`}
+                  onMouseEnter={() => handleItemMouseEnter(item)}
+                  onMouseLeave={handleItemMouseLeave}
+                  onClick={() => handleItemClick(item)}
                 >
                   <div
                     className="sleep-bar-fill-stack"
@@ -233,7 +164,7 @@ function ActivityBarChart({ period, data }) {
         <div className="bar-chart-labels">
           {data.map((item, index) => (
             <div key={`${item.key}-label`} className="bar-label">
-              {shouldShowLabel(index) ? item.label : ''}
+              {shouldShowChartLabel(period, index, data.length) ? item.label : ''}
             </div>
           ))}
         </div>
@@ -244,4 +175,4 @@ function ActivityBarChart({ period, data }) {
   );
 }
 
-export default ActivityBarChart;
+export default SleepBarChart;
