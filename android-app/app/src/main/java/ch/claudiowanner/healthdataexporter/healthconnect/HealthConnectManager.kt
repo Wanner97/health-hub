@@ -2,308 +2,79 @@ package ch.claudiowanner.healthdataexporter.healthconnect
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.permission.HealthPermission
-import androidx.health.connect.client.records.DistanceRecord
-import androidx.health.connect.client.records.HeartRateRecord
-import androidx.health.connect.client.records.SleepSessionRecord
-import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.request.AggregateGroupByDurationRequest
-import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
-import androidx.health.connect.client.request.ReadRecordsRequest
-import androidx.health.connect.client.time.TimeRangeFilter
-import ch.claudiowanner.healthdataexporter.model.ActivityDayExportRecord
-import ch.claudiowanner.healthdataexporter.model.HeartRateDailyExportRecord
-import ch.claudiowanner.healthdataexporter.model.HeartRateHourlyExportRecord
-import ch.claudiowanner.healthdataexporter.model.SleepSessionExportRecord
-import ch.claudiowanner.healthdataexporter.model.SleepStageExportRecord
-import java.time.Duration
+import ch.claudiowanner.healthdataexporter.healthconnect.activity.ActivityReader
+import ch.claudiowanner.healthdataexporter.healthconnect.sleep.SleepReader
+import ch.claudiowanner.healthdataexporter.healthconnect.vitals.HeartRateReader
+import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
+import ch.claudiowanner.healthdataexporter.model.sleep.SleepSessionExportRecord
+import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateDailyExportRecord
+import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateHourlyExportRecord
 import java.time.Instant
 import java.time.LocalDate
-import java.time.Period
-import java.time.ZoneId
 
 class HealthConnectManager(private val context: Context) {
-
-    companion object {
-        const val PROVIDER_PACKAGE_NAME = "com.google.android.apps.healthdata"
-
-        private const val READ_HEALTH_DATA_HISTORY =
-            "android.permission.health.READ_HEALTH_DATA_HISTORY"
-
-        val PERMISSIONS = setOf(
-            HealthPermission.getReadPermission(StepsRecord::class),
-            HealthPermission.getReadPermission(DistanceRecord::class),
-            HealthPermission.getReadPermission(SleepSessionRecord::class),
-            HealthPermission.getReadPermission(HeartRateRecord::class),
-            READ_HEALTH_DATA_HISTORY
-        )
-    }
-
-    fun getSdkStatus(): Int {
-        return HealthConnectClient.getSdkStatus(context, PROVIDER_PACKAGE_NAME)
-    }
-
     private fun client(): HealthConnectClient {
         return HealthConnectClient.getOrCreate(context)
     }
 
+    private val activityReader: ActivityReader
+        get() = ActivityReader(client())
+
+    private val sleepReader: SleepReader
+        get() = SleepReader(client())
+
+    private val heartRateReader: HeartRateReader
+        get() = HeartRateReader(client())
+
+    fun getSdkStatus(): Int {
+        return HealthConnectClient.getSdkStatus(
+            context,
+            HealthConnectAvailability.PROVIDER_PACKAGE_NAME
+        )
+    }
+
     suspend fun hasAllPermissions(): Boolean {
         val granted = client().permissionController.getGrantedPermissions()
-        return granted.containsAll(PERMISSIONS)
+        return granted.containsAll(HealthConnectAvailability.PERMISSIONS)
     }
 
     suspend fun readActivityExportRecords(
         startDateInclusive: LocalDate,
         endDateExclusive: LocalDate
     ): List<ActivityDayExportRecord> {
-        require(startDateInclusive < endDateExclusive) {
-            "startDateInclusive must be before endDateExclusive."
-        }
-
-        val zoneId = ZoneId.systemDefault()
-        val allResults = mutableListOf<ActivityDayExportRecord>()
-        var chunkStart = startDateInclusive
-
-        while (chunkStart < endDateExclusive) {
-            val chunkEndExclusive = minOf(chunkStart.plusDays(365), endDateExclusive)
-
-            val chunkResults = readActivityExportRecordsForRange(
-                startDateInclusive = chunkStart,
-                endDateExclusive = chunkEndExclusive,
-                zoneId = zoneId
-            )
-
-            allResults.addAll(chunkResults)
-            chunkStart = chunkEndExclusive
-        }
-
-        return allResults.sortedBy { it.date }
+        return activityReader.readActivityExportRecords(
+            startDateInclusive = startDateInclusive,
+            endDateExclusive = endDateExclusive
+        )
     }
 
     suspend fun readSleepSessions(
         startInstant: Instant,
         endInstant: Instant
     ): List<SleepSessionExportRecord> {
-        require(startInstant < endInstant) {
-            "startInstant must be before endInstant."
-        }
-
-        val allResults = mutableListOf<SleepSessionExportRecord>()
-        var pageToken: String? = null
-
-        do {
-            val response = client().readRecords(
-                ReadRecordsRequest(
-                    recordType = SleepSessionRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
-                    pageSize = 1000,
-                    pageToken = pageToken
-                )
-            )
-
-            val mapped = response.records.map { session ->
-                SleepSessionExportRecord(
-                    startTime = session.startTime.toString(),
-                    endTime = session.endTime.toString(),
-                    durationMinutes = Duration.between(
-                        session.startTime,
-                        session.endTime
-                    ).toMinutes(),
-                    title = session.title,
-                    notes = session.notes,
-                    stages = session.stages.map { stage ->
-                        SleepStageExportRecord(
-                            startTime = stage.startTime.toString(),
-                            endTime = stage.endTime.toString(),
-                            stage = mapSleepStage(stage.stage)
-                        )
-                    }
-                )
-            }
-
-            allResults.addAll(mapped)
-            pageToken = response.pageToken
-        } while (pageToken != null)
-
-        return allResults.sortedBy { it.startTime }
+        return sleepReader.readSleepSessions(
+            startInstant = startInstant,
+            endInstant = endInstant
+        )
     }
 
     suspend fun readHeartRateDailyRecords(
         startDateInclusive: LocalDate,
         endDateExclusive: LocalDate
     ): List<HeartRateDailyExportRecord> {
-        require(startDateInclusive < endDateExclusive) {
-            "startDateInclusive must be before endDateExclusive."
-        }
-
-        val zoneId = ZoneId.systemDefault()
-        val allResults = mutableListOf<HeartRateDailyExportRecord>()
-        var chunkStart = startDateInclusive
-
-        while (chunkStart < endDateExclusive) {
-            val chunkEndExclusive = minOf(chunkStart.plusDays(365), endDateExclusive)
-
-            val response = client().aggregateGroupByPeriod(
-                AggregateGroupByPeriodRequest(
-                    metrics = setOf(
-                        HeartRateRecord.BPM_MIN,
-                        HeartRateRecord.BPM_MAX,
-                        HeartRateRecord.BPM_AVG,
-                        HeartRateRecord.MEASUREMENTS_COUNT
-                    ),
-                    timeRangeFilter = TimeRangeFilter.between(
-                        chunkStart.atStartOfDay(),
-                        chunkEndExclusive.atStartOfDay()
-                    ),
-                    timeRangeSlicer = Period.ofDays(1)
-                )
-            )
-
-            val mapped = response.mapNotNull { dayResult ->
-                val minBpm = dayResult.result[HeartRateRecord.BPM_MIN]
-                val maxBpm = dayResult.result[HeartRateRecord.BPM_MAX]
-                val avgBpm = dayResult.result[HeartRateRecord.BPM_AVG]
-                val measurementCount = dayResult.result[HeartRateRecord.MEASUREMENTS_COUNT] ?: 0L
-
-                if (minBpm == null && maxBpm == null && avgBpm == null && measurementCount == 0L) {
-                    return@mapNotNull null
-                }
-
-                val startInstant = dayResult.startTime.atZone(zoneId).toInstant()
-                val endInstant = dayResult.endTime.atZone(zoneId).toInstant()
-
-                HeartRateDailyExportRecord(
-                    date = dayResult.startTime.toLocalDate().toString(),
-                    minBpm = minBpm ?: 0L,
-                    maxBpm = maxBpm ?: 0L,
-                    avgBpm = avgBpm ?: 0L,
-                    measurementCount = measurementCount,
-                    startTime = startInstant.toString(),
-                    endTime = endInstant.toString()
-                )
-            }
-
-            allResults.addAll(mapped)
-            chunkStart = chunkEndExclusive
-        }
-
-        return allResults.sortedBy { it.date }
+        return heartRateReader.readHeartRateDailyRecords(
+            startDateInclusive = startDateInclusive,
+            endDateExclusive = endDateExclusive
+        )
     }
 
     suspend fun readHeartRateHourlyRecords(
         startInstant: Instant,
         endInstant: Instant
     ): List<HeartRateHourlyExportRecord> {
-        require(startInstant < endInstant) {
-            "startInstant must be before endInstant."
-        }
-
-        val zoneId = ZoneId.systemDefault()
-        val allResults = mutableListOf<HeartRateHourlyExportRecord>()
-        var chunkStart = startInstant
-
-        while (chunkStart < endInstant) {
-            val chunkEnd = minOf(chunkStart.plus(Duration.ofDays(31)), endInstant)
-
-            val response = client().aggregateGroupByDuration(
-                AggregateGroupByDurationRequest(
-                    metrics = setOf(
-                        HeartRateRecord.BPM_MIN,
-                        HeartRateRecord.BPM_MAX,
-                        HeartRateRecord.BPM_AVG,
-                        HeartRateRecord.MEASUREMENTS_COUNT
-                    ),
-                    timeRangeFilter = TimeRangeFilter.between(chunkStart, chunkEnd),
-                    timeRangeSlicer = Duration.ofHours(1)
-                )
-            )
-
-            val mapped = response.mapNotNull { hourResult ->
-                val minBpm = hourResult.result[HeartRateRecord.BPM_MIN]
-                val maxBpm = hourResult.result[HeartRateRecord.BPM_MAX]
-                val avgBpm = hourResult.result[HeartRateRecord.BPM_AVG]
-                val measurementCount = hourResult.result[HeartRateRecord.MEASUREMENTS_COUNT] ?: 0L
-
-                if (minBpm == null && maxBpm == null && avgBpm == null && measurementCount == 0L) {
-                    return@mapNotNull null
-                }
-
-                val bucketStart = hourResult.startTime
-                val bucketEnd = hourResult.endTime
-                val localBucketStart = bucketStart.atZone(zoneId)
-
-                HeartRateHourlyExportRecord(
-                    date = localBucketStart.toLocalDate().toString(),
-                    hour = localBucketStart.hour,
-                    minBpm = minBpm ?: 0L,
-                    maxBpm = maxBpm ?: 0L,
-                    avgBpm = avgBpm ?: 0L,
-                    measurementCount = measurementCount,
-                    startTime = bucketStart.toString(),
-                    endTime = bucketEnd.toString()
-                )
-            }
-
-            allResults.addAll(mapped)
-            chunkStart = chunkEnd
-        }
-
-        return allResults.sortedWith(
-            compareBy<HeartRateHourlyExportRecord> { it.date }
-                .thenBy { it.hour }
+        return heartRateReader.readHeartRateHourlyRecords(
+            startInstant = startInstant,
+            endInstant = endInstant
         )
-    }
-
-    private suspend fun readActivityExportRecordsForRange(
-        startDateInclusive: LocalDate,
-        endDateExclusive: LocalDate,
-        zoneId: ZoneId
-    ): List<ActivityDayExportRecord> {
-        val response = client().aggregateGroupByPeriod(
-            AggregateGroupByPeriodRequest(
-                metrics = setOf(
-                    StepsRecord.COUNT_TOTAL,
-                    DistanceRecord.DISTANCE_TOTAL
-                ),
-                timeRangeFilter = TimeRangeFilter.between(
-                    startDateInclusive.atStartOfDay(),
-                    endDateExclusive.atStartOfDay()
-                ),
-                timeRangeSlicer = Period.ofDays(1)
-            )
-        )
-
-        return response.mapNotNull { dayResult ->
-            val steps = dayResult.result[StepsRecord.COUNT_TOTAL] ?: 0L
-            val distanceMeters = dayResult.result[DistanceRecord.DISTANCE_TOTAL]?.inMeters ?: 0.0
-
-            if (steps == 0L && distanceMeters == 0.0) {
-                return@mapNotNull null
-            }
-
-            val startInstant = dayResult.startTime.atZone(zoneId).toInstant()
-            val endInstant = dayResult.endTime.atZone(zoneId).toInstant()
-
-            ActivityDayExportRecord(
-                date = dayResult.startTime.toLocalDate().toString(),
-                steps = steps,
-                distanceMeters = distanceMeters,
-                startTime = startInstant.toString(),
-                endTime = endInstant.toString()
-            )
-        }
-    }
-
-    private fun mapSleepStage(stageType: Int): String {
-        return when (stageType) {
-            SleepSessionRecord.STAGE_TYPE_UNKNOWN -> "unknown"
-            SleepSessionRecord.STAGE_TYPE_AWAKE -> "awake"
-            SleepSessionRecord.STAGE_TYPE_SLEEPING -> "sleeping"
-            SleepSessionRecord.STAGE_TYPE_OUT_OF_BED -> "out_of_bed"
-            SleepSessionRecord.STAGE_TYPE_LIGHT -> "light"
-            SleepSessionRecord.STAGE_TYPE_DEEP -> "deep"
-            SleepSessionRecord.STAGE_TYPE_REM -> "rem"
-            else -> "unknown"
-        }
     }
 }

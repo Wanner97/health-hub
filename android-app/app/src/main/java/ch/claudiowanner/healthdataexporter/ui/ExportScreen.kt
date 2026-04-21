@@ -10,26 +10,26 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ch.claudiowanner.healthdataexporter.ui.components.ExportActionsSection
+import ch.claudiowanner.healthdataexporter.ui.components.ExportPreviewSection
+import ch.claudiowanner.healthdataexporter.ui.components.ExportStatusSection
 
 @Composable
 fun ExportScreen(
-    statusText: String,
-    exportPreview: String?,
-    isBusy: Boolean,
+    uiState: ExportUiState,
     onRequestHealthPermissions: () -> Unit,
     onExportFullHistory: () -> Unit,
-    onExportLast7Days: () -> Unit,
-    onExportLast31Days: () -> Unit,
-    onExportLast62Days: () -> Unit,
+    onExportRollingWindow: (Int) -> Unit,
     onLoadLatestExport: () -> Unit,
     onSaveLatestExportToDevice: () -> Unit,
-    onShareLatestExport: () -> Unit
+    onShareLatestExport: () -> Unit,
+    onLoadFullPreview: () -> Unit,
+    onShowSnippetPreview: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -53,80 +53,24 @@ fun ExportScreen(
                 style = MaterialTheme.typography.bodyLarge
             )
 
-            Button(
-                onClick = onRequestHealthPermissions,
-                enabled = !isBusy
-            ) {
-                Text("Request health permissions")
-            }
-
-            Button(
-                onClick = onExportFullHistory,
-                enabled = !isBusy
-            ) {
-                Text("Export full history")
-            }
-
-            Button(
-                onClick = onExportLast7Days,
-                enabled = !isBusy
-            ) {
-                Text("Export last 7 days")
-            }
-
-            Button(
-                onClick = onExportLast31Days,
-                enabled = !isBusy
-            ) {
-                Text("Export last 31 days")
-            }
-
-            Button(
-                onClick = onExportLast62Days,
-                enabled = !isBusy
-            ) {
-                Text("Export last 62 days")
-            }
-
-            Button(
-                onClick = onLoadLatestExport,
-                enabled = !isBusy
-            ) {
-                Text("Load latest export")
-            }
-
-            Button(
-                onClick = onSaveLatestExportToDevice,
-                enabled = !isBusy
-            ) {
-                Text("Save latest export to device")
-            }
-
-            Button(
-                onClick = onShareLatestExport,
-                enabled = !isBusy
-            ) {
-                Text("Share latest export")
-            }
-
-            Text(
-                text = "Status",
-                style = MaterialTheme.typography.titleMedium
+            ExportActionsSection(
+                isBusy = uiState.isBusy,
+                onRequestHealthPermissions = onRequestHealthPermissions,
+                onExportFullHistory = onExportFullHistory,
+                onExportRollingWindow = onExportRollingWindow,
+                onLoadLatestExport = onLoadLatestExport,
+                onSaveLatestExportToDevice = onSaveLatestExportToDevice,
+                onShareLatestExport = onShareLatestExport
             )
 
-            Text(
-                text = statusText,
-                style = MaterialTheme.typography.bodyMedium
+            ExportStatusSection(
+                uiState = uiState
             )
 
-            Text(
-                text = "Export preview",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Text(
-                text = exportPreview ?: "No export loaded yet.",
-                style = MaterialTheme.typography.bodySmall
+            ExportPreviewSection(
+                uiState = uiState,
+                onLoadFullPreview = onLoadFullPreview,
+                onShowSnippetPreview = onShowSnippetPreview
             )
         }
     }

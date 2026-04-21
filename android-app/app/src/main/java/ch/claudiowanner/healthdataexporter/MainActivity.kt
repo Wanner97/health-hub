@@ -9,7 +9,8 @@ import androidx.core.content.FileProvider
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
+import ch.claudiowanner.healthdataexporter.config.ExportConfig
+import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectAvailability
 import ch.claudiowanner.healthdataexporter.ui.ExportScreen
 import ch.claudiowanner.healthdataexporter.ui.ExportViewModel
 import ch.claudiowanner.healthdataexporter.ui.theme.HealthDataExporterTheme
@@ -47,17 +48,15 @@ class MainActivity : ComponentActivity() {
 
             HealthDataExporterTheme {
                 ExportScreen(
-                    statusText = uiState.statusText,
-                    exportPreview = uiState.exportPreview,
-                    isBusy = uiState.isBusy,
+                    uiState = uiState,
                     onRequestHealthPermissions = { requestHealthPermissions() },
                     onExportFullHistory = { viewModel.exportFullHistory() },
-                    onExportLast7Days = { viewModel.exportLastDays(7) },
-                    onExportLast31Days = { viewModel.exportLastDays(31) },
-                    onExportLast62Days = { viewModel.exportLastDays(62) },
+                    onExportRollingWindow = { days -> viewModel.exportLastDays(days) },
                     onLoadLatestExport = { viewModel.loadLatestExport() },
                     onSaveLatestExportToDevice = { saveLatestExportToDevice() },
-                    onShareLatestExport = { shareLatestExport() }
+                    onShareLatestExport = { shareLatestExport() },
+                    onLoadFullPreview = { viewModel.loadFullPreview() },
+                    onShowSnippetPreview = { viewModel.showPreviewSnippet() }
                 )
             }
         }
@@ -67,7 +66,7 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             val shouldLaunch = viewModel.shouldLaunchPermissionRequest()
             if (shouldLaunch) {
-                requestPermissions.launch(HealthConnectManager.PERMISSIONS)
+                requestPermissions.launch(HealthConnectAvailability.PERMISSIONS)
             }
         }
     }
@@ -85,7 +84,7 @@ class MainActivity : ComponentActivity() {
 
         val uri = FileProvider.getUriForFile(
             this,
-            "ch.claudiowanner.healthdataexporter.fileprovider",
+            ExportConfig.FILE_PROVIDER_AUTHORITY,
             latestFile
         )
 
