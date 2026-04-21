@@ -12,7 +12,10 @@ import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
 import ch.claudiowanner.healthdataexporter.model.ActivityExportCluster
 import ch.claudiowanner.healthdataexporter.model.ExportClusters
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
+import ch.claudiowanner.healthdataexporter.model.HeartRateDailyExportCluster
+import ch.claudiowanner.healthdataexporter.model.HeartRateHourlyExportCluster
 import ch.claudiowanner.healthdataexporter.model.SleepExportCluster
+import ch.claudiowanner.healthdataexporter.model.VitalsExportCluster
 import ch.claudiowanner.healthdataexporter.storage.ExportFileWriter
 import kotlinx.coroutines.launch
 import java.io.File
@@ -180,6 +183,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                         val now = Instant.now()
                         val today = LocalDate.now(zoneId)
                         val endDateExclusive = today.plusDays(1)
+                        val rangeStartInstant = startDateInclusive.atStartOfDay(zoneId).toInstant()
 
                         val activityRecords = healthConnectManager.readActivityExportRecords(
                             startDateInclusive = startDateInclusive,
@@ -187,22 +191,37 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                         )
 
                         val sleepSessions = healthConnectManager.readSleepSessions(
-                            startInstant = startDateInclusive.atStartOfDay(zoneId).toInstant(),
+                            startInstant = rangeStartInstant,
                             endInstant = now
                         )
 
-                        if (activityRecords.isEmpty() && sleepSessions.isEmpty()) {
-                            updateStatus("No activity or sleep data found.")
+                        val heartRateDailyRecords = healthConnectManager.readHeartRateDailyRecords(
+                            startDateInclusive = startDateInclusive,
+                            endDateExclusive = endDateExclusive
+                        )
+
+                        val heartRateHourlyRecords = healthConnectManager.readHeartRateHourlyRecords(
+                            startInstant = rangeStartInstant,
+                            endInstant = now
+                        )
+
+                        if (
+                            activityRecords.isEmpty() &&
+                            sleepSessions.isEmpty() &&
+                            heartRateDailyRecords.isEmpty() &&
+                            heartRateHourlyRecords.isEmpty()
+                        ) {
+                            updateStatus("No activity, sleep, or heart rate data found.")
                             return@launch
                         }
 
                         val payload = ExportPayload(
-                            exportVersion = 3,
+                            exportVersion = 4,
                             source = "health-connect",
                             exportedAt = now.toString(),
                             exportType = exportType,
                             rangeDays = rangeDays,
-                            rangeStart = startDateInclusive.atStartOfDay(zoneId).toInstant().toString(),
+                            rangeStart = rangeStartInstant.toString(),
                             rangeEnd = now.toString(),
                             clusters = ExportClusters(
                                 activity = ActivityExportCluster(
@@ -210,6 +229,14 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                                 ),
                                 sleep = SleepExportCluster(
                                     sessions = sleepSessions
+                                ),
+                                vitals = VitalsExportCluster(
+                                    heartRateDaily = HeartRateDailyExportCluster(
+                                        records = heartRateDailyRecords
+                                    ),
+                                    heartRateHourly = HeartRateHourlyExportCluster(
+                                        records = heartRateHourlyRecords
+                                    )
                                 )
                             )
                         )

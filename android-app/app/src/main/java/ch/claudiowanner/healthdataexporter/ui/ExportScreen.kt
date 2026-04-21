@@ -49,7 +49,7 @@ fun ExportScreen(
             )
 
             Text(
-                text = "This app exports activity data and sleep sessions from Health Connect as JSON.",
+                text = "This app exports personal health data from Health Connect as JSON.",
                 style = MaterialTheme.typography.bodyLarge
             )
 

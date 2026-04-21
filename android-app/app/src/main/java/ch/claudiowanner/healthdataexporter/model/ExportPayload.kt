@@ -13,7 +13,8 @@ data class ExportPayload(
 
 data class ExportClusters(
     val activity: ActivityExportCluster,
-    val sleep: SleepExportCluster
+    val sleep: SleepExportCluster,
+    val vitals: VitalsExportCluster
 )
 
 data class ActivityExportCluster(
@@ -22,6 +23,19 @@ data class ActivityExportCluster(
 
 data class SleepExportCluster(
     val sessions: List<SleepSessionExportRecord>
+)
+
+data class VitalsExportCluster(
+    val heartRateDaily: HeartRateDailyExportCluster,
+    val heartRateHourly: HeartRateHourlyExportCluster
+)
+
+data class HeartRateDailyExportCluster(
+    val records: List<HeartRateDailyExportRecord>
+)
+
+data class HeartRateHourlyExportCluster(
+    val records: List<HeartRateHourlyExportRecord>
 )
 
 data class ActivityDayExportRecord(
@@ -45,4 +59,25 @@ data class SleepStageExportRecord(
     val startTime: String,
     val endTime: String,
     val stage: String
+)
+
+data class HeartRateDailyExportRecord(
+    val date: String,
+    val minBpm: Long,
+    val maxBpm: Long,
+    val avgBpm: Long,
+    val measurementCount: Long,
+    val startTime: String,
+    val endTime: String
+)
+
+data class HeartRateHourlyExportRecord(
+    val date: String,
+    val hour: Int,
+    val minBpm: Long,
+    val maxBpm: Long,
+    val avgBpm: Long,
+    val measurementCount: Long,
+    val startTime: String,
+    val endTime: String
 )
