@@ -9,7 +9,8 @@ namespace Logic.Mappers
             HealthExportDto dto,
             DateTime importedAtUtc,
             List<ActivityDay> activityDays,
-            List<SleepSession> sleepSessions)
+            List<SleepSession> sleepSessions,
+            List<HeartRateDay> heartRateDays)
         {
             return new ImportBatch
             {
@@ -20,12 +21,17 @@ namespace Logic.Mappers
                 ImportedAtUtc = importedAtUtc,
                 RangeStartUtc = dto.RangeStart.UtcDateTime,
                 RangeEndUtc = dto.RangeEnd.UtcDateTime,
-                ReceivedRecordCount = activityDays.Count + sleepSessions.Count,
+                ReceivedRecordCount =
+                    activityDays.Count
+                    + sleepSessions.Count
+                    + heartRateDays.Count
+                    + heartRateDays.Sum(x => x.HourlyRecords.Count),
                 InsertedRecordCount = 0,
                 UpdatedRecordCount = 0,
                 UnchangedRecordCount = 0,
                 ActivityDayEntries = activityDays,
-                SleepSessionEntries = sleepSessions
+                SleepSessionEntries = sleepSessions,
+                HeartRateDayEntries = heartRateDays
             };
         }
     }

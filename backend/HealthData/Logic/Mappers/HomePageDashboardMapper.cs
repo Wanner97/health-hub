@@ -6,7 +6,8 @@ namespace Logic.Mappers
 {
     public static class HomepageDashboardMapper
     {
-        public static HomepageDashboardDto MapToHomepageDashboardDto(ImportBatch? latestImportBatch, ActivityDay? latestActivityDay, SleepSession? latestSleepSession)
+        public static HomepageDashboardDto MapToHomepageDashboardDto(ImportBatch? latestImportBatch,
+            ActivityDay? latestActivityDay, SleepSession? latestSleepSession, HeartRateDay? latestHeartRateDay)
         {
             return new HomepageDashboardDto
             {
@@ -28,10 +29,19 @@ namespace Logic.Mappers
 
                 LatestSleepSession = latestSleepSession == null ? null : new LatestSleepSessionSummaryDto
                 {
-                StartTimeUtc = latestSleepSession.StartTimeUtc,
-                EndTimeUtc = latestSleepSession.EndTimeUtc,
-                DurationMinutes = latestSleepSession.DurationMinutes
-            }
+                    StartTimeUtc = latestSleepSession.StartTimeUtc,
+                    EndTimeUtc = latestSleepSession.EndTimeUtc,
+                    DurationMinutes = latestSleepSession.DurationMinutes
+                },
+
+                LatestHeartRateDay = latestHeartRateDay == null ? null : new LatestHeartRateDaySummaryDto
+                {
+                    Date = latestHeartRateDay.Date,
+                    AvgBpm = latestHeartRateDay.AvgBpm,
+                    MinBpm = latestHeartRateDay.MinBpm,
+                    MaxBpm = latestHeartRateDay.MaxBpm,
+                    MeasurementCount = latestHeartRateDay.MeasurementCount
+                }
             };
         }
     }

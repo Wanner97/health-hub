@@ -59,11 +59,18 @@ namespace Logic
                     importedAtUtc,
                     consolidatedSleepSessionDtos);
 
+                var importedHeartRateDays = HeartRateImportMapper.MapToHeartRateDays(
+                    dto.Source,
+                    importedAtUtc,
+                    dto.Clusters.Vitals?.HeartRateDaily,
+                    dto.Clusters.Vitals?.HeartRateHourly);
+
                 var importBatch = ImportBatchImportMapper.MapToImportBatch(
                     dto,
                     importedAtUtc,
                     importedActivityDays,
-                    importedSleepSessions);
+                    importedSleepSessions,
+                    importedHeartRateDays);
 
                 new ImportBatchValidator(false).ValidateAndThrow(importBatch);
 
@@ -83,27 +90,41 @@ namespace Logic
                     importedSleepSessions,
                     existingSleepSessionsByStartTime);
 
+                var existingHeartRateDaysByDate = _importBatchDataAccess.GetExistingHeartRateDays(
+                    importBatch.Source,
+                    importedHeartRateDays.Select(x => x.Date));
+
+                var heartRateUpsertData = HeartRateImportUpsertDataHelper.BuildUpsertData(
+                    importedHeartRateDays,
+                    existingHeartRateDaysByDate);
+
                 importBatch.InsertedRecordCount =
                     activityUpsertData.InsertedActivityDays.Count
-                    + sleepUpsertData.InsertedSleepSessions.Count;
+                    + sleepUpsertData.InsertedSleepSessions.Count
+                    + heartRateUpsertData.InsertedHeartRateDays.Count;
 
                 importBatch.UpdatedRecordCount =
                     activityUpsertData.UpdatedActivityDays.Count
-                    + sleepUpsertData.UpdatedSleepSessions.Count;
+                    + sleepUpsertData.UpdatedSleepSessions.Count
+                    + heartRateUpsertData.UpdatedHeartRateDays.Count;
 
                 importBatch.UnchangedRecordCount =
                     activityUpsertData.UnchangedCount
-                    + sleepUpsertData.UnchangedCount;
+                    + sleepUpsertData.UnchangedCount
+                    + heartRateUpsertData.UnchangedCount;
 
                 importBatch.ActivityDayEntries = new List<ActivityDay>();
                 importBatch.SleepSessionEntries = new List<SleepSession>();
+                importBatch.HeartRateDayEntries = new List<HeartRateDay>();
 
                 return _importBatchDataAccess.ApplyImport(
                     importBatch,
                     activityUpsertData.InsertedActivityDays,
                     activityUpsertData.UpdatedActivityDays,
                     sleepUpsertData.InsertedSleepSessions,
-                    sleepUpsertData.UpdatedSleepSessions);
+                    sleepUpsertData.UpdatedSleepSessions,
+                    heartRateUpsertData.InsertedHeartRateDays,
+                    heartRateUpsertData.UpdatedHeartRateDays);
             }
         }
     }

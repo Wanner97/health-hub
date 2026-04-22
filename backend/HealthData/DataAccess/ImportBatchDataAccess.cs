@@ -73,12 +73,27 @@ namespace DataAccess
             }
         }
 
+        public Dictionary<DateOnly, HeartRateDay> GetExistingHeartRateDays(string source, IEnumerable<DateOnly> dates)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                var distinctDates = dates.Distinct().ToList();
+
+                return context.HeartRateDays
+                    .Include(x => x.HourlyRecords)
+                    .Where(x => x.Source == source && distinctDates.Contains(x.Date))
+                    .ToDictionary(x => x.Date, x => x);
+            }
+        }
+
         public ImportBatch ApplyImport(
             ImportBatch importBatch,
             List<ActivityDay> insertedActivityDays,
             List<ActivityDay> updatedActivityDays,
             List<SleepSession> insertedSleepSessions,
-            List<SleepSession> updatedSleepSessions)
+            List<SleepSession> updatedSleepSessions,
+            List<HeartRateDay> insertedHeartRateDays,
+            List<HeartRateDay> updatedHeartRateDays)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
@@ -113,6 +128,20 @@ namespace DataAccess
                         updatedSleepSession.LastImportBatchId = importBatch.Id;
                         updatedSleepSession.LastImportBatch = importBatch;
                         updatedSleepSession.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var insertedHeartRateDay in insertedHeartRateDays)
+                    {
+                        insertedHeartRateDay.LastImportBatchId = importBatch.Id;
+                        insertedHeartRateDay.LastImportBatch = importBatch;
+                        insertedHeartRateDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var updatedHeartRateDay in updatedHeartRateDays)
+                    {
+                        updatedHeartRateDay.LastImportBatchId = importBatch.Id;
+                        updatedHeartRateDay.LastImportBatch = importBatch;
+                        updatedHeartRateDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
                     }
 
                     if (insertedActivityDays.Count > 0)
@@ -161,6 +190,45 @@ namespace DataAccess
                         if (replacementSleepStages.Count > 0)
                         {
                             context.SleepStages.AddRange(replacementSleepStages);
+                        }
+                    }
+
+                    if (insertedHeartRateDays.Count > 0)
+                    {
+                        context.HeartRateDays.AddRange(insertedHeartRateDays);
+                    }
+
+                    if (updatedHeartRateDays.Count > 0)
+                    {
+                        var updatedHeartRateDayIds = updatedHeartRateDays
+                            .Select(x => x.Id)
+                            .ToList();
+
+                        var existingHourlyRecords = context.HeartRateHourlyRecords
+                            .Where(x => updatedHeartRateDayIds.Contains(x.HeartRateDayId));
+
+                        context.HeartRateHourlyRecords.RemoveRange(existingHourlyRecords);
+
+                        var replacementHourlyRecords = new List<HeartRateHourlyRecord>();
+
+                        foreach (var updatedHeartRateDay in updatedHeartRateDays)
+                        {
+                            var newHourlyRecords = updatedHeartRateDay.HourlyRecords.ToList();
+
+                            updatedHeartRateDay.HourlyRecords = new List<HeartRateHourlyRecord>();
+
+                            context.HeartRateDays.Update(updatedHeartRateDay);
+
+                            foreach (var newHourlyRecord in newHourlyRecords)
+                            {
+                                newHourlyRecord.HeartRateDayId = updatedHeartRateDay.Id;
+                                replacementHourlyRecords.Add(newHourlyRecord);
+                            }
+                        }
+
+                        if (replacementHourlyRecords.Count > 0)
+                        {
+                            context.HeartRateHourlyRecords.AddRange(replacementHourlyRecords);
                         }
                     }
 

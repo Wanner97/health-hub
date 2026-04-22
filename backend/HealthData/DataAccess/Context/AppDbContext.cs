@@ -14,6 +14,8 @@ namespace DataAccess.Context
         public DbSet<ActivityDay> ActivityDays { get; set; }
         public DbSet<SleepSession> SleepSessions { get; set; }
         public DbSet<SleepStage> SleepStages { get; set; }
+        public DbSet<HeartRateDay> HeartRateDays { get; set; }
+        public DbSet<HeartRateHourlyRecord> HeartRateHourlyRecords { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

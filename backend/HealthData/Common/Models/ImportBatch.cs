@@ -29,5 +29,7 @@
         public List<ActivityDay> ActivityDayEntries { get; set; } = new();
 
         public List<SleepSession> SleepSessionEntries { get; set; } = new();
+
+        public List<HeartRateDay> HeartRateDayEntries { get; set; } = new();
     }
 }

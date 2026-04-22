@@ -9,5 +9,7 @@ namespace Common.Dtos.DataReadDtos.Dashboard
         public LatestActivityDaySummaryDto? LatestActivityDay { get; set; }
 
         public LatestSleepSessionSummaryDto? LatestSleepSession { get; set; }
+
+        public LatestHeartRateDaySummaryDto? LatestHeartRateDay { get; set; }
     }
 }

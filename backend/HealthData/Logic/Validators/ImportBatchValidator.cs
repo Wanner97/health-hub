@@ -32,12 +32,16 @@ namespace Logic.Validators
                 .Must((batch, receivedRecordCount) =>
                     receivedRecordCount ==
                     (batch.ActivityDayEntries?.Count ?? 0) +
-                    (batch.SleepSessionEntries?.Count ?? 0))
+                    (batch.SleepSessionEntries?.Count ?? 0) +
+                    (batch.HeartRateDayEntries?.Count ?? 0) +
+                    (batch.HeartRateDayEntries?.Sum(x => x.HourlyRecords.Count) ?? 0))
                 .WithMessage("ReceivedRecordCount does not match the number of imported records.");
 
             RuleForEach(x => x.ActivityDayEntries).SetValidator(new ActivityDayValidator(false));
 
             RuleForEach(x => x.SleepSessionEntries).SetValidator(new SleepSessionValidator(false));
+
+            RuleForEach(x => x.HeartRateDayEntries).SetValidator(new HeartRateDayValidator(false));
 
             RuleFor(x => x.ActivityDayEntries)
                 .Must(HaveUniqueDates)
@@ -48,6 +52,11 @@ namespace Logic.Validators
                 .Must(HaveUniqueStartTimes)
                 .When(x => x.SleepSessionEntries != null && x.SleepSessionEntries.Count > 0)
                 .WithMessage("The import contains duplicate sleep session start times after consolidation.");
+
+            RuleFor(x => x.HeartRateDayEntries)
+                .Must(HaveUniqueHeartRateDates)
+                .When(x => x.HeartRateDayEntries != null && x.HeartRateDayEntries.Count > 0)
+                .WithMessage("The import contains duplicate heart rate dates.");
         }
 
         private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
@@ -77,6 +86,18 @@ namespace Logic.Validators
 
             return sleepSessionEntries
                 .GroupBy(x => x.StartTimeUtc)
+                .All(g => g.Count() == 1);
+        }
+
+        private static bool HaveUniqueHeartRateDates(ICollection<HeartRateDay>? heartRateDayEntries)
+        {
+            if (heartRateDayEntries == null)
+            {
+                return true;
+            }
+
+            return heartRateDayEntries
+                .GroupBy(x => x.Date)
                 .All(g => g.Count() == 1);
         }
     }

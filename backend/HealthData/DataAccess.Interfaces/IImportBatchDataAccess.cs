@@ -8,12 +8,15 @@ namespace DataAccess.Interfaces
         List<ImportBatch> GetImportBatches(DateOnly? from, DateOnly? to);
         Dictionary<DateOnly, ActivityDay> GetExistingActivityDays(string source, IEnumerable<DateOnly> dates);
         Dictionary<DateTime, SleepSession> GetExistingSleepSessions(string source, IEnumerable<DateTime> startTimes);
+        Dictionary<DateOnly, HeartRateDay> GetExistingHeartRateDays(string source, IEnumerable<DateOnly> dates);
 
         ImportBatch ApplyImport(
             ImportBatch importBatch,
             List<ActivityDay> insertedActivityDays,
             List<ActivityDay> updatedActivityDays,
             List<SleepSession> insertedSleepSessions,
-            List<SleepSession> updatedSleepSessions);
+            List<SleepSession> updatedSleepSessions,
+            List<HeartRateDay> insertedHeartRateDays,
+            List<HeartRateDay> updatedHeartRateDays);
     }
 }
