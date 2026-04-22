@@ -22,7 +22,7 @@
 
         public string Source { get; set; } = string.Empty;
 
-        public int ExportVersion { get; set; }
+        public string ExportVersion { get; set; }
 
         public string ExportType { get; set; } = string.Empty;
 

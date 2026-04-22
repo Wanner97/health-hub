@@ -35,5 +35,12 @@
     <ProjectReference Include="..\Logic.Interfaces\Logic.Interfaces.csproj" />
     <ProjectReference Include="..\Logic\Logic.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+  <Content Include="..\..\..\versions.json" Link="versions.json">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+  </Content>
+</ItemGroup>
 
 </Project>

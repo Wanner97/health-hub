@@ -1,12 +1,16 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
+    "predev": "node ./scripts/generate-version.mjs",
     "dev": "vite",
+    "prebuild": "node ./scripts/generate-version.mjs",
     "build": "vite build",
+    "prelint": "node ./scripts/generate-version.mjs",
     "lint": "eslint .",
+    "prepreview": "node ./scripts/generate-version.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

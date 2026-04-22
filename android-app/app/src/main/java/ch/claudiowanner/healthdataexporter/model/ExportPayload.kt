@@ -5,7 +5,7 @@ import ch.claudiowanner.healthdataexporter.model.sleep.SleepExportCluster
 import ch.claudiowanner.healthdataexporter.model.vitals.VitalsExportCluster
 
 data class ExportPayload(
-    val exportVersion: Int,
+    val exportVersion: String,
     val source: String,
     val exportedAt: String,
     val exportType: String,

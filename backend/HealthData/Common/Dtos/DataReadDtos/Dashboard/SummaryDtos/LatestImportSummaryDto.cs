@@ -12,6 +12,6 @@
 
         public int UnchangedRecordCount { get; set; }
 
-        public int ExportVersion { get; set; }
+        public string ExportVersion { get; set; }
     }
 }

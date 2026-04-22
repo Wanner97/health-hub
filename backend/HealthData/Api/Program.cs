@@ -1,4 +1,5 @@
 using Api.ExceptionHandling;
+using Common.Versioning;
 using DataAccess;
 using DataAccess.Context;
 using DataAccess.Interfaces;
@@ -59,6 +60,11 @@ namespace Api
 
         private static void ConfigureServices(WebApplicationBuilder builder)
         {
+            var versionManifestPath = Path.Combine(AppContext.BaseDirectory, "versions.json");
+
+            builder.Services.AddSingleton<IVersionManifestProvider>(
+                _ => new VersionManifestProvider(versionManifestPath));
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("FrontendPolicy", policy =>

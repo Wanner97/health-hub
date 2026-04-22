@@ -4,7 +4,7 @@ import ch.claudiowanner.healthdataexporter.BuildConfig
 import java.time.LocalDate
 
 object ExportConfig {
-    const val EXPORT_VERSION = 4
+    const val EXPORT_VERSION = BuildConfig.SERVICE_VERSION
     const val PREVIEW_SNIPPET_LENGTH = 250
     const val FULL_PREVIEW_CHUNK_LINE_COUNT = 80
     const val EXPORT_FILE_PREFIX = "health-export"

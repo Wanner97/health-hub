@@ -6,14 +6,14 @@ namespace Logic.Validators
 {
     public class ImportBatchValidator : AbstractValidator<ImportBatch>
     {
-        public ImportBatchValidator(bool idIsRequired)
+        public ImportBatchValidator(bool idIsRequired, string expectedExportVersion)
         {
             if (idIsRequired)
             {
                 RuleFor(x => x.Id).GreaterThan(0);
             }
 
-            RuleFor(x => x.ExportVersion).Equal(Const.LatestExportVersion);
+            RuleFor(x => x.ExportVersion).Equal(expectedExportVersion);
             RuleFor(x => x.Source).NotEmpty();
             RuleFor(x => x.ExportType).NotEmpty();
 
@@ -62,7 +62,8 @@ namespace Logic.Validators
         private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
         {
             return (importBatch.ActivityDayEntries?.Count ?? 0) > 0
-                   || (importBatch.SleepSessionEntries?.Count ?? 0) > 0;
+                   || (importBatch.SleepSessionEntries?.Count ?? 0) > 0
+                   || (importBatch.HeartRateDayEntries?.Count ?? 0) > 0;
         }
 
         private static bool HaveUniqueDates(ICollection<ActivityDay>? activityDayEntries)

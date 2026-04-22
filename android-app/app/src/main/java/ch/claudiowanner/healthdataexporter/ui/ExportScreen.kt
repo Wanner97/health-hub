@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import ch.claudiowanner.healthdataexporter.BuildConfig
 import ch.claudiowanner.healthdataexporter.ui.components.ExportActionsSection
 import ch.claudiowanner.healthdataexporter.ui.components.ExportPreviewSection
 import ch.claudiowanner.healthdataexporter.ui.components.ExportStatusSection
@@ -49,7 +50,12 @@ fun ExportScreen(
             )
 
             Text(
-                text = "This app exports personal health data from Health Connect as JSON.",
+                text = "App Version: ${BuildConfig.SERVICE_VERSION}",
+                style = MaterialTheme.typography.bodyLarge
+            )
+
+            Text(
+                text = "Hub Version: ${BuildConfig.SUITE_VERSION}",
                 style = MaterialTheme.typography.bodyLarge
             )
 

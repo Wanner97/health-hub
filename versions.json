@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "suite": {
+    "version": "0.4.0"
+  },
+  "services": {
+    "android": {
+      "version": "0.4.0",
+      "versionCode": 4
+    },
+    "backend": {
+      "version": "0.4.0"
+    },
+    "frontend": {
+      "version": "0.3.0"
+    }
+  },
+  "release": {
+    "tagPrefix": "v"
+  }
+}

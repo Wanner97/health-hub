@@ -1,5 +1,6 @@
 import { APP_SECTIONS } from '../../constants/appSections';
 import { useHomepageDashboard } from '../../hooks/useHomepageDashboard';
+import { FRONTEND_VERSION, SUITE_VERSION } from '../../generated/version.generated';
 import {
   buildImportSubtitle,
   buildSleepSubtitle,
@@ -18,7 +19,8 @@ function HomeSectionSelector({ onSelectSection }) {
   return (
     <section className="home-section">
       <h1>Health Hub</h1>
-      <p className="subtitle">Übersicht über die aktuellsten Daten im System.</p>
+      <p className="subtitle">Frontend Version: {FRONTEND_VERSION}</p>
+      <p className="subtitle">Hub Version: {SUITE_VERSION}</p>
 
       {errorMessage && <p className="error">{errorMessage}</p>}
 

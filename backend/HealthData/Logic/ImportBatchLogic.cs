@@ -1,6 +1,7 @@
 ﻿using Common.Dtos.DataImportDtos;
 using Common.Dtos.DataReadDtos;
 using Common.Models;
+using Common.Versioning;
 using DataAccess.Interfaces;
 using FluentValidation;
 using Logic.Helpers;
@@ -14,10 +15,12 @@ namespace Logic
     public class ImportBatchLogic : IImportBatchLogic
     {
         private readonly IImportBatchDataAccess _importBatchDataAccess;
+        private readonly IVersionManifestProvider _versionManifestProvider;
 
-        public ImportBatchLogic(IImportBatchDataAccess importBatchDataAccess)
+        public ImportBatchLogic(IImportBatchDataAccess importBatchDataAccess, IVersionManifestProvider versionManifestProvider)
         {
             _importBatchDataAccess = importBatchDataAccess;
+            _versionManifestProvider = versionManifestProvider;
         }
 
         public List<ImportBatchReadDto> GetImportBatches(DateOnly? from, DateOnly? to)
@@ -72,7 +75,9 @@ namespace Logic
                     importedSleepSessions,
                     importedHeartRateDays);
 
-                new ImportBatchValidator(false).ValidateAndThrow(importBatch);
+                var expectedExportVersion = _versionManifestProvider.AndroidVersion;
+
+                new ImportBatchValidator(false, expectedExportVersion).ValidateAndThrow(importBatch);
 
                 var existingActivityDaysByDate = _importBatchDataAccess.GetExistingActivityDays(
                     importBatch.Source,

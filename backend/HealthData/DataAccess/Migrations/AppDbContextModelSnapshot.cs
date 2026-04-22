@@ -186,8 +186,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("ExportType");
 
-                    b.Property<int>("ExportVersion")
-                        .HasColumnType("INTEGER")
+                    b.Property<string>("ExportVersion")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
                         .HasColumnName("ExportVersion");
 
                     b.Property<DateTime>("ExportedAtUtc")

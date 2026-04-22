@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260415085858_AddSleepImportSupport")]
-    partial class AddSleepImportSupport
+    [Migration("20260422085800_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -71,6 +71,111 @@ namespace DataAccess.Migrations
                     b.ToTable("ActivityDay", (string)null);
                 });
 
+            modelBuilder.Entity("Common.Models.HeartRateDay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AvgBpm")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("AvgBpm");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Date");
+
+                    b.Property<DateTime>("EndTimeUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("EndTimeUtc");
+
+                    b.Property<int>("LastImportBatchId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("LastImportBatchId");
+
+                    b.Property<DateTime>("LastImportedAtUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("LastImportedAtUtc");
+
+                    b.Property<int>("MaxBpm")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MaxBpm");
+
+                    b.Property<int>("MeasurementCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MeasurementCount");
+
+                    b.Property<int>("MinBpm")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MinBpm");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Source");
+
+                    b.Property<DateTime>("StartTimeUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("StartTimeUtc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LastImportBatchId");
+
+                    b.HasIndex("Source", "Date")
+                        .IsUnique();
+
+                    b.ToTable("HeartRateDay", (string)null);
+                });
+
+            modelBuilder.Entity("Common.Models.HeartRateHourlyRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("AvgBpm")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("AvgBpm");
+
+                    b.Property<DateTime>("EndTimeUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("EndTimeUtc");
+
+                    b.Property<int>("HeartRateDayId")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("HeartRateDayId");
+
+                    b.Property<int>("Hour")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("Hour");
+
+                    b.Property<int>("MaxBpm")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MaxBpm");
+
+                    b.Property<int>("MeasurementCount")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MeasurementCount");
+
+                    b.Property<int>("MinBpm")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("MinBpm");
+
+                    b.Property<DateTime>("StartTimeUtc")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("StartTimeUtc");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HeartRateDayId", "Hour")
+                        .IsUnique();
+
+                    b.ToTable("HeartRateHourlyRecord", (string)null);
+                });
+
             modelBuilder.Entity("Common.Models.ImportBatch", b =>
                 {
                     b.Property<int>("Id")
@@ -84,8 +189,9 @@ namespace DataAccess.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("ExportType");
 
-                    b.Property<int>("ExportVersion")
-                        .HasColumnType("INTEGER")
+                    b.Property<string>("ExportVersion")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
                         .HasColumnName("ExportVersion");
 
                     b.Property<DateTime>("ExportedAtUtc")
@@ -218,6 +324,28 @@ namespace DataAccess.Migrations
                     b.Navigation("LastImportBatch");
                 });
 
+            modelBuilder.Entity("Common.Models.HeartRateDay", b =>
+                {
+                    b.HasOne("Common.Models.ImportBatch", "LastImportBatch")
+                        .WithMany("HeartRateDayEntries")
+                        .HasForeignKey("LastImportBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("LastImportBatch");
+                });
+
+            modelBuilder.Entity("Common.Models.HeartRateHourlyRecord", b =>
+                {
+                    b.HasOne("Common.Models.HeartRateDay", "HeartRateDay")
+                        .WithMany("HourlyRecords")
+                        .HasForeignKey("HeartRateDayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HeartRateDay");
+                });
+
             modelBuilder.Entity("Common.Models.SleepSession", b =>
                 {
                     b.HasOne("Common.Models.ImportBatch", "LastImportBatch")
@@ -240,9 +368,16 @@ namespace DataAccess.Migrations
                     b.Navigation("SleepSession");
                 });
 
+            modelBuilder.Entity("Common.Models.HeartRateDay", b =>
+                {
+                    b.Navigation("HourlyRecords");
+                });
+
             modelBuilder.Entity("Common.Models.ImportBatch", b =>
                 {
                     b.Navigation("ActivityDayEntries");
+
+                    b.Navigation("HeartRateDayEntries");
 
                     b.Navigation("SleepSessionEntries");
                 });

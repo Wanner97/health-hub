@@ -2,7 +2,7 @@
 {
     public class HealthExportDto
     {
-        public int ExportVersion { get; set; }
+        public string ExportVersion { get; set; }
 
         public string Source { get; set; } = string.Empty;
 

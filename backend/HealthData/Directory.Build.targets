@@ -1,0 +1,103 @@
+<Project>
+  <UsingTask
+    TaskName="ReadHealthDataVersionsTask"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <ManifestPath ParameterType="System.String" Required="true" />
+      <SuiteVersion Output="true" ParameterType="System.String" />
+      <BackendVersion Output="true" ParameterType="System.String" />
+      <AssemblyVersionValue Output="true" ParameterType="System.String" />
+      <FileVersionValue Output="true" ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System" />
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        if (!File.Exists(ManifestPath))
+        {
+            Log.LogError("versions.json was not found: " + ManifestPath);
+            return false;
+        }
+
+        var json = File.ReadAllText(ManifestPath);
+
+        var suiteMatch = Regex.Match(
+            json,
+            "\"suite\"\\s*:\\s*\\{\\s*\"version\"\\s*:\\s*\"([^\"]+)\"");
+
+        if (!suiteMatch.Success)
+        {
+            Log.LogError("suite.version is missing in versions.json.");
+            return false;
+        }
+
+        SuiteVersion = suiteMatch.Groups[1].Value;
+
+        var backendMatch = Regex.Match(
+            json,
+            "\"services\"\\s*:\\s*\\{[\\s\\S]*?\"backend\"\\s*:\\s*\\{\\s*\"version\"\\s*:\\s*\"([^\"]+)\"");
+
+        if (!backendMatch.Success)
+        {
+            Log.LogError("services.backend.version is missing in versions.json.");
+            return false;
+        }
+
+        BackendVersion = backendMatch.Groups[1].Value;
+
+        if (String.IsNullOrWhiteSpace(SuiteVersion))
+        {
+            Log.LogError("suite.version is missing in versions.json.");
+            return false;
+        }
+
+        if (String.IsNullOrWhiteSpace(BackendVersion))
+        {
+            Log.LogError("services.backend.version is missing in versions.json.");
+            return false;
+        }
+
+        var parts = BackendVersion.Split('.');
+        if (parts.Length != 3)
+        {
+            Log.LogError("Backend version '" + BackendVersion + "' is not valid SemVer (expected X.Y.Z).");
+            return false;
+        }
+
+        AssemblyVersionValue = parts[0] + "." + parts[1] + "." + parts[2] + ".0";
+        FileVersionValue = AssemblyVersionValue;
+
+        return true;
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="ApplyVersionsFromManifest" BeforeTargets="GenerateAssemblyInfo">
+    <ReadHealthDataVersionsTask ManifestPath="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\versions.json'))">
+      <Output TaskParameter="SuiteVersion" PropertyName="HealthDataSuiteVersion" />
+      <Output TaskParameter="BackendVersion" PropertyName="Version" />
+      <Output TaskParameter="BackendVersion" PropertyName="InformationalVersion" />
+      <Output TaskParameter="AssemblyVersionValue" PropertyName="AssemblyVersion" />
+      <Output TaskParameter="FileVersionValue" PropertyName="FileVersion" />
+    </ReadHealthDataVersionsTask>
+
+    <PropertyGroup>
+      <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+        <_Parameter1>SuiteVersion</_Parameter1>
+        <_Parameter2>$(HealthDataSuiteVersion)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+
+    <Message
+      Importance="High"
+      Text="Applied backend version $(Version) (suite $(HealthDataSuiteVersion)) to $(MSBuildProjectName)." />
+  </Target>
+</Project>
