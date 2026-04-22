@@ -1,0 +1,74 @@
+name: Create version tag
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - versions.json
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read suite version from manifest
+        id: manifest
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path("versions.json").read_text(encoding="utf-8"))
+
+          suite_version = manifest["suite"]["version"]
+          tag_prefix = manifest.get("release", {}).get("tagPrefix", "v")
+          tag_name = f"{tag_prefix}{suite_version}"
+
+          output_path = Path("${GITHUB_OUTPUT}")
+          with output_path.open("a", encoding="utf-8") as f:
+              f.write(f"suite_version={suite_version}\n")
+              f.write(f"tag_name={tag_name}\n")
+          PY
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Check whether tag already exists
+        id: tag_check
+        shell: bash
+        run: |
+          TAG_NAME="${{ steps.manifest.outputs.tag_name }}"
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG_NAME already exists. Nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG_NAME does not exist yet."
+          fi
+
+      - name: Create and push tag
+        if: steps.tag_check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          TAG_NAME="${{ steps.manifest.outputs.tag_name }}"
+          SUITE_VERSION="${{ steps.manifest.outputs.suite_version }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+          git push origin "$TAG_NAME"
+
+          echo "Created tag $TAG_NAME for suite version $SUITE_VERSION."
