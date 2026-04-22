@@ -25,21 +25,12 @@ jobs:
         id: manifest
         shell: bash
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
+          SUITE_VERSION=$(python -c "import json; print(json.load(open('versions.json', encoding='utf-8'))['suite']['version'])")
+          TAG_PREFIX=$(python -c "import json; data=json.load(open('versions.json', encoding='utf-8')); print(data.get('release', {}).get('tagPrefix', 'v'))")
+          TAG_NAME="${TAG_PREFIX}${SUITE_VERSION}"
 
-          manifest = json.loads(Path("versions.json").read_text(encoding="utf-8"))
-
-          suite_version = manifest["suite"]["version"]
-          tag_prefix = manifest.get("release", {}).get("tagPrefix", "v")
-          tag_name = f"{tag_prefix}{suite_version}"
-
-          output_path = Path("${GITHUB_OUTPUT}")
-          with output_path.open("a", encoding="utf-8") as f:
-              f.write(f"suite_version={suite_version}\n")
-              f.write(f"tag_name={tag_name}\n")
-          PY
+          echo "suite_version=$SUITE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag_name=$TAG_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Fetch tags
         run: git fetch --tags --force
