@@ -1,15 +1,20 @@
 import { PERIODS } from '../../constants/periods';
 import {
   formatDate,
-  formatDateTimeUtc,
   formatMonthLabel,
 } from '../../utils/date/dateFormatters';
-import {
-  formatKilometersFromMeters,
-  formatNumber,
-} from '../../utils/number/numberFormatters';
+import { formatNumber } from '../../utils/number/numberFormatters';
 
-function ActivityDaysTable({ rows, period }) {
+function HeartRateDaysTable({ rows, period }) {
+  if (!rows?.length) {
+    return (
+      <section className="table-section">
+        <h2>Herzfrequenzübersicht</h2>
+        <p>Es wurden keine Herzfrequenzdaten gefunden.</p>
+      </section>
+    );
+  }
+
   if (period === PERIODS.TWELVE_MONTHS) {
     return (
       <section className="table-section">
@@ -19,9 +24,10 @@ function ActivityDaysTable({ rows, period }) {
           <thead>
             <tr>
               <th>Monat</th>
-              <th>Ø Schritte / Tag</th>
-              <th>Ø km / Tag</th>
-              <th>Schritte gesamt</th>
+              <th>Ø BPM</th>
+              <th>Min BPM</th>
+              <th>Max BPM</th>
+              <th>Messungen</th>
               <th>Tage</th>
             </tr>
           </thead>
@@ -29,9 +35,10 @@ function ActivityDaysTable({ rows, period }) {
             {rows.map((month) => (
               <tr key={month.monthKey}>
                 <td>{formatMonthLabel(month.monthKey)}</td>
-                <td>{formatNumber(month.averageSteps)}</td>
-                <td>{formatKilometersFromMeters(month.averageDistanceMeters)}</td>
-                <td>{formatNumber(month.totalSteps)}</td>
+                <td>{formatNumber(month.averageBpm)}</td>
+                <td>{formatNumber(month.minBpm)}</td>
+                <td>{formatNumber(month.maxBpm)}</td>
+                <td>{formatNumber(month.measurementCount)}</td>
                 <td>{formatNumber(month.dayCount)}</td>
               </tr>
             ))}
@@ -43,26 +50,26 @@ function ActivityDaysTable({ rows, period }) {
 
   return (
     <section className="table-section">
-      <h2>Schrittübersicht</h2>
+      <h2>Herzfrequenzübersicht</h2>
 
       <table>
         <thead>
           <tr>
             <th>Datum</th>
-            <th>Schritte</th>
-            <th>Distanz (km)</th>
-            <th>Start (UTC)</th>
-            <th>Ende (UTC)</th>
+            <th>Ø BPM</th>
+            <th>Min BPM</th>
+            <th>Max BPM</th>
+            <th>Messungen</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((day) => (
             <tr key={day.date}>
               <td>{formatDate(day.date)}</td>
-              <td>{formatNumber(day.steps)}</td>
-              <td>{formatKilometersFromMeters(day.distanceMeters)}</td>
-              <td>{formatDateTimeUtc(day.startTimeUtc)}</td>
-              <td>{formatDateTimeUtc(day.endTimeUtc)}</td>
+              <td>{formatNumber(day.avgBpm)}</td>
+              <td>{formatNumber(day.minBpm)}</td>
+              <td>{formatNumber(day.maxBpm)}</td>
+              <td>{formatNumber(day.measurementCount)}</td>
             </tr>
           ))}
         </tbody>
@@ -71,4 +78,4 @@ function ActivityDaysTable({ rows, period }) {
   );
 }
 
-export default ActivityDaysTable;
+export default HeartRateDaysTable;

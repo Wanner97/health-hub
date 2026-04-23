@@ -47,3 +47,19 @@ export function buildSleepSubtitle(latestSleepSession) {
 
   return `vom ${startDate} auf den ${endDate}`;
 }
+
+export function buildHeartRateTitle(latestHeartRateDay) {
+  if (!latestHeartRateDay) {
+    return 'Keine Herzfrequenzdaten';
+  }
+
+  return `Ø ${formatNumber(latestHeartRateDay.avgBpm)} BPM`;
+}
+
+export function buildHeartRateSubtitle(latestHeartRateDay) {
+  if (!latestHeartRateDay) {
+    return 'Kein aktueller Herzfrequenzdatensatz vorhanden.';
+  }
+
+  return `am ${formatDate(latestHeartRateDay.date)} · Min ${formatNumber(latestHeartRateDay.minBpm)} · Max ${formatNumber(latestHeartRateDay.maxBpm)} · ${formatNumber(latestHeartRateDay.measurementCount)} Messungen`;
+}

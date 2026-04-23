@@ -24,7 +24,7 @@ function ImportBatchList({ batches }) {
             </div>
 
             <span className="batch-version">
-              Export v{formatNumber(batch.exportVersion)}
+              Export v{batch.exportVersion}
             </span>
           </div>
 

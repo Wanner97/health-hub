@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ActivityDaysPage from './components/activityDays/ActivityDaysPage';
+import HeartRateDaysPage from './components/heartRateDays/HeartRateDaysPage';
 import HomeSectionSelector from './components/home/HomeSectionSelector';
 import ImportBatchesPage from './components/importBatches/ImportBatchesPage';
 import SleepSessionsPage from './components/sleepSessions/SleepSessionsPage';
@@ -29,6 +30,10 @@ function App() {
 
         {currentSection === APP_SECTIONS.SLEEP_SESSIONS && (
           <SleepSessionsPage onBack={goHome} />
+        )}
+
+        {currentSection === APP_SECTIONS.HEART_RATE_DAYS && (
+          <HeartRateDaysPage onBack={goHome} />
         )}
       </div>
     </main>

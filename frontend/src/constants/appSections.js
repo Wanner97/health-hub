@@ -1,6 +1,7 @@
 export const APP_SECTIONS = {
   HOME: 'home',
-  ACTIVITY_DAYS: 'activityDays',
   IMPORT_BATCHES: 'importBatches',
+  ACTIVITY_DAYS: 'activityDays',
   SLEEP_SESSIONS: 'sleepSessions',
+  HEART_RATE_DAYS: 'heartRateDays',
 };

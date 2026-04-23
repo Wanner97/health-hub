@@ -1,0 +1,174 @@
+.heart-rate-page .card h2,
+.heart-rate-page .table-section h2,
+.heart-rate-page .chart-header h2 {
+  color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .chart-guide {
+  border-top-color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .chart-guide-label {
+  color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .chart-details-value {
+  color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .range-bar-track {
+  position: relative;
+  width: 72%;
+  max-width: 24px;
+  height: 100%;
+}
+
+.heart-rate-page .range-bar-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  min-height: 4px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-bar);
+}
+
+.heart-rate-page .heart-rate-chart-details-meta {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-text-soft);
+  line-height: 1.4;
+}
+
+.heart-rate-page .heart-rate-chart-details-meta--empty {
+  color: transparent;
+}
+
+.heart-rate-page .bar-column-wrapper.is-active .range-bar-fill,
+.heart-rate-page .bar-column-wrapper:hover .range-bar-fill {
+  background-color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .heart-rate-hourly-details {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.heart-rate-page .heart-rate-hourly-title {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .heart-rate-hourly-empty {
+  margin: 0;
+  color: var(--color-text-soft);
+}
+
+.heart-rate-page .heart-rate-hourly-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.heart-rate-page .heart-rate-hourly-canvas {
+  position: relative;
+  height: 180px;
+  margin-top: var(--space-2);
+  padding-right: var(--chart-label-gutter);
+}
+
+.heart-rate-page .heart-rate-hourly-guide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--color-accent-heart-rate);
+  pointer-events: none;
+}
+
+.heart-rate-page .heart-rate-hourly-guide-label {
+  position: absolute;
+  right: 8px;
+  top: 0;
+  transform: translateY(-50%);
+  font-size: var(--font-size-sm);
+  line-height: 1;
+  color: var(--color-accent-heart-rate);
+  background-color: var(--color-control);
+  padding: 0 var(--space-1);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.heart-rate-page .heart-rate-hourly-columns {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  gap: 4px;
+  height: 100%;
+}
+
+.heart-rate-page .heart-rate-hour-slot {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.heart-rate-page .heart-rate-hour-slot-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-pill);
+}
+
+.heart-rate-page .heart-rate-hour-slot-fill {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 12px);
+  min-height: 4px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-bar);
+}
+
+.heart-rate-page .heart-rate-hourly-labels {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(0, 1fr));
+  gap: 4px;
+  padding-right: var(--chart-label-gutter);
+}
+
+.heart-rate-page .heart-rate-hourly-label {
+  min-height: 16px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-soft);
+  text-align: center;
+}
+
+.heart-rate-page .heart-rate-hour-slot--has-data {
+  cursor: pointer;
+}
+
+.heart-rate-page .heart-rate-hour-slot-fill {
+  transition: background-color var(--transition-fast);
+}
+
+.heart-rate-page .heart-rate-hour-slot.is-active .heart-rate-hour-slot-fill,
+.heart-rate-page .heart-rate-hour-slot--has-data:hover .heart-rate-hour-slot-fill {
+  background-color: var(--color-accent-heart-rate);
+}
+
+.heart-rate-page .heart-rate-hourly-record-details {
+  margin-top: var(--space-4);
+}
+
+.heart-rate-page .heart-rate-hourly-record-meta {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-text-soft);
+  line-height: 1.4;
+}
+
+.heart-rate-page .heart-rate-hourly-record-meta--empty {
+  color: transparent;
+}

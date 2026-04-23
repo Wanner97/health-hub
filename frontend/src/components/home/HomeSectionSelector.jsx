@@ -2,6 +2,8 @@ import { APP_SECTIONS } from '../../constants/appSections';
 import { useHomepageDashboard } from '../../hooks/useHomepageDashboard';
 import { FRONTEND_VERSION, SUITE_VERSION } from '../../generated/version.generated';
 import {
+  buildHeartRateSubtitle,
+  buildHeartRateTitle,
   buildImportSubtitle,
   buildSleepSubtitle,
   buildSleepTitle,
@@ -15,12 +17,13 @@ function HomeSectionSelector({ onSelectSection }) {
   const latestImport = dashboard?.latestImport ?? null;
   const latestActivityDay = dashboard?.latestActivityDay ?? null;
   const latestSleepSession = dashboard?.latestSleepSession ?? null;
+  const latestHeartRateDay = dashboard?.latestHeartRateDay ?? null;
 
   return (
     <section className="home-section">
       <h1>Health Hub</h1>
       <p className="subtitle">Frontend Version: {FRONTEND_VERSION}</p>
-      <p className="subtitle">Hub Version: {SUITE_VERSION}</p>
+      <p className="subtitle">Health-Hub Version: {SUITE_VERSION}</p>
 
       {errorMessage && <p className="error">{errorMessage}</p>}
 
@@ -69,6 +72,23 @@ function HomeSectionSelector({ onSelectSection }) {
             {isLoading
               ? 'Bitte warten...'
               : buildSleepSubtitle(latestSleepSession)}
+          </p>
+        </button>
+
+        <button
+          type="button"
+          className="home-card home-card--heart-rate"
+          onClick={() => onSelectSection(APP_SECTIONS.HEART_RATE_DAYS)}
+        >
+          <h2>
+            {isLoading
+              ? 'Herzfrequenzdaten werden geladen...'
+              : buildHeartRateTitle(latestHeartRateDay)}
+          </h2>
+          <p>
+            {isLoading
+              ? 'Bitte warten...'
+              : buildHeartRateSubtitle(latestHeartRateDay)}
           </p>
         </button>
       </div>
