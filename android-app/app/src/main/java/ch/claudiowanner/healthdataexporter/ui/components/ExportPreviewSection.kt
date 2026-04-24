@@ -14,70 +14,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import ch.claudiowanner.healthdataexporter.ui.ExportUiState
-import ch.claudiowanner.healthdataexporter.ui.PreviewDisplayMode
 
 @Composable
 fun ExportPreviewSection(
     uiState: ExportUiState,
-    onLoadFullPreview: () -> Unit,
-    onShowSnippetPreview: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val snippetVerticalScrollState = rememberScrollState()
-    val snippetHorizontalScrollState = rememberScrollState()
     val summary = uiState.previewSummary
-
-    var showFullPreviewDialog by remember { mutableStateOf(false) }
-
-    if (showFullPreviewDialog) {
-        AlertDialog(
-            onDismissRequest = { showFullPreviewDialog = false },
-            title = {
-                Text("Load full JSON preview?")
-            },
-            text = {
-                Text(
-                    "Large export files can take noticeable time to process and render. " +
-                            "During this time, the preview may need a moment to become ready."
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showFullPreviewDialog = false
-                        onLoadFullPreview()
-                    }
-                ) {
-                    Text("Continue")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showFullPreviewDialog = false
-                    }
-                ) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 
     Column(
         modifier = modifier,
@@ -143,22 +94,6 @@ fun ExportPreviewSection(
             }
         }
 
-        if (uiState.previewDisplayMode == PreviewDisplayMode.SNIPPET) {
-            Button(
-                onClick = { showFullPreviewDialog = true },
-                enabled = !uiState.isPreviewLoading && uiState.canLoadFullPreview
-            ) {
-                Text("Load full JSON preview")
-            }
-        } else {
-            Button(
-                onClick = onShowSnippetPreview,
-                enabled = !uiState.isPreviewLoading
-            ) {
-                Text("Show short preview")
-            }
-        }
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -191,8 +126,7 @@ fun ExportPreviewSection(
                     }
                 }
 
-                uiState.previewDisplayMode == PreviewDisplayMode.FULL &&
-                        uiState.previewHighlightedFullChunks.isNotEmpty() -> {
+                uiState.previewHighlightedFullChunks.isNotEmpty() -> {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -215,18 +149,28 @@ fun ExportPreviewSection(
                     }
                 }
 
-                else -> {
+                !uiState.previewFullText.isNullOrBlank() -> {
+                    val horizontalScrollState = rememberScrollState()
+
                     SelectionContainer {
                         Text(
-                            text = uiState.previewShortText,
+                            text = uiState.previewFullText,
                             style = MaterialTheme.typography.bodySmall,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
-                                .verticalScroll(snippetVerticalScrollState)
-                                .horizontalScroll(snippetHorizontalScrollState)
+                                .fillMaxWidth()
+                                .horizontalScroll(horizontalScrollState)
                         )
                     }
+                }
+
+                else -> {
+                    Text(
+                        text = "No export loaded yet.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

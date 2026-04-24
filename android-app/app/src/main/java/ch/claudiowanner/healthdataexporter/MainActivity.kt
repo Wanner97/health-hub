@@ -54,9 +54,7 @@ class MainActivity : ComponentActivity() {
                     onExportRollingWindow = { days -> viewModel.exportLastDays(days) },
                     onLoadLatestExport = { viewModel.loadLatestExport() },
                     onSaveLatestExportToDevice = { saveLatestExportToDevice() },
-                    onShareLatestExport = { shareLatestExport() },
-                    onLoadFullPreview = { viewModel.loadFullPreview() },
-                    onShowSnippetPreview = { viewModel.showPreviewSnippet() }
+                    onShareLatestExport = { shareLatestExport() }
                 )
             }
         }

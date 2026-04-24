@@ -141,7 +141,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
             result.fold(
                 onSuccess = { (file, content) ->
-                    setCompletedState(
+                    applyCompletedStateWithPreview(
                         title = "Export loaded",
                         message = "Latest export loaded: ${file.absolutePath}",
                         exportPreview = content,
@@ -254,46 +254,6 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         )
     }
 
-    fun loadFullPreview() {
-        val fullJson = uiState.exportPreview ?: return
-
-        if (
-            uiState.previewDisplayMode == PreviewDisplayMode.FULL &&
-            uiState.previewHighlightedFullChunks.isNotEmpty()
-        ) {
-            return
-        }
-
-        viewModelScope.launch {
-            uiState = uiState.copy(
-                isPreviewLoading = true,
-                previewLoadingMessage = "Generating highlighted preview...",
-                canLoadFullPreview = false
-            )
-
-            val highlightedChunks = withContext(Dispatchers.Default) {
-                buildHighlightedPreviewChunks(fullJson)
-            }
-
-            uiState = uiState.copy(
-                previewDisplayMode = PreviewDisplayMode.FULL,
-                previewFullText = fullJson,
-                previewHighlightedFullChunks = highlightedChunks,
-                isPreviewLoading = false,
-                previewLoadingMessage = null,
-                canLoadFullPreview = true
-            )
-        }
-    }
-
-    fun showPreviewSnippet() {
-        uiState = uiState.copy(
-            previewDisplayMode = PreviewDisplayMode.SNIPPET,
-            isPreviewLoading = false,
-            previewLoadingMessage = null
-        )
-    }
-
     private fun runExport(request: ExportRequest) {
         viewModelScope.launch {
             val result = exportCoordinator.executeExport(request) { update ->
@@ -302,31 +262,24 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
             result.fold(
                 onSuccess = { executionResult ->
-                    handleSuccessfulExport(request, executionResult)
+                    applyCompletedStateWithPreview(
+                        title = "Export complete",
+                        message = buildSuccessMessage(
+                            exportType = request.exportType,
+                            rangeDays = request.rangeDays,
+                            path = executionResult.filePath
+                        ),
+                        exportPreview = executionResult.exportPreview,
+                        lastExportPath = executionResult.filePath,
+                        progressCurrent = executionResult.progressTotal,
+                        progressTotal = executionResult.progressTotal
+                    )
                 },
                 onFailure = {
                     setFailureState(it.message ?: "Export failed.")
                 }
             )
         }
-    }
-
-    private fun handleSuccessfulExport(
-        request: ExportRequest,
-        executionResult: ExportExecutionResult
-    ) {
-        setCompletedState(
-            title = "Export complete",
-            message = buildSuccessMessage(
-                exportType = request.exportType,
-                rangeDays = request.rangeDays,
-                path = executionResult.filePath
-            ),
-            exportPreview = executionResult.exportPreview,
-            lastExportPath = executionResult.filePath,
-            progressCurrent = executionResult.progressTotal,
-            progressTotal = executionResult.progressTotal
-        )
     }
 
     private fun applyProgressUpdate(update: ExportProgressUpdate) {
@@ -347,14 +300,6 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         return when (exportType) {
             ExportType.FULL_HISTORY -> "Full history exported successfully: $path"
             ExportType.ROLLING_WINDOW -> "Last ${rangeDays ?: "?"} days exported successfully: $path"
-        }
-    }
-
-    private fun createPreviewSnippet(previewContent: String): String {
-        return if (previewContent.length <= ExportConfig.PREVIEW_SNIPPET_LENGTH) {
-            previewContent
-        } else {
-            previewContent.take(ExportConfig.PREVIEW_SNIPPET_LENGTH) + "…"
         }
     }
 
@@ -422,6 +367,43 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
             }
     }
 
+    private suspend fun applyCompletedStateWithPreview(
+        title: String,
+        message: String,
+        exportPreview: String,
+        lastExportPath: String?,
+        progressCurrent: Int?,
+        progressTotal: Int?
+    ) {
+        val previewSummary = buildPreviewSummary(exportPreview)
+
+        uiState = uiState.copy(
+            statusTitle = title,
+            statusMessage = message,
+            currentPhase = ExportProgressPhase.COMPLETED,
+            progressCurrent = progressCurrent,
+            progressTotal = progressTotal,
+            exportPreview = exportPreview,
+            previewSummary = previewSummary ?: uiState.previewSummary,
+            previewFullText = exportPreview,
+            previewHighlightedFullChunks = emptyList(),
+            isPreviewLoading = true,
+            previewLoadingMessage = "Generating highlighted preview...",
+            isBusy = false,
+            lastExportPath = lastExportPath
+        )
+
+        val highlightedChunks = withContext(Dispatchers.Default) {
+            buildHighlightedPreviewChunks(exportPreview)
+        }
+
+        uiState = uiState.copy(
+            previewHighlightedFullChunks = highlightedChunks,
+            isPreviewLoading = false,
+            previewLoadingMessage = null
+        )
+    }
+
     private fun JsonObject.stringOrNull(name: String): String? {
         val value = get(name) ?: return null
         return if (value.isJsonNull) null else value.asString
@@ -485,7 +467,6 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         progressTotal: Int? = null
     ) {
         val previewSummary = exportPreview?.let { buildPreviewSummary(it) }
-        val previewShortText = exportPreview?.let { createPreviewSnippet(it) } ?: uiState.previewShortText
 
         uiState = uiState.copy(
             statusTitle = title,
@@ -495,13 +476,10 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
             progressTotal = progressTotal,
             exportPreview = exportPreview,
             previewSummary = previewSummary ?: uiState.previewSummary,
-            previewDisplayMode = if (exportPreview != null) PreviewDisplayMode.SNIPPET else uiState.previewDisplayMode,
-            previewShortText = previewShortText,
-            previewFullText = if (exportPreview != null) null else uiState.previewFullText,
-            previewHighlightedFullChunks = emptyList(),
+            previewFullText = exportPreview ?: uiState.previewFullText,
+            previewHighlightedFullChunks = if (exportPreview != null) emptyList() else uiState.previewHighlightedFullChunks,
             isPreviewLoading = false,
             previewLoadingMessage = null,
-            canLoadFullPreview = !exportPreview.isNullOrBlank(),
             isBusy = false,
             lastExportPath = lastExportPath
         )

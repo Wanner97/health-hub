@@ -119,7 +119,7 @@ class ExportCoordinator(
             ExportProgressUpdate(
                 phase = ExportOperationPhase.READING_HEART_RATE_HOURLY,
                 title = "Reading hourly heart rate data",
-                message = "Loading hourly heart rate summaries from Health Connect.",
+                message = "Loading hourly heart rate summaries from Health Connect. This can take some time.",
                 progressCurrent = 4,
                 progressTotal = totalSteps
             )

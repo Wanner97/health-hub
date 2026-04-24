@@ -28,9 +28,7 @@ fun ExportScreen(
     onExportRollingWindow: (Int) -> Unit,
     onLoadLatestExport: () -> Unit,
     onSaveLatestExportToDevice: () -> Unit,
-    onShareLatestExport: () -> Unit,
-    onLoadFullPreview: () -> Unit,
-    onShowSnippetPreview: () -> Unit
+    onShareLatestExport: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -74,9 +72,7 @@ fun ExportScreen(
             )
 
             ExportPreviewSection(
-                uiState = uiState,
-                onLoadFullPreview = onLoadFullPreview,
-                onShowSnippetPreview = onShowSnippetPreview
+                uiState = uiState
             )
         }
     }
