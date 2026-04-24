@@ -34,7 +34,8 @@ namespace Logic.Validators
                     (batch.ActivityDayEntries?.Count ?? 0) +
                     (batch.SleepSessionEntries?.Count ?? 0) +
                     (batch.HeartRateDayEntries?.Count ?? 0) +
-                    (batch.HeartRateDayEntries?.Sum(x => x.HourlyRecords.Count) ?? 0))
+                    (batch.HeartRateDayEntries?.Sum(x => x.HourlyRecords.Count) ?? 0) +
+                    (batch.BloodOxygenDayEntries?.Count ?? 0))
                 .WithMessage("ReceivedRecordCount does not match the number of imported records.");
 
             RuleForEach(x => x.ActivityDayEntries).SetValidator(new ActivityDayValidator(false));
@@ -43,8 +44,10 @@ namespace Logic.Validators
 
             RuleForEach(x => x.HeartRateDayEntries).SetValidator(new HeartRateDayValidator(false));
 
+            RuleForEach(x => x.BloodOxygenDayEntries).SetValidator(new BloodOxygenDayValidator(false));
+
             RuleFor(x => x.ActivityDayEntries)
-                .Must(HaveUniqueDates)
+                .Must(HaveUniqueActivityDates)
                 .When(x => x.ActivityDayEntries != null && x.ActivityDayEntries.Count > 0)
                 .WithMessage("The import contains duplicate activity dates.");
 
@@ -57,6 +60,11 @@ namespace Logic.Validators
                 .Must(HaveUniqueHeartRateDates)
                 .When(x => x.HeartRateDayEntries != null && x.HeartRateDayEntries.Count > 0)
                 .WithMessage("The import contains duplicate heart rate dates.");
+
+            RuleFor(x => x.BloodOxygenDayEntries)
+                .Must(HaveUniqueBloodOxygenDates)
+                .When(x => x.BloodOxygenDayEntries != null && x.BloodOxygenDayEntries.Count > 0)
+                .WithMessage("The import contains duplicate blood oxygen dates.");
         }
 
         private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
@@ -66,7 +74,7 @@ namespace Logic.Validators
                    || (importBatch.HeartRateDayEntries?.Count ?? 0) > 0;
         }
 
-        private static bool HaveUniqueDates(ICollection<ActivityDay>? activityDayEntries)
+        private static bool HaveUniqueActivityDates(ICollection<ActivityDay>? activityDayEntries)
         {
             if (activityDayEntries == null)
             {
@@ -98,6 +106,18 @@ namespace Logic.Validators
             }
 
             return heartRateDayEntries
+                .GroupBy(x => x.Date)
+                .All(g => g.Count() == 1);
+        }
+
+        private static bool HaveUniqueBloodOxygenDates(ICollection<BloodOxygenDay>? bloodOxygenDayEntries)
+        {
+            if (bloodOxygenDayEntries == null)
+            {
+                return true;
+            }
+
+            return bloodOxygenDayEntries
                 .GroupBy(x => x.Date)
                 .All(g => g.Count() == 1);
         }

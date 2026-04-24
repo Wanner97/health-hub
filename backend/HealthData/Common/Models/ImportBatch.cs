@@ -31,5 +31,7 @@
         public List<SleepSession> SleepSessionEntries { get; set; } = new();
 
         public List<HeartRateDay> HeartRateDayEntries { get; set; } = new();
+
+        public List<BloodOxygenDay> BloodOxygenDayEntries { get; set; } = new();
     }
 }

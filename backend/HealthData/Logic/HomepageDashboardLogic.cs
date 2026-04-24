@@ -11,17 +11,20 @@ namespace Logic
         private readonly IActivityDayDataAccess _activityDayDataAccess;
         private readonly ISleepSessionDataAccess _sleepSessionDataAccess;
         private readonly IHeartRateDayDataAccess _heartRateDayDataAccess;
+        private readonly IBloodOxygenDayDataAccess _bloodOxygenDayDataAccess;
 
         public HomepageDashboardLogic(
             IImportBatchDataAccess importBatchDataAccess,
             IActivityDayDataAccess activityDayDataAccess,
             ISleepSessionDataAccess sleepSessionDataAccess,
-            IHeartRateDayDataAccess heartRateDayDataAccess)
+            IHeartRateDayDataAccess heartRateDayDataAccess,
+            IBloodOxygenDayDataAccess bloodOxygenDayDataAccess)
         {
             _importBatchDataAccess = importBatchDataAccess;
             _activityDayDataAccess = activityDayDataAccess;
             _sleepSessionDataAccess = sleepSessionDataAccess;
             _heartRateDayDataAccess = heartRateDayDataAccess;
+            _bloodOxygenDayDataAccess = bloodOxygenDayDataAccess;
         }
 
         public HomepageDashboardDto GetHomepageDashboard()
@@ -30,12 +33,14 @@ namespace Logic
             var latestActivityDay = _activityDayDataAccess.GetLatestActivityDay();
             var latestSleepSession = _sleepSessionDataAccess.GetLatestSleepSession();
             var latestHeartRateDay = _heartRateDayDataAccess.GetLatestHeartRateDay();
+            var latestBloodOxygenDay = _bloodOxygenDayDataAccess.GetLatestBloodOxygenDay();
 
             return HomepageDashboardMapper.MapToHomepageDashboardDto(
                 latestImportBatch,
                 latestActivityDay,
                 latestSleepSession,
-                latestHeartRateDay);
+                latestHeartRateDay,
+                latestBloodOxygenDay);
         }
     }
 }

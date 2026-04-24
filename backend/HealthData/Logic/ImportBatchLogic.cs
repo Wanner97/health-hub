@@ -68,12 +68,18 @@ namespace Logic
                     dto.Clusters.Vitals?.HeartRateDaily,
                     dto.Clusters.Vitals?.HeartRateHourly);
 
+                var importedBloodOxygenDays = BloodOxygenImportMapper.MapToBloodOxygenDays(
+                    dto.Source,
+                    importedAtUtc,
+                    dto.Clusters.Vitals?.BloodOxygenDaily);
+
                 var importBatch = ImportBatchImportMapper.MapToImportBatch(
                     dto,
                     importedAtUtc,
                     importedActivityDays,
                     importedSleepSessions,
-                    importedHeartRateDays);
+                    importedHeartRateDays,
+                    importedBloodOxygenDays);
 
                 var expectedExportVersion = _versionManifestProvider.AndroidVersion;
 
@@ -103,24 +109,36 @@ namespace Logic
                     importedHeartRateDays,
                     existingHeartRateDaysByDate);
 
+                var existingBloodOxygenDaysByDate = _importBatchDataAccess.GetExistingBloodOxygenDays(
+                    importBatch.Source,
+                    importedBloodOxygenDays.Select(x => x.Date));
+
+                var bloodOxygenUpsertData = BloodOxygenImportUpsertDataHelper.BuildUpsertData(
+                    importedBloodOxygenDays,
+                    existingBloodOxygenDaysByDate);
+
                 importBatch.InsertedRecordCount =
                     activityUpsertData.InsertedActivityDays.Count
                     + sleepUpsertData.InsertedSleepSessions.Count
-                    + heartRateUpsertData.InsertedHeartRateDays.Count;
+                    + heartRateUpsertData.InsertedHeartRateDays.Count
+                    + bloodOxygenUpsertData.InsertedBloodOxygenDays.Count;
 
                 importBatch.UpdatedRecordCount =
                     activityUpsertData.UpdatedActivityDays.Count
                     + sleepUpsertData.UpdatedSleepSessions.Count
-                    + heartRateUpsertData.UpdatedHeartRateDays.Count;
+                    + heartRateUpsertData.UpdatedHeartRateDays.Count
+                    + bloodOxygenUpsertData.UpdatedBloodOxygenDays.Count;
 
                 importBatch.UnchangedRecordCount =
                     activityUpsertData.UnchangedCount
                     + sleepUpsertData.UnchangedCount
-                    + heartRateUpsertData.UnchangedCount;
+                    + heartRateUpsertData.UnchangedCount
+                    + bloodOxygenUpsertData.UnchangedCount;
 
                 importBatch.ActivityDayEntries = new List<ActivityDay>();
                 importBatch.SleepSessionEntries = new List<SleepSession>();
                 importBatch.HeartRateDayEntries = new List<HeartRateDay>();
+                importBatch.BloodOxygenDayEntries = new List<BloodOxygenDay>();
 
                 return _importBatchDataAccess.ApplyImport(
                     importBatch,
@@ -129,7 +147,9 @@ namespace Logic
                     sleepUpsertData.InsertedSleepSessions,
                     sleepUpsertData.UpdatedSleepSessions,
                     heartRateUpsertData.InsertedHeartRateDays,
-                    heartRateUpsertData.UpdatedHeartRateDays);
+                    heartRateUpsertData.UpdatedHeartRateDays,
+                    bloodOxygenUpsertData.InsertedBloodOxygenDays,
+                    bloodOxygenUpsertData.UpdatedBloodOxygenDays);
             }
         }
     }

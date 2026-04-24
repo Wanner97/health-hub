@@ -10,7 +10,8 @@ namespace Logic.Mappers
             DateTime importedAtUtc,
             List<ActivityDay> activityDays,
             List<SleepSession> sleepSessions,
-            List<HeartRateDay> heartRateDays)
+            List<HeartRateDay> heartRateDays,
+            List<BloodOxygenDay> bloodOxygenDays)
         {
             return new ImportBatch
             {
@@ -25,13 +26,15 @@ namespace Logic.Mappers
                     activityDays.Count
                     + sleepSessions.Count
                     + heartRateDays.Count
-                    + heartRateDays.Sum(x => x.HourlyRecords.Count),
+                    + heartRateDays.Sum(x => x.HourlyRecords.Count)
+                    + bloodOxygenDays.Count,
                 InsertedRecordCount = 0,
                 UpdatedRecordCount = 0,
                 UnchangedRecordCount = 0,
                 ActivityDayEntries = activityDays,
                 SleepSessionEntries = sleepSessions,
-                HeartRateDayEntries = heartRateDays
+                HeartRateDayEntries = heartRateDays,
+                BloodOxygenDayEntries = bloodOxygenDays
             };
         }
     }

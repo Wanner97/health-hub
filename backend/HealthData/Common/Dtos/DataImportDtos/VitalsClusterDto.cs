@@ -5,5 +5,7 @@
         public HeartRateDailyClusterDto? HeartRateDaily { get; set; }
 
         public HeartRateHourlyClusterDto? HeartRateHourly { get; set; }
+
+        public BloodOxygenDailyClusterDto? BloodOxygenDaily { get; set; }
     }
 }

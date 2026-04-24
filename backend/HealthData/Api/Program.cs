@@ -48,6 +48,10 @@ namespace Api
 
                 app.Run();
             }
+            catch (HostAbortedException ex)
+            {
+                Log.Information(ex, "Host aborted during startup. This can happen during EF Core design-time operations.");
+            }
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Application terminated unexpectedly");
@@ -93,12 +97,14 @@ namespace Api
             builder.Services.AddScoped<IActivityDayDataAccess, ActivityDayDataAccess>();
             builder.Services.AddScoped<ISleepSessionDataAccess, SleepSessionDataAccess>();
             builder.Services.AddScoped<IHeartRateDayDataAccess, HeartRateDayDataAccess>();
+            builder.Services.AddScoped<IBloodOxygenDayDataAccess, BloodOxygenDayDataAccess>();
 
             builder.Services.AddScoped<IImportBatchLogic, ImportBatchLogic>();
             builder.Services.AddScoped<IActivityDayReadLogic, ActivityDayReadLogic>();
             builder.Services.AddScoped<IHomepageDashboardLogic, HomepageDashboardLogic>();
             builder.Services.AddScoped<ISleepSessionReadLogic, SleepSessionReadLogic>();
             builder.Services.AddScoped<IHeartRateDayReadLogic, HeartRateDayReadLogic>();
+            builder.Services.AddScoped<IBloodOxygenDayReadLogic, BloodOxygenDayReadLogic>();
         }
     }
 }

@@ -86,6 +86,18 @@ namespace DataAccess
             }
         }
 
+        public Dictionary<DateOnly, BloodOxygenDay> GetExistingBloodOxygenDays(string source, IEnumerable<DateOnly> dates)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                var distinctDates = dates.Distinct().ToList();
+
+                return context.BloodOxygenDays
+                    .Where(x => x.Source == source && distinctDates.Contains(x.Date))
+                    .ToDictionary(x => x.Date, x => x);
+            }
+        }
+
         public ImportBatch ApplyImport(
             ImportBatch importBatch,
             List<ActivityDay> insertedActivityDays,
@@ -93,7 +105,9 @@ namespace DataAccess
             List<SleepSession> insertedSleepSessions,
             List<SleepSession> updatedSleepSessions,
             List<HeartRateDay> insertedHeartRateDays,
-            List<HeartRateDay> updatedHeartRateDays)
+            List<HeartRateDay> updatedHeartRateDays,
+            List<BloodOxygenDay> insertedBloodOxygenDays,
+            List<BloodOxygenDay> updatedBloodOxygenDays)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
@@ -142,6 +156,20 @@ namespace DataAccess
                         updatedHeartRateDay.LastImportBatchId = importBatch.Id;
                         updatedHeartRateDay.LastImportBatch = importBatch;
                         updatedHeartRateDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var insertedBloodOxygenDay in insertedBloodOxygenDays)
+                    {
+                        insertedBloodOxygenDay.LastImportBatchId = importBatch.Id;
+                        insertedBloodOxygenDay.LastImportBatch = importBatch;
+                        insertedBloodOxygenDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var updatedBloodOxygenDay in updatedBloodOxygenDays)
+                    {
+                        updatedBloodOxygenDay.LastImportBatchId = importBatch.Id;
+                        updatedBloodOxygenDay.LastImportBatch = importBatch;
+                        updatedBloodOxygenDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
                     }
 
                     if (insertedActivityDays.Count > 0)
@@ -230,6 +258,16 @@ namespace DataAccess
                         {
                             context.HeartRateHourlyRecords.AddRange(replacementHourlyRecords);
                         }
+                    }
+
+                    if (insertedBloodOxygenDays.Count > 0)
+                    {
+                        context.BloodOxygenDays.AddRange(insertedBloodOxygenDays);
+                    }
+
+                    if (updatedBloodOxygenDays.Count > 0)
+                    {
+                        context.BloodOxygenDays.UpdateRange(updatedBloodOxygenDays);
                     }
 
                     context.SaveChanges();

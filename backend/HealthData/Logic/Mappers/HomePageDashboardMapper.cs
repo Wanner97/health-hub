@@ -7,7 +7,8 @@ namespace Logic.Mappers
     public static class HomepageDashboardMapper
     {
         public static HomepageDashboardDto MapToHomepageDashboardDto(ImportBatch? latestImportBatch,
-            ActivityDay? latestActivityDay, SleepSession? latestSleepSession, HeartRateDay? latestHeartRateDay)
+            ActivityDay? latestActivityDay, SleepSession? latestSleepSession, HeartRateDay? latestHeartRateDay,
+            BloodOxygenDay? latestBloodOxygenDay)
         {
             return new HomepageDashboardDto
             {
@@ -41,6 +42,15 @@ namespace Logic.Mappers
                     MinBpm = latestHeartRateDay.MinBpm,
                     MaxBpm = latestHeartRateDay.MaxBpm,
                     MeasurementCount = latestHeartRateDay.MeasurementCount
+                },
+
+                LatestBloodOxygenDay = latestBloodOxygenDay == null ? null : new LatestBloodOxygenDaySummaryDto
+                {
+                    Date = latestBloodOxygenDay.Date,
+                    AvgPercent = latestBloodOxygenDay.AvgPercent,
+                    MinPercent = latestBloodOxygenDay.MinPercent,
+                    MaxPercent = latestBloodOxygenDay.MaxPercent,
+                    MeasurementCount = latestBloodOxygenDay.MeasurementCount
                 }
             };
         }
