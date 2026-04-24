@@ -48,8 +48,11 @@ class ExportJsonSerializer {
         heartRateHourly.add("records", gson.toJsonTree(payload.clusters.vitals.heartRateHourly.records))
         vitals.add("heartRateHourly", heartRateHourly)
 
-        clusters.add("vitals", vitals)
+        val bloodOxygenDaily = JsonObject()
+        bloodOxygenDaily.add("records", gson.toJsonTree(payload.clusters.vitals.bloodOxygenDaily.records))
+        vitals.add("bloodOxygenDaily", bloodOxygenDaily)
 
+        clusters.add("vitals", vitals)
         root.add("clusters", clusters)
 
         return gson.toJson(root)

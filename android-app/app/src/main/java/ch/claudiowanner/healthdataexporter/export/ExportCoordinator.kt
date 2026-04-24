@@ -3,15 +3,16 @@ package ch.claudiowanner.healthdataexporter.export
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import ch.claudiowanner.healthdataexporter.config.ExportConfig
-import ch.claudiowanner.healthdataexporter.serialization.ExportJsonSerializer
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
 import ch.claudiowanner.healthdataexporter.model.ExportClusters
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityExportCluster
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepExportCluster
+import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportCluster
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateDailyExportCluster
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateHourlyExportCluster
 import ch.claudiowanner.healthdataexporter.model.vitals.VitalsExportCluster
+import ch.claudiowanner.healthdataexporter.serialization.ExportJsonSerializer
 import ch.claudiowanner.healthdataexporter.storage.ExportFileWriter
 import java.time.Instant
 import java.time.LocalDate
@@ -23,7 +24,6 @@ class ExportCoordinator(
     private val exportFileWriter: ExportFileWriter,
     private val exportJsonSerializer: ExportJsonSerializer
 ) {
-
     suspend fun executeExport(
         request: ExportRequest,
         onProgress: (ExportProgressUpdate) -> Unit
@@ -41,15 +41,12 @@ class ExportCoordinator(
                 HealthConnectClient.SDK_AVAILABLE -> {
                     executeAvailableExport(request, onProgress)
                 }
-
                 HealthConnectClient.SDK_UNAVAILABLE -> {
                     error("Export failed: Health Connect is unavailable on this device.")
                 }
-
                 HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
                     error("Export failed: Health Connect requires an update.")
                 }
-
                 else -> {
                     error("Export failed: Health Connect status is unknown.")
                 }
@@ -71,7 +68,7 @@ class ExportCoordinator(
         val endDateExclusive = today.plusDays(1)
         val rangeStartInstant = request.startDateInclusive.atStartOfDay(zoneId).toInstant()
 
-        val totalSteps = 6
+        val totalSteps = 7
 
         onProgress(
             ExportProgressUpdate(
@@ -117,10 +114,24 @@ class ExportCoordinator(
 
         onProgress(
             ExportProgressUpdate(
+                phase = ExportOperationPhase.READING_BLOOD_OXYGEN_DAILY,
+                title = "Reading daily blood oxygen data",
+                message = "Loading daily blood oxygen summaries from Health Connect.",
+                progressCurrent = 4,
+                progressTotal = totalSteps
+            )
+        )
+        val bloodOxygenDailyRecords = healthConnectManager.readBloodOxygenDailyRecords(
+            startInstant = rangeStartInstant,
+            endInstant = now
+        )
+
+        onProgress(
+            ExportProgressUpdate(
                 phase = ExportOperationPhase.READING_HEART_RATE_HOURLY,
                 title = "Reading hourly heart rate data",
                 message = "Loading hourly heart rate summaries from Health Connect. This can take some time.",
-                progressCurrent = 4,
+                progressCurrent = 5,
                 progressTotal = totalSteps
             )
         )
@@ -133,9 +144,10 @@ class ExportCoordinator(
             activityRecords.isEmpty() &&
             sleepSessions.isEmpty() &&
             heartRateDailyRecords.isEmpty() &&
-            heartRateHourlyRecords.isEmpty()
+            heartRateHourlyRecords.isEmpty() &&
+            bloodOxygenDailyRecords.isEmpty()
         ) {
-            error("No activity, sleep, or heart rate data found.")
+            error("No activity, sleep, heart rate, or blood oxygen data found.")
         }
 
         onProgress(
@@ -143,7 +155,7 @@ class ExportCoordinator(
                 phase = ExportOperationPhase.BUILDING_EXPORT,
                 title = "Building export payload",
                 message = "Combining all loaded records into one export file.",
-                progressCurrent = 5,
+                progressCurrent = 6,
                 progressTotal = totalSteps
             )
         )
@@ -169,6 +181,9 @@ class ExportCoordinator(
                     ),
                     heartRateHourly = HeartRateHourlyExportCluster(
                         records = heartRateHourlyRecords
+                    ),
+                    bloodOxygenDaily = BloodOxygenDailyExportCluster(
+                        records = bloodOxygenDailyRecords
                     )
                 )
             )
@@ -181,7 +196,7 @@ class ExportCoordinator(
                 phase = ExportOperationPhase.WRITING_JSON,
                 title = "Writing JSON file",
                 message = "Saving the export to app storage.",
-                progressCurrent = 6,
+                progressCurrent = 7,
                 progressTotal = totalSteps
             )
         )

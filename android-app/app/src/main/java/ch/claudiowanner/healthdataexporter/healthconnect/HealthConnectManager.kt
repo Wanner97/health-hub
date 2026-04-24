@@ -4,9 +4,11 @@ import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import ch.claudiowanner.healthdataexporter.healthconnect.activity.ActivityReader
 import ch.claudiowanner.healthdataexporter.healthconnect.sleep.SleepReader
+import ch.claudiowanner.healthdataexporter.healthconnect.vitals.BloodOxygenReader
 import ch.claudiowanner.healthdataexporter.healthconnect.vitals.HeartRateReader
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepSessionExportRecord
+import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateDailyExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateHourlyExportRecord
 import java.time.Instant
@@ -25,6 +27,9 @@ class HealthConnectManager(private val context: Context) {
 
     private val heartRateReader: HeartRateReader
         get() = HeartRateReader(client())
+
+    private val bloodOxygenReader: BloodOxygenReader
+        get() = BloodOxygenReader(client())
 
     fun getSdkStatus(): Int {
         return HealthConnectClient.getSdkStatus(
@@ -73,6 +78,16 @@ class HealthConnectManager(private val context: Context) {
         endInstant: Instant
     ): List<HeartRateHourlyExportRecord> {
         return heartRateReader.readHeartRateHourlyRecords(
+            startInstant = startInstant,
+            endInstant = endInstant
+        )
+    }
+
+    suspend fun readBloodOxygenDailyRecords(
+        startInstant: Instant,
+        endInstant: Instant
+    ): List<BloodOxygenDailyExportRecord> {
+        return bloodOxygenReader.readBloodOxygenDailyRecords(
             startInstant = startInstant,
             endInstant = endInstant
         )

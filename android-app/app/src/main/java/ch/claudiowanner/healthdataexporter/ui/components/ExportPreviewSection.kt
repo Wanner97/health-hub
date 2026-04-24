@@ -91,6 +91,14 @@ fun ExportPreviewSection(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
+
+                summary.bloodOxygenDailyCount?.let {
+                    Text(
+                        text = "Blood oxygen daily records: $it",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
 

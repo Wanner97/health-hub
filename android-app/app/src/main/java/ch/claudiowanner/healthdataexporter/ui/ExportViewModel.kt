@@ -329,6 +329,11 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                 ?.objectOrNull("heartRateHourly")
                 ?.arraySizeOrNull("records")
 
+            val bloodOxygenDailyCount = clusters
+                ?.objectOrNull("vitals")
+                ?.objectOrNull("bloodOxygenDaily")
+                ?.arraySizeOrNull("records")
+
             ExportPreviewSummary(
                 exportType = exportType,
                 rangeDescription = when {
@@ -339,7 +344,8 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                 activityRecordCount = activityCount,
                 sleepSessionCount = sleepCount,
                 heartRateDailyCount = heartRateDailyCount,
-                heartRateHourlyCount = heartRateHourlyCount
+                heartRateHourlyCount = heartRateHourlyCount,
+                bloodOxygenDailyCount = bloodOxygenDailyCount
             )
         }.getOrNull()
     }
@@ -506,6 +512,7 @@ private fun ExportOperationPhase.toUiPhase(): ExportProgressPhase {
         ExportOperationPhase.READING_SLEEP -> ExportProgressPhase.READING_SLEEP
         ExportOperationPhase.READING_HEART_RATE_DAILY -> ExportProgressPhase.READING_HEART_RATE_DAILY
         ExportOperationPhase.READING_HEART_RATE_HOURLY -> ExportProgressPhase.READING_HEART_RATE_HOURLY
+        ExportOperationPhase.READING_BLOOD_OXYGEN_DAILY -> ExportProgressPhase.READING_BLOOD_OXYGEN_DAILY
         ExportOperationPhase.BUILDING_EXPORT -> ExportProgressPhase.BUILDING_EXPORT
         ExportOperationPhase.WRITING_JSON -> ExportProgressPhase.WRITING_JSON
     }

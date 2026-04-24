@@ -6,5 +6,6 @@ data class ExportPreviewSummary(
     val activityRecordCount: Int? = null,
     val sleepSessionCount: Int? = null,
     val heartRateDailyCount: Int? = null,
-    val heartRateHourlyCount: Int? = null
+    val heartRateHourlyCount: Int? = null,
+    val bloodOxygenDailyCount: Int? = null
 )

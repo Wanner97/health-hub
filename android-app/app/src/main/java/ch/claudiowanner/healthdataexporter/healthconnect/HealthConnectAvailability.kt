@@ -3,6 +3,7 @@ package ch.claudiowanner.healthdataexporter.healthconnect
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
+import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 
@@ -17,6 +18,7 @@ object HealthConnectAvailability {
         HealthPermission.getReadPermission(DistanceRecord::class),
         HealthPermission.getReadPermission(SleepSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
+        HealthPermission.getReadPermission(OxygenSaturationRecord::class),
         READ_HEALTH_DATA_HISTORY
     )
 }
