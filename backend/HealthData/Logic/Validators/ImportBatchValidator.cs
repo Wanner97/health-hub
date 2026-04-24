@@ -1,6 +1,6 @@
-using Common;
 using Common.Models;
 using FluentValidation;
+using Logic.Import.Helpers;
 
 namespace Logic.Validators
 {
@@ -30,12 +30,7 @@ namespace Logic.Validators
 
             RuleFor(x => x.ReceivedRecordCount)
                 .Must((batch, receivedRecordCount) =>
-                    receivedRecordCount ==
-                    (batch.ActivityDayEntries?.Count ?? 0) +
-                    (batch.SleepSessionEntries?.Count ?? 0) +
-                    (batch.HeartRateDayEntries?.Count ?? 0) +
-                    (batch.HeartRateDayEntries?.Sum(x => x.HourlyRecords.Count) ?? 0) +
-                    (batch.BloodOxygenDayEntries?.Count ?? 0))
+                    receivedRecordCount == ImportBatchRecordCountHelper.CalculateReceivedRecordCount(batch))
                 .WithMessage("ReceivedRecordCount does not match the number of imported records.");
 
             RuleForEach(x => x.ActivityDayEntries).SetValidator(new ActivityDayValidator(false));
@@ -69,9 +64,7 @@ namespace Logic.Validators
 
         private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
         {
-            return (importBatch.ActivityDayEntries?.Count ?? 0) > 0
-                   || (importBatch.SleepSessionEntries?.Count ?? 0) > 0
-                   || (importBatch.HeartRateDayEntries?.Count ?? 0) > 0;
+            return ImportBatchRecordCountHelper.CalculateReceivedRecordCount(importBatch) > 0;
         }
 
         private static bool HaveUniqueActivityDates(ICollection<ActivityDay>? activityDayEntries)

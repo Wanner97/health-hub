@@ -1,4 +1,5 @@
-﻿using Common.Models;
+﻿using Common.Import;
+using Common.Models;
 using DataAccess.Context;
 using DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -98,21 +99,24 @@ namespace DataAccess
             }
         }
 
-        public ImportBatch ApplyImport(
-            ImportBatch importBatch,
-            List<ActivityDay> insertedActivityDays,
-            List<ActivityDay> updatedActivityDays,
-            List<SleepSession> insertedSleepSessions,
-            List<SleepSession> updatedSleepSessions,
-            List<HeartRateDay> insertedHeartRateDays,
-            List<HeartRateDay> updatedHeartRateDays,
-            List<BloodOxygenDay> insertedBloodOxygenDays,
-            List<BloodOxygenDay> updatedBloodOxygenDays)
+        public ImportBatch ApplyImport(ImportBatch importBatch, HealthImportUpsertData upsertData)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
                 using (var transaction = context.Database.BeginTransaction())
                 {
+                    var insertedActivityDays = upsertData.ActivityDays.InsertedItems;
+                    var updatedActivityDays = upsertData.ActivityDays.UpdatedItems;
+
+                    var insertedSleepSessions = upsertData.SleepSessions.InsertedItems;
+                    var updatedSleepSessions = upsertData.SleepSessions.UpdatedItems;
+
+                    var insertedHeartRateDays = upsertData.HeartRateDays.InsertedItems;
+                    var updatedHeartRateDays = upsertData.HeartRateDays.UpdatedItems;
+
+                    var insertedBloodOxygenDays = upsertData.BloodOxygenDays.InsertedItems;
+                    var updatedBloodOxygenDays = upsertData.BloodOxygenDays.UpdatedItems;
+
                     context.ImportBatches.Add(importBatch);
                     context.SaveChanges();
 

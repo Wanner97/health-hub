@@ -3,8 +3,10 @@ using Common.Versioning;
 using DataAccess;
 using DataAccess.Context;
 using DataAccess.Interfaces;
-using Logic;
+using Logic.Dashboard;
+using Logic.Import;
 using Logic.Interfaces;
+using Logic.Read;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -98,6 +100,7 @@ namespace Api
             builder.Services.AddScoped<ISleepSessionDataAccess, SleepSessionDataAccess>();
             builder.Services.AddScoped<IHeartRateDayDataAccess, HeartRateDayDataAccess>();
             builder.Services.AddScoped<IBloodOxygenDayDataAccess, BloodOxygenDayDataAccess>();
+            builder.Services.AddScoped<IDashboardDataAccess, DashboardDataAccess>();
 
             builder.Services.AddScoped<IImportBatchLogic, ImportBatchLogic>();
             builder.Services.AddScoped<IActivityDayReadLogic, ActivityDayReadLogic>();
