@@ -5,6 +5,10 @@ import {
 import { formatDurationMinutes } from '../duration/durationFormatters';
 import { formatNumber } from '../number/numberFormatters';
 
+function formatPercent(value) {
+  return `${formatNumber(Math.round(value ?? 0))}%`;
+}
+
 export function buildImportSubtitle(latestImport) {
   if (!latestImport) {
     return 'Noch keine Importdaten verfügbar.';
@@ -62,4 +66,20 @@ export function buildHeartRateSubtitle(latestHeartRateDay) {
   }
 
   return `am ${formatDate(latestHeartRateDay.date)} · Min ${formatNumber(latestHeartRateDay.minBpm)} · Max ${formatNumber(latestHeartRateDay.maxBpm)} · ${formatNumber(latestHeartRateDay.measurementCount)} Messungen`;
+}
+
+export function buildBloodOxygenTitle(latestBloodOxygenDay) {
+  if (!latestBloodOxygenDay) {
+    return 'Keine Blutsauerstoffdaten';
+  }
+
+  return `Ø ${formatPercent(latestBloodOxygenDay.avgPercent)} SpO₂`;
+}
+
+export function buildBloodOxygenSubtitle(latestBloodOxygenDay) {
+  if (!latestBloodOxygenDay) {
+    return 'Kein aktueller Blutsauerstoffdatensatz vorhanden.';
+  }
+
+  return `am ${formatDate(latestBloodOxygenDay.date)} · Min ${formatPercent(latestBloodOxygenDay.minPercent)} · Max ${formatPercent(latestBloodOxygenDay.maxPercent)} · ${formatNumber(latestBloodOxygenDay.measurementCount)} Messungen`;
 }

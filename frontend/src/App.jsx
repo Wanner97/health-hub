@@ -4,6 +4,7 @@ import HeartRateDaysPage from './components/heartRateDays/HeartRateDaysPage';
 import HomeSectionSelector from './components/home/HomeSectionSelector';
 import ImportBatchesPage from './components/importBatches/ImportBatchesPage';
 import SleepSessionsPage from './components/sleepSessions/SleepSessionsPage';
+import BloodOxygenDaysPage from './components/bloodOxygenDays/BloodOxygenDaysPage';
 import { APP_SECTIONS } from './constants/appSections';
 
 function App() {
@@ -34,6 +35,10 @@ function App() {
 
         {currentSection === APP_SECTIONS.HEART_RATE_DAYS && (
           <HeartRateDaysPage onBack={goHome} />
+        )}
+
+        {currentSection === APP_SECTIONS.BLOOD_OXYGEN_DAYS && (
+          <BloodOxygenDaysPage onBack={goHome} />
         )}
       </div>
     </main>

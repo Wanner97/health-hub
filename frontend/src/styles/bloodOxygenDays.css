@@ -1,0 +1,50 @@
+.blood-oxygen-page .card h2,
+.blood-oxygen-page .table-section h2,
+.blood-oxygen-page .chart-header h2 {
+  color: var(--color-accent-blood-oxygen);
+}
+
+.blood-oxygen-page .chart-guide {
+  border-top-color: var(--color-accent-blood-oxygen);
+}
+
+.blood-oxygen-page .chart-guide-label {
+  color: var(--color-accent-blood-oxygen);
+}
+
+.blood-oxygen-page .chart-details-value {
+  color: var(--color-accent-blood-oxygen);
+}
+
+.blood-oxygen-page .blood-oxygen-range-bar-track {
+  position: relative;
+  width: 72%;
+  max-width: 24px;
+  height: 100%;
+}
+
+.blood-oxygen-page .blood-oxygen-range-bar-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  min-height: 4px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-bar);
+  transition: background-color var(--transition-fast);
+}
+
+.blood-oxygen-page .bar-column-wrapper.is-active .blood-oxygen-range-bar-fill,
+.blood-oxygen-page .bar-column-wrapper:hover .blood-oxygen-range-bar-fill {
+  background-color: var(--color-accent-blood-oxygen);
+}
+
+.blood-oxygen-page .blood-oxygen-chart-details-meta {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-md);
+  color: var(--color-text-soft);
+  line-height: 1.4;
+}
+
+.blood-oxygen-page .blood-oxygen-chart-details-meta--empty {
+  color: transparent;
+}

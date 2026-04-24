@@ -123,6 +123,10 @@ h1 {
   grid-template-columns: 1.5fr repeat(5, minmax(0, 1fr));
 }
 
+.summary-grid--blood-oxygen {
+  grid-template-columns: 1.5fr repeat(5, minmax(0, 1fr));
+}
+
 .summary-value-nowrap {
   white-space: nowrap;
   overflow: hidden;

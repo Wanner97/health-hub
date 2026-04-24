@@ -2,6 +2,8 @@ import { APP_SECTIONS } from '../../constants/appSections';
 import { useHomepageDashboard } from '../../hooks/useHomepageDashboard';
 import { FRONTEND_VERSION, SUITE_VERSION } from '../../generated/version.generated';
 import {
+  buildBloodOxygenSubtitle,
+  buildBloodOxygenTitle,
   buildHeartRateSubtitle,
   buildHeartRateTitle,
   buildImportSubtitle,
@@ -18,6 +20,7 @@ function HomeSectionSelector({ onSelectSection }) {
   const latestActivityDay = dashboard?.latestActivityDay ?? null;
   const latestSleepSession = dashboard?.latestSleepSession ?? null;
   const latestHeartRateDay = dashboard?.latestHeartRateDay ?? null;
+  const latestBloodOxygenDay = dashboard?.latestBloodOxygenDay ?? null;
 
   return (
     <section className="home-section">
@@ -89,6 +92,23 @@ function HomeSectionSelector({ onSelectSection }) {
             {isLoading
               ? 'Bitte warten...'
               : buildHeartRateSubtitle(latestHeartRateDay)}
+          </p>
+        </button>
+
+        <button
+          type="button"
+          className="home-card home-card--blood-oxygen"
+          onClick={() => onSelectSection(APP_SECTIONS.BLOOD_OXYGEN_DAYS)}
+        >
+          <h2>
+            {isLoading
+              ? 'Blutsauerstoffdaten werden geladen...'
+              : buildBloodOxygenTitle(latestBloodOxygenDay)}
+          </h2>
+          <p>
+            {isLoading
+              ? 'Bitte warten...'
+              : buildBloodOxygenSubtitle(latestBloodOxygenDay)}
           </p>
         </button>
       </div>

@@ -69,3 +69,11 @@
 .home-card--heart-rate:hover {
   border-color: var(--color-accent-heart-rate);
 }
+
+.home-card--blood-oxygen h2 {
+  color: var(--color-accent-blood-oxygen);
+}
+
+.home-card--blood-oxygen:hover {
+  border-color: var(--color-accent-blood-oxygen);
+}

@@ -4,4 +4,5 @@ export const APP_SECTIONS = {
   ACTIVITY_DAYS: 'activityDays',
   SLEEP_SESSIONS: 'sleepSessions',
   HEART_RATE_DAYS: 'heartRateDays',
+  BLOOD_OXYGEN_DAYS: 'bloodOxygenDays',
 };
