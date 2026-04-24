@@ -11,19 +11,15 @@ import androidx.lifecycle.viewModelScope
 import ch.claudiowanner.healthdataexporter.config.ExportConfig
 import ch.claudiowanner.healthdataexporter.config.ExportType
 import ch.claudiowanner.healthdataexporter.export.ExportCoordinator
-import ch.claudiowanner.healthdataexporter.export.ExportExecutionResult
-import ch.claudiowanner.healthdataexporter.export.ExportOperationPhase
 import ch.claudiowanner.healthdataexporter.export.ExportProgressUpdate
 import ch.claudiowanner.healthdataexporter.export.ExportRequest
+import ch.claudiowanner.healthdataexporter.export.ExportPhase
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectAvailability
-import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectManager
+import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectGateway
 import ch.claudiowanner.healthdataexporter.serialization.ExportJsonSerializer
 import ch.claudiowanner.healthdataexporter.storage.ExportFileWriter
-import androidx.compose.ui.graphics.Color
-import ch.claudiowanner.healthdataexporter.ui.components.JsonHighlightColors
-import ch.claudiowanner.healthdataexporter.ui.components.buildHighlightedJson
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
+import ch.claudiowanner.healthdataexporter.ui.preview.ExportPreviewChunkBuilder
+import ch.claudiowanner.healthdataexporter.ui.preview.ExportPreviewSummaryParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,11 +30,13 @@ import java.time.ZoneId
 class ExportViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext = application.applicationContext
     private val exportFileWriter = ExportFileWriter()
-    private val healthConnectManager = HealthConnectManager(appContext)
+    private val healthConnectGateway = HealthConnectGateway(appContext)
     private val exportJsonSerializer = ExportJsonSerializer()
+    private val exportPreviewSummaryParser = ExportPreviewSummaryParser()
+    private val exportPreviewChunkBuilder = ExportPreviewChunkBuilder()
     private val exportCoordinator = ExportCoordinator(
         appContext = appContext,
-        healthConnectManager = healthConnectManager,
+        healthConnectGateway = healthConnectGateway,
         exportFileWriter = exportFileWriter,
         exportJsonSerializer = exportJsonSerializer
     )
@@ -48,14 +46,14 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
     suspend fun shouldLaunchPermissionRequest(): Boolean {
         setBusyPhase(
-            phase = ExportProgressPhase.CHECKING_PERMISSIONS,
+            phase = ExportPhase.CHECKING_PERMISSIONS,
             title = "Checking permissions",
             message = "Checking Health Connect availability and existing permissions."
         )
 
-        return when (healthConnectManager.getSdkStatus()) {
+        return when (healthConnectGateway.getSdkStatus()) {
             HealthConnectClient.SDK_AVAILABLE -> {
-                val alreadyGranted = healthConnectManager.hasAllPermissions()
+                val alreadyGranted = healthConnectGateway.hasAllPermissions()
 
                 if (alreadyGranted) {
                     setCompletedState(
@@ -67,7 +65,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
                     setIdleState(
                         title = "Permission request ready",
                         message = "Opening the Health Connect permission dialog.",
-                        phase = ExportProgressPhase.CHECKING_PERMISSIONS
+                        phase = ExportPhase.CHECKING_PERMISSIONS
                     )
                     true
                 }
@@ -130,7 +128,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
     fun loadLatestExport() {
         viewModelScope.launch {
             setBusyPhase(
-                phase = ExportProgressPhase.LOADING_EXPORT,
+                phase = ExportPhase.LOADING_EXPORT,
                 title = "Loading export",
                 message = "Reading the latest export file from app storage.",
                 progressCurrent = 1,
@@ -193,7 +191,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
         viewModelScope.launch {
             setBusyPhase(
-                phase = ExportProgressPhase.SAVING_EXPORT,
+                phase = ExportPhase.SAVING_EXPORT,
                 title = "Saving export",
                 message = "Writing the current export to the selected location.",
                 progressCurrent = 1,
@@ -224,7 +222,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
     fun getLatestExportFileForSharing(): File? {
         setBusyPhase(
-            phase = ExportProgressPhase.PREPARING_SHARE,
+            phase = ExportPhase.PREPARING_SHARE,
             title = "Preparing share",
             message = "Loading the latest export file for sharing."
         )
@@ -239,7 +237,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         setIdleState(
             title = "Share ready",
             message = "Opening share sheet for latest export.",
-            phase = ExportProgressPhase.PREPARING_SHARE,
+            phase = ExportPhase.PREPARING_SHARE,
             lastExportPath = latestFile.absolutePath
         )
 
@@ -250,7 +248,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         setIdleState(
             title = "Share sheet opened",
             message = "Share sheet opened for latest export.",
-            phase = ExportProgressPhase.PREPARING_SHARE
+            phase = ExportPhase.PREPARING_SHARE
         )
     }
 
@@ -284,7 +282,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun applyProgressUpdate(update: ExportProgressUpdate) {
         setBusyPhase(
-            phase = update.phase.toUiPhase(),
+            phase = update.phase,
             title = update.title,
             message = update.message,
             progressCurrent = update.progressCurrent,
@@ -303,76 +301,6 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun buildPreviewSummary(previewContent: String): ExportPreviewSummary? {
-        return runCatching {
-            val root = JsonParser.parseString(previewContent).asJsonObject
-
-            val exportType = root.stringOrNull("exportType")
-            val rangeDays = root.intOrNull("rangeDays")
-            val clusters = root.objectOrNull("clusters")
-
-            val activityCount = clusters
-                ?.objectOrNull("activity")
-                ?.arraySizeOrNull("records")
-
-            val sleepCount = clusters
-                ?.objectOrNull("sleep")
-                ?.arraySizeOrNull("sessions")
-
-            val heartRateDailyCount = clusters
-                ?.objectOrNull("vitals")
-                ?.objectOrNull("heartRateDaily")
-                ?.arraySizeOrNull("records")
-
-            val heartRateHourlyCount = clusters
-                ?.objectOrNull("vitals")
-                ?.objectOrNull("heartRateHourly")
-                ?.arraySizeOrNull("records")
-
-            val bloodOxygenDailyCount = clusters
-                ?.objectOrNull("vitals")
-                ?.objectOrNull("bloodOxygenDaily")
-                ?.arraySizeOrNull("records")
-
-            ExportPreviewSummary(
-                exportType = exportType,
-                rangeDescription = when {
-                    exportType == ExportType.FULL_HISTORY.jsonValue -> "Full history"
-                    rangeDays != null -> "Last $rangeDays days"
-                    else -> null
-                },
-                activityRecordCount = activityCount,
-                sleepSessionCount = sleepCount,
-                heartRateDailyCount = heartRateDailyCount,
-                heartRateHourlyCount = heartRateHourlyCount,
-                bloodOxygenDailyCount = bloodOxygenDailyCount
-            )
-        }.getOrNull()
-    }
-
-    private fun buildHighlightedPreviewChunks(json: String): List<PreviewChunk> {
-        val lines = json.lines()
-
-        return lines
-            .chunked(ExportConfig.FULL_PREVIEW_CHUNK_LINE_COUNT)
-            .mapIndexed { index, chunkLines ->
-                val chunkText = chunkLines.joinToString(separator = "\n")
-
-                PreviewChunk(
-                    id = index,
-                    content = buildHighlightedJson(
-                        json = chunkText,
-                        colors = JsonHighlightColors(
-                            keyColor = Color(0xFF4FC3F7),
-                            stringColor = Color(0xFFCE93D8),
-                            numberColor = Color(0xFFFFCC80),
-                            literalColor = Color(0xFFEF9A9A)
-                        )
-                    )
-                )
-            }
-    }
-
     private suspend fun applyCompletedStateWithPreview(
         title: String,
         message: String,
@@ -381,12 +309,12 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         progressCurrent: Int?,
         progressTotal: Int?
     ) {
-        val previewSummary = buildPreviewSummary(exportPreview)
+        val previewSummary = exportPreviewSummaryParser.parse(exportPreview)
 
         uiState = uiState.copy(
             statusTitle = title,
             statusMessage = message,
-            currentPhase = ExportProgressPhase.COMPLETED,
+            currentPhase = ExportPhase.COMPLETED,
             progressCurrent = progressCurrent,
             progressTotal = progressTotal,
             exportPreview = exportPreview,
@@ -400,7 +328,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         )
 
         val highlightedChunks = withContext(Dispatchers.Default) {
-            buildHighlightedPreviewChunks(exportPreview)
+            exportPreviewChunkBuilder.build(exportPreview)
         }
 
         uiState = uiState.copy(
@@ -410,28 +338,8 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         )
     }
 
-    private fun JsonObject.stringOrNull(name: String): String? {
-        val value = get(name) ?: return null
-        return if (value.isJsonNull) null else value.asString
-    }
-
-    private fun JsonObject.intOrNull(name: String): Int? {
-        val value = get(name) ?: return null
-        return if (value.isJsonNull) null else value.asInt
-    }
-
-    private fun JsonObject.objectOrNull(name: String): JsonObject? {
-        val value = get(name) ?: return null
-        return if (value.isJsonObject) value.asJsonObject else null
-    }
-
-    private fun JsonObject.arraySizeOrNull(name: String): Int? {
-        val value = get(name) ?: return null
-        return if (value.isJsonArray) value.asJsonArray.size() else null
-    }
-
     private fun setBusyPhase(
-        phase: ExportProgressPhase,
+        phase: ExportPhase,
         title: String,
         message: String,
         progressCurrent: Int? = null,
@@ -450,7 +358,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
     private fun setIdleState(
         title: String,
         message: String,
-        phase: ExportProgressPhase = ExportProgressPhase.IDLE,
+        phase: ExportPhase = ExportPhase.IDLE,
         lastExportPath: String? = uiState.lastExportPath
     ) {
         uiState = uiState.copy(
@@ -472,12 +380,12 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         progressCurrent: Int? = null,
         progressTotal: Int? = null
     ) {
-        val previewSummary = exportPreview?.let { buildPreviewSummary(it) }
+        val previewSummary = exportPreview?.let { exportPreviewSummaryParser.parse(it) }
 
         uiState = uiState.copy(
             statusTitle = title,
             statusMessage = message,
-            currentPhase = ExportProgressPhase.COMPLETED,
+            currentPhase = ExportPhase.COMPLETED,
             progressCurrent = progressCurrent,
             progressTotal = progressTotal,
             exportPreview = exportPreview,
@@ -495,25 +403,12 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         uiState = uiState.copy(
             statusTitle = "Operation failed",
             statusMessage = message,
-            currentPhase = ExportProgressPhase.FAILED,
+            currentPhase = ExportPhase.FAILED,
             progressCurrent = null,
             progressTotal = null,
             isBusy = false,
             isPreviewLoading = false,
             previewLoadingMessage = null
         )
-    }
-}
-
-private fun ExportOperationPhase.toUiPhase(): ExportProgressPhase {
-    return when (this) {
-        ExportOperationPhase.CHECKING_PERMISSIONS -> ExportProgressPhase.CHECKING_PERMISSIONS
-        ExportOperationPhase.READING_ACTIVITY -> ExportProgressPhase.READING_ACTIVITY
-        ExportOperationPhase.READING_SLEEP -> ExportProgressPhase.READING_SLEEP
-        ExportOperationPhase.READING_HEART_RATE_DAILY -> ExportProgressPhase.READING_HEART_RATE_DAILY
-        ExportOperationPhase.READING_HEART_RATE_HOURLY -> ExportProgressPhase.READING_HEART_RATE_HOURLY
-        ExportOperationPhase.READING_BLOOD_OXYGEN_DAILY -> ExportProgressPhase.READING_BLOOD_OXYGEN_DAILY
-        ExportOperationPhase.BUILDING_EXPORT -> ExportProgressPhase.BUILDING_EXPORT
-        ExportOperationPhase.WRITING_JSON -> ExportProgressPhase.WRITING_JSON
     }
 }

@@ -1,4 +1,4 @@
-package ch.claudiowanner.healthdataexporter.ui.components
+package ch.claudiowanner.healthdataexporter.ui.preview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,61 +44,13 @@ fun ExportPreviewSection(
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                summary.exportType?.let {
-                    Text(
-                        text = "Export type: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                summary.rangeDescription?.let {
-                    Text(
-                        text = "Range: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                summary.activityRecordCount?.let {
-                    Text(
-                        text = "Activity records: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                summary.sleepSessionCount?.let {
-                    Text(
-                        text = "Sleep sessions: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                summary.heartRateDailyCount?.let {
-                    Text(
-                        text = "Heart rate daily records: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                summary.heartRateHourlyCount?.let {
-                    Text(
-                        text = "Heart rate hourly records: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                summary.bloodOxygenDailyCount?.let {
-                    Text(
-                        text = "Blood oxygen daily records: $it",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                PreviewSummaryLine("Export type", summary.exportType)
+                PreviewSummaryLine("Range", summary.rangeDescription)
+                PreviewSummaryLine("Activity records", summary.activityRecordCount)
+                PreviewSummaryLine("Sleep sessions", summary.sleepSessionCount)
+                PreviewSummaryLine("Heart rate daily records", summary.heartRateDailyCount)
+                PreviewSummaryLine("Heart rate hourly records", summary.heartRateHourlyCount)
+                PreviewSummaryLine("Blood oxygen daily records", summary.bloodOxygenDailyCount)
             }
         }
 
@@ -183,4 +135,20 @@ fun ExportPreviewSection(
             }
         }
     }
+}
+
+@Composable
+private fun PreviewSummaryLine(
+    label: String,
+    value: Any?
+) {
+    if (value == null) {
+        return
+    }
+
+    Text(
+        text = "$label: $value",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurface
+    )
 }

@@ -5,9 +5,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.core.content.FileProvider
 import androidx.health.connect.client.PermissionController
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import ch.claudiowanner.healthdataexporter.config.ExportConfig
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectAvailability
@@ -17,7 +17,8 @@ import ch.claudiowanner.healthdataexporter.ui.theme.HealthDataExporterTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: ExportViewModel
+
+    private val viewModel: ExportViewModel by viewModels()
 
     private val requestPermissions =
         registerForActivityResult(
@@ -40,8 +41,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel = ViewModelProvider(this)[ExportViewModel::class.java]
 
         setContent {
             val uiState = viewModel.uiState

@@ -1,4 +1,4 @@
-package ch.claudiowanner.healthdataexporter.ui.components
+package ch.claudiowanner.healthdataexporter.ui.preview
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString

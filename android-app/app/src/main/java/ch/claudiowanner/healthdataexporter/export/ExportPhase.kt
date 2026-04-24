@@ -1,6 +1,6 @@
-package ch.claudiowanner.healthdataexporter.ui
+package ch.claudiowanner.healthdataexporter.export
 
-enum class ExportProgressPhase(val label: String) {
+enum class ExportPhase(val label: String) {
     IDLE("Ready"),
     CHECKING_PERMISSIONS("Checking permissions"),
     READING_ACTIVITY("Reading activity data"),

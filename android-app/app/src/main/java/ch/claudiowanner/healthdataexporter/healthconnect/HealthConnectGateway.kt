@@ -14,22 +14,28 @@ import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateHourlyExportRec
 import java.time.Instant
 import java.time.LocalDate
 
-class HealthConnectManager(private val context: Context) {
-    private fun client(): HealthConnectClient {
-        return HealthConnectClient.getOrCreate(context)
+class HealthConnectGateway(
+    private val context: Context
+) {
+    private val client: HealthConnectClient by lazy {
+        HealthConnectClient.getOrCreate(context)
     }
 
-    private val activityReader: ActivityReader
-        get() = ActivityReader(client())
+    private val activityReader: ActivityReader by lazy {
+        ActivityReader(client)
+    }
 
-    private val sleepReader: SleepReader
-        get() = SleepReader(client())
+    private val sleepReader: SleepReader by lazy {
+        SleepReader(client)
+    }
 
-    private val heartRateReader: HeartRateReader
-        get() = HeartRateReader(client())
+    private val heartRateReader: HeartRateReader by lazy {
+        HeartRateReader(client)
+    }
 
-    private val bloodOxygenReader: BloodOxygenReader
-        get() = BloodOxygenReader(client())
+    private val bloodOxygenReader: BloodOxygenReader by lazy {
+        BloodOxygenReader(client)
+    }
 
     fun getSdkStatus(): Int {
         return HealthConnectClient.getSdkStatus(
@@ -39,7 +45,7 @@ class HealthConnectManager(private val context: Context) {
     }
 
     suspend fun hasAllPermissions(): Boolean {
-        val granted = client().permissionController.getGrantedPermissions()
+        val granted = client.permissionController.getGrantedPermissions()
         return granted.containsAll(HealthConnectAvailability.PERMISSIONS)
     }
 

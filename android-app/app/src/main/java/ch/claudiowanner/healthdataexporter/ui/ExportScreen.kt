@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ch.claudiowanner.healthdataexporter.BuildConfig
 import ch.claudiowanner.healthdataexporter.ui.components.ExportActionsSection
-import ch.claudiowanner.healthdataexporter.ui.components.ExportPreviewSection
+import ch.claudiowanner.healthdataexporter.ui.preview.ExportPreviewSection
 import ch.claudiowanner.healthdataexporter.ui.components.ExportStatusSection
 
 @Composable

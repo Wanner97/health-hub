@@ -32,7 +32,7 @@ class PermissionsRationaleActivity : ComponentActivity() {
                     )
 
                     Text(
-                        text = "This app reads your step data from Health Connect so you can inspect and later export your own health data as JSON. This screen is a local development placeholder and must be replaced with your real privacy policy before publishing.",
+                        text = "This app reads selected health data from Health Connect, including activity, sleep and vital measurements, so you can inspect and export your own data as JSON.",
                         style = MaterialTheme.typography.bodyLarge
                     )
 

@@ -1,4 +1,4 @@
-package ch.claudiowanner.healthdataexporter.ui
+package ch.claudiowanner.healthdataexporter.ui.preview
 
 data class ExportPreviewSummary(
     val exportType: String? = null,
