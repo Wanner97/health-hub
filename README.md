@@ -8,7 +8,7 @@ At the moment, the project is still in active development. The whole workflow cu
 
 ---
 
->## Project Status
+>[!IMPORTANT]
 >
 > **Work in progress**
 >
@@ -54,9 +54,7 @@ At the moment, the flow is still local and manual:
 
 ---
 
-## Privacy and Security Warning
-
-> **Important warning**
+> [!WARNING]
 >
 > This project handles personal health data.
 >
