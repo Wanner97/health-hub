@@ -8,6 +8,7 @@ data class ActivityDayExportRecord(
     val date: String,
     val steps: Long,
     val distanceMeters: Double,
+    val totalCaloriesBurnedKcal: Double,
     val startTime: String,
     val endTime: String
 )
