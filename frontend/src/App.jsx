@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ActivityDaysPage from './components/activityDays/ActivityDaysPage';
 import HeartRateDaysPage from './components/heartRateDays/HeartRateDaysPage';
-import HomeSectionSelector from './components/home/HomeSectionSelector';
+import HomeDashboard from './components/home/HomeDashboard';
 import ImportBatchesPage from './components/importBatches/ImportBatchesPage';
 import SleepSessionsPage from './components/sleepSessions/SleepSessionsPage';
 import BloodOxygenDaysPage from './components/bloodOxygenDays/BloodOxygenDaysPage';
@@ -18,7 +18,7 @@ function App() {
     <main className="app">
       <div className="container">
         {currentSection === APP_SECTIONS.HOME && (
-          <HomeSectionSelector onSelectSection={setCurrentSection} />
+          <HomeDashboard onSelectSection={setCurrentSection} />
         )}
 
         {currentSection === APP_SECTIONS.ACTIVITY_DAYS && (

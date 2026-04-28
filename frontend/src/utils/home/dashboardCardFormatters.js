@@ -3,11 +3,7 @@ import {
   formatDateUtcDateOnly,
 } from '../date/dateFormatters';
 import { formatDurationMinutes } from '../duration/durationFormatters';
-import { formatNumber } from '../number/numberFormatters';
-
-function formatPercent(value) {
-  return `${formatNumber(Math.round(value ?? 0))}%`;
-}
+import { formatNumber, formatPercent } from '../number/numberFormatters';
 
 export function buildImportSubtitle(latestImport) {
   if (!latestImport) {

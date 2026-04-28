@@ -13,7 +13,7 @@ import {
   buildStepsTitle,
 } from '../../utils/home/dashboardCardFormatters';
 
-function HomeSectionSelector({ onSelectSection }) {
+function HomeDashboard({ onSelectSection }) {
   const { dashboard, isLoading, errorMessage } = useHomepageDashboard();
 
   const latestImport = dashboard?.latestImport ?? null;
@@ -116,4 +116,4 @@ function HomeSectionSelector({ onSelectSection }) {
   );
 }
 
-export default HomeSectionSelector;
+export default HomeDashboard;

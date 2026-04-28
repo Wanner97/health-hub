@@ -1,25 +1,16 @@
 import { PERIODS } from '../../constants/periods';
 import {
-  formatDate,
-  formatMonthDetailsLabel,
-} from '../../utils/date/dateFormatters';
+  buildRangeDetailsMeta,
+  getRangeDetailsLabel,
+} from '../../utils/charts/rangeDetailFormatters';
 import { formatNumber } from '../../utils/number/numberFormatters';
-import { getNiceStep } from '../../utils/charts/scaleUtils';
+import {
+  buildRangeScale,
+  getRangePosition,
+} from '../../utils/charts/rangeScaleUtils';
 import { shouldShowChartLabel } from '../../utils/charts/labelUtils';
 import { useSelectableChartItem } from '../../hooks/useSelectableChartItem';
 import HeartRateHourlyChart from './HeartRateHourlyChart';
-
-function getDetailsLabel(item, period) {
-  if (!item) {
-    return '';
-  }
-
-  if (period === PERIODS.TWELVE_MONTHS) {
-    return formatMonthDetailsLabel(item.fullLabel);
-  }
-
-  return formatDate(item.fullLabel);
-}
 
 function getDetailsValue(item) {
   if (!item) {
@@ -34,41 +25,17 @@ function getDetailsMeta(item, period) {
     return '';
   }
 
-  if (period === PERIODS.TWELVE_MONTHS) {
-    return `Ø ${formatNumber(item.averageBpm)} BPM · ${formatNumber(item.measurementCount)} Messungen · ${formatNumber(item.dayCount)} Tage`;
-  }
+  const averageValue =
+    period === PERIODS.TWELVE_MONTHS
+      ? `${formatNumber(item.averageBpm)} BPM`
+      : `${formatNumber(item.avgBpm)} BPM`;
 
-  return `Ø ${formatNumber(item.avgBpm)} BPM · ${formatNumber(item.measurementCount)} Messungen`;
-}
-
-function buildRangeGuideValues(minValue, maxValue) {
-  const padding = 5;
-  const paddedMin = Math.max(0, minValue - padding);
-  const paddedMax = maxValue + padding;
-  const step = getNiceStep(paddedMax - paddedMin, 20);
-
-  const chartMin = Math.floor(paddedMin / step) * step;
-  const chartMax = Math.ceil(paddedMax / step) * step;
-
-  const values = [];
-
-  for (let value = chartMin; value <= chartMax; value += step) {
-    values.push(value);
-  }
-
-  return {
-    chartMin,
-    chartMax,
-    values,
-  };
-}
-
-function getRelativePosition(value, chartMin, chartMax) {
-  if (chartMax <= chartMin) {
-    return 0;
-  }
-
-  return ((value - chartMin) / (chartMax - chartMin)) * 100;
+  return buildRangeDetailsMeta({
+    period,
+    averageValue,
+    measurementCount: formatNumber(item.measurementCount),
+    dayCount: formatNumber(item.dayCount),
+  });
 }
 
 function HeartRateRangeChart({ period, data }) {
@@ -77,9 +44,9 @@ function HeartRateRangeChart({ period, data }) {
     handleItemMouseEnter,
     handleItemMouseLeave,
     handleItemClick,
-    } = useSelectableChartItem({
-        resetSelectors: ['.bar-column-wrapper', '.heart-rate-hourly-details'],
-      });
+  } = useSelectableChartItem({
+    resetSelectors: ['.bar-column-wrapper', '.heart-rate-hourly-details'],
+  });
 
   if (!data?.length) {
     return (
@@ -93,9 +60,14 @@ function HeartRateRangeChart({ period, data }) {
   const minValue = Math.min(...data.map((item) => item.minBpm ?? 0));
   const maxValue = Math.max(...data.map((item) => item.maxBpm ?? 0), 1);
 
-  const { chartMin, chartMax, values: guideValues } = buildRangeGuideValues(
+  const { chartMin, chartMax, values: guideValues } = buildRangeScale(
     minValue,
-    maxValue
+    maxValue,
+    {
+      padding: 5,
+      minLimit: 0,
+      fallbackStep: 20,
+    }
   );
 
   return (
@@ -111,7 +83,7 @@ function HeartRateRangeChart({ period, data }) {
               key={value}
               className="chart-guide"
               style={{
-                bottom: `${getRelativePosition(value, chartMin, chartMax)}%`,
+                bottom: `${getRangePosition(value, chartMin, chartMax)}%`,
               }}
             >
               <span className="chart-guide-label">{formatNumber(value)}</span>
@@ -121,8 +93,8 @@ function HeartRateRangeChart({ period, data }) {
           <div className="bar-chart-columns">
             {data.map((item) => {
               const isActive = displayedItem?.key === item.key;
-              const bottom = getRelativePosition(item.minBpm, chartMin, chartMax);
-              const top = getRelativePosition(item.maxBpm, chartMin, chartMax);
+              const bottom = getRangePosition(item.minBpm, chartMin, chartMax);
+              const top = getRangePosition(item.maxBpm, chartMin, chartMax);
               const height = Math.max(top - bottom, 0);
 
               return (
@@ -158,7 +130,7 @@ function HeartRateRangeChart({ period, data }) {
 
         <div className={`chart-details ${displayedItem ? '' : 'chart-details--empty'}`}>
           <div className="chart-details-label">
-            {getDetailsLabel(displayedItem, period)}
+            {getRangeDetailsLabel(displayedItem, period)}
           </div>
 
           <div className="chart-details-value">
@@ -166,16 +138,15 @@ function HeartRateRangeChart({ period, data }) {
           </div>
 
           <div
-            className={`heart-rate-chart-details-meta ${
-              displayedItem ? '' : 'heart-rate-chart-details-meta--empty'
-            }`}
+            className={`heart-rate-chart-details-meta ${displayedItem ? '' : 'heart-rate-chart-details-meta--empty'
+              }`}
           >
             {getDetailsMeta(displayedItem, period)}
           </div>
 
           {period !== PERIODS.TWELVE_MONTHS && displayedItem && (
             <HeartRateHourlyChart
-              dateLabel={getDetailsLabel(displayedItem, period)}
+              dateLabel={getRangeDetailsLabel(displayedItem, period)}
               hourlyRecords={displayedItem.hourlyRecords ?? []}
             />
           )}

@@ -1,37 +1,10 @@
 import { formatNumber } from '../../utils/number/numberFormatters';
-import { getNiceStep } from '../../utils/charts/scaleUtils';
+import {
+  buildRangeScale,
+  getRangePosition,
+} from '../../utils/charts/rangeScaleUtils';
 import { useSelectableChartItem } from '../../hooks/useSelectableChartItem';
 import { buildHourlyHeartRateChartData } from '../../utils/heartRateDays/hourlyChartData';
-
-function buildRangeGuideValues(minValue, maxValue) {
-  const padding = 5;
-  const paddedMin = Math.max(0, minValue - padding);
-  const paddedMax = maxValue + padding;
-  const step = getNiceStep(Math.max(paddedMax - paddedMin, 1), 20);
-
-  const chartMin = Math.floor(paddedMin / step) * step;
-  const chartMax = Math.ceil(paddedMax / step) * step;
-
-  const values = [];
-
-  for (let value = chartMin; value <= chartMax; value += step) {
-    values.push(value);
-  }
-
-  return {
-    chartMin,
-    chartMax,
-    values,
-  };
-}
-
-function getRelativePosition(value, chartMin, chartMax) {
-  if (value == null || chartMax <= chartMin) {
-    return 0;
-  }
-
-  return ((value - chartMin) / (chartMax - chartMin)) * 100;
-}
 
 function shouldShowHourLabel(hour) {
   return hour % 3 === 0;
@@ -88,9 +61,14 @@ function HeartRateHourlyChart({ dateLabel, hourlyRecords }) {
   const minValue = Math.min(...dataWithValues.map((item) => item.minBpm ?? 0));
   const maxValue = Math.max(...dataWithValues.map((item) => item.maxBpm ?? 0), 1);
 
-  const { chartMin, chartMax, values: guideValues } = buildRangeGuideValues(
+  const { chartMin, chartMax, values: guideValues } = buildRangeScale(
     minValue,
-    maxValue
+    maxValue,
+    {
+      padding: 5,
+      minLimit: 0,
+      fallbackStep: 20,
+    }
   );
 
   return (
@@ -104,7 +82,7 @@ function HeartRateHourlyChart({ dateLabel, hourlyRecords }) {
               key={value}
               className="heart-rate-hourly-guide"
               style={{
-                bottom: `${getRelativePosition(value, chartMin, chartMax)}%`,
+                bottom: `${getRangePosition(value, chartMin, chartMax)}%`,
               }}
             >
               <span className="heart-rate-hourly-guide-label">
@@ -115,8 +93,8 @@ function HeartRateHourlyChart({ dateLabel, hourlyRecords }) {
 
           <div className="heart-rate-hourly-columns">
             {data.map((item) => {
-              const bottom = getRelativePosition(item.minBpm, chartMin, chartMax);
-              const top = getRelativePosition(item.maxBpm, chartMin, chartMax);
+              const bottom = getRangePosition(item.minBpm, chartMin, chartMax);
+              const top = getRangePosition(item.maxBpm, chartMin, chartMax);
               const height = Math.max(top - bottom, 0);
               const isActive = displayedItem?.key === item.key;
 

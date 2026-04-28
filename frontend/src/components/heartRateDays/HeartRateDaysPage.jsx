@@ -29,7 +29,6 @@ function HeartRateDaysPage({ onBack }) {
     displayRows,
     chartData,
     dayCount,
-    includeHourlyRecords,
   } = useHeartRateDaysDashboard();
 
   const averageBpm = calculateAverageBpm(heartRateDays);

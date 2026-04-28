@@ -1,25 +1,11 @@
 import { PERIODS } from '../../constants/periods';
-import {
-  formatDate,
-  formatMonthLabel,
-} from '../../utils/date/dateFormatters';
+import { formatMonthLabel } from '../../utils/date/dateFormatters';
 import { formatDurationMinutes } from '../../utils/duration/durationFormatters';
 import { formatNumber } from '../../utils/number/numberFormatters';
-
-function formatSleepDateRange(sleepDateStartKey, sleepDateEndKey) {
-  const startDate = formatDate(sleepDateStartKey);
-  const endDate = formatDate(sleepDateEndKey);
-
-  return `${startDate} – ${endDate}`;
-}
-
-function formatPercentage(value) {
-  if (value == null) {
-    return '-';
-  }
-
-  return `${Math.round(value)}%`;
-}
+import {
+  formatSleepDateRange,
+  formatSleepPercentage,
+} from '../../utils/sleepSessions/formatters';
 
 function SleepSessionsTable({ rows, period }) {
   if (!rows?.length) {
@@ -57,10 +43,10 @@ function SleepSessionsTable({ rows, period }) {
                 <td>{formatDurationMinutes(month.averageSleepMinutes)}</td>
                 <td>{formatDurationMinutes(month.totalDurationMinutes)}</td>
                 <td>{formatNumber(month.sessionCount)}</td>
-                <td>{formatPercentage(month.awakePercentage)}</td>
-                <td>{formatPercentage(month.lightPercentage)}</td>
-                <td>{formatPercentage(month.deepPercentage)}</td>
-                <td>{formatPercentage(month.remPercentage)}</td>
+                <td>{formatSleepPercentage(month.awakePercentage)}</td>
+                <td>{formatSleepPercentage(month.lightPercentage)}</td>
+                <td>{formatSleepPercentage(month.deepPercentage)}</td>
+                <td>{formatSleepPercentage(month.remPercentage)}</td>
                 <td>{formatNumber(month.dayCount)}</td>
               </tr>
             ))}
@@ -97,10 +83,10 @@ function SleepSessionsTable({ rows, period }) {
               </td>
               <td>{formatDurationMinutes(row.totalDurationMinutes)}</td>
               <td>{formatNumber(row.totalStageCount)}</td>
-              <td>{formatPercentage(row.awakePercentage)}</td>
-              <td>{formatPercentage(row.lightPercentage)}</td>
-              <td>{formatPercentage(row.deepPercentage)}</td>
-              <td>{formatPercentage(row.remPercentage)}</td>
+              <td>{formatSleepPercentage(row.awakePercentage)}</td>
+              <td>{formatSleepPercentage(row.lightPercentage)}</td>
+              <td>{formatSleepPercentage(row.deepPercentage)}</td>
+              <td>{formatSleepPercentage(row.remPercentage)}</td>
             </tr>
           ))}
         </tbody>

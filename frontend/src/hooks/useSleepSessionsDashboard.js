@@ -15,7 +15,7 @@ import {
   buildSleepDayRows,
 } from '../utils/sleepSessions/transformers';
 
-export function useSleepSessions() {
+export function useSleepSessionsDashboard() {
   const [period, setPeriod] = useState(PERIODS.SEVEN_DAYS);
   const [endDate, setEndDate] = useState(formatDateForInput(new Date()));
   const [viewMode, setViewMode] = useState(VIEW_MODES.STATS);

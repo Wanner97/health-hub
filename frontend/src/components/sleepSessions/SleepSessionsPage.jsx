@@ -3,7 +3,7 @@ import ViewModeToggle from '../ViewModeToggle';
 import SleepBarChart from './SleepBarChart';
 import SleepSessionsSummary from './SleepSessionsSummary';
 import SleepSessionsTable from './SleepSessionsTable';
-import { useSleepSessions } from '../../hooks/useSleepSessions';
+import { useSleepSessionsDashboard } from '../../hooks/useSleepSessionsDashboard';
 import { VIEW_MODES } from '../../constants/viewModes';
 import { formatRangeLabel } from '../../utils/periods/periodFormatters';
 import { formatDurationMinutes } from '../../utils/duration/durationFormatters';
@@ -26,7 +26,7 @@ function SleepSessionsPage({ onBack }) {
     totalSessionCount,
     displayRows,
     chartData,
-  } = useSleepSessions();
+  } = useSleepSessionsDashboard();
 
   return (
     <section className="sleep-page">

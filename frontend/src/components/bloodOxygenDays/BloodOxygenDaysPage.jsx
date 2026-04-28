@@ -5,7 +5,7 @@ import BloodOxygenRangeChart from './BloodOxygenRangeChart';
 import BloodOxygenStatsSummary from './BloodOxygenStatsSummary';
 import { VIEW_MODES } from '../../constants/viewModes';
 import { useBloodOxygenDaysDashboard } from '../../hooks/useBloodOxygenDaysDashboard';
-import { formatNumber } from '../../utils/number/numberFormatters';
+import { formatNumber, formatPercent } from '../../utils/number/numberFormatters';
 import { formatRangeLabel } from '../../utils/periods/periodFormatters';
 import {
   calculateAveragePercent,
@@ -13,10 +13,6 @@ import {
   calculateMinPercent,
   calculateTotalMeasurements,
 } from '../../utils/bloodOxygenDays/calculations';
-
-function formatPercent(value) {
-  return `${formatNumber(Math.round(value ?? 0))} %`;
-}
 
 function BloodOxygenDaysPage({ onBack }) {
   const {

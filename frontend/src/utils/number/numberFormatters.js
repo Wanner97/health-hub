@@ -10,3 +10,7 @@ export function formatKilometersFromMeters(value) {
     maximumFractionDigits: 2,
   }).format(kilometers);
 }
+
+export function formatPercent(value) {
+  return `${formatNumber(Math.round(value ?? 0))}%`;
+}

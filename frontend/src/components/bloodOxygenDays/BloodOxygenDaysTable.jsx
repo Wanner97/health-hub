@@ -3,11 +3,7 @@ import {
   formatDate,
   formatMonthLabel,
 } from '../../utils/date/dateFormatters';
-import { formatNumber } from '../../utils/number/numberFormatters';
-
-function formatPercent(value) {
-  return `${formatNumber(Math.round(value ?? 0))} %`;
-}
+import { formatNumber, formatPercent } from '../../utils/number/numberFormatters';
 
 function BloodOxygenDaysTable({ rows, period }) {
   if (!rows?.length) {
