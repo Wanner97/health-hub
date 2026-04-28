@@ -1,10 +1,13 @@
-﻿using Common.Import;
+﻿using Common.Constants;
+using Common.Import;
 using Common.Models;
 
 namespace Logic.Import.Upsert
 {
     public static class ActivityImportUpsertDataHelper
     {
+        private const double DistanceToleranceMeters = 0.0001d;
+
         public static ImportUpsertData<ActivityDay> BuildUpsertData(
             List<ActivityDay> importedActivityDays,
             Dictionary<DateOnly, ActivityDay> existingActivityDaysByDate)
@@ -39,7 +42,18 @@ namespace Logic.Import.Upsert
             return existingActivityDay.StartTimeUtc != importedActivityDay.StartTimeUtc
                    || existingActivityDay.EndTimeUtc != importedActivityDay.EndTimeUtc
                    || existingActivityDay.Steps != importedActivityDay.Steps
-                   || Math.Abs(existingActivityDay.DistanceMeters - importedActivityDay.DistanceMeters) > 0.0001d;
+                   || HasRelevantDistanceChanges(existingActivityDay, importedActivityDay);
+        }
+
+        private static bool HasRelevantDistanceChanges(ActivityDay existingActivityDay, ActivityDay importedActivityDay)
+        {
+            if (!CanReplaceDistance(existingActivityDay, importedActivityDay))
+            {
+                return false;
+            }
+
+            return Math.Abs(existingActivityDay.DistanceMeters - importedActivityDay.DistanceMeters) > DistanceToleranceMeters
+                   || existingActivityDay.DistanceSource != importedActivityDay.DistanceSource;
         }
 
         private static void ApplyChanges(ActivityDay existingActivityDay, ActivityDay importedActivityDay)
@@ -47,7 +61,34 @@ namespace Logic.Import.Upsert
             existingActivityDay.StartTimeUtc = importedActivityDay.StartTimeUtc;
             existingActivityDay.EndTimeUtc = importedActivityDay.EndTimeUtc;
             existingActivityDay.Steps = importedActivityDay.Steps;
-            existingActivityDay.DistanceMeters = importedActivityDay.DistanceMeters;
+
+            if (CanReplaceDistance(existingActivityDay, importedActivityDay))
+            {
+                existingActivityDay.DistanceMeters = importedActivityDay.DistanceMeters;
+                existingActivityDay.DistanceSource = importedActivityDay.DistanceSource;
+            }
+        }
+
+        private static bool CanReplaceDistance(ActivityDay existingActivityDay, ActivityDay importedActivityDay)
+        {
+            return !IsHealthConnectDistance(existingActivityDay.DistanceSource)
+                   || !IsCalculatedDistance(importedActivityDay.DistanceSource);
+        }
+
+        private static bool IsHealthConnectDistance(string? distanceSource)
+        {
+            return string.Equals(
+                distanceSource,
+                ActivityDistanceSources.HealthConnect,
+                StringComparison.Ordinal);
+        }
+
+        private static bool IsCalculatedDistance(string? distanceSource)
+        {
+            return string.Equals(
+                distanceSource,
+                ActivityDistanceSources.CalculatedFromSteps,
+                StringComparison.Ordinal);
         }
     }
 }

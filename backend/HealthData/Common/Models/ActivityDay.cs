@@ -1,4 +1,6 @@
-﻿namespace Common.Models
+﻿using Common.Constants;
+
+namespace Common.Models
 {
     public class ActivityDay
     {
@@ -15,6 +17,10 @@
         public int Steps { get; set; }
 
         public double DistanceMeters { get; set; }
+
+        public string DistanceSource { get; set; } = ActivityDistanceSources.CalculatedFromSteps;
+
+        public double TotalCaloriesBurnedKcal { get; set; }
 
         public DateTime LastImportedAtUtc { get; set; }
 

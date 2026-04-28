@@ -10,16 +10,20 @@ namespace Logic.Read.Mappers
             return new ActivityDayReadDto
             {
                 Date = activityDay.Date,
+                StartTimeUtc = activityDay.StartTimeUtc,
+                EndTimeUtc = activityDay.EndTimeUtc,
                 Steps = activityDay.Steps,
                 DistanceMeters = activityDay.DistanceMeters,
-                StartTimeUtc = activityDay.StartTimeUtc,
-                EndTimeUtc = activityDay.EndTimeUtc
+                DistanceSource = activityDay.DistanceSource,
+                TotalCaloriesBurnedKcal = activityDay.TotalCaloriesBurnedKcal
             };
         }
 
         public static List<ActivityDayReadDto> MapToReadDtos(List<ActivityDay> activityDays)
         {
-            return activityDays.Select(MapToReadDto).ToList();
+            return activityDays
+                .Select(MapToReadDto)
+                .ToList();
         }
     }
 }

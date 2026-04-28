@@ -1,4 +1,5 @@
-﻿using Common.Models;
+﻿using Common.Constants;
+using Common.Models;
 using FluentValidation;
 
 namespace Logic.Validators
@@ -21,6 +22,14 @@ namespace Logic.Validators
             RuleFor(x => x.Steps).GreaterThanOrEqualTo(0);
 
             RuleFor(x => x.DistanceMeters).GreaterThanOrEqualTo(0);
+
+            RuleFor(x => x.TotalCaloriesBurnedKcal).GreaterThanOrEqualTo(0);
+
+            RuleFor(x => x.DistanceSource).NotEmpty();
+
+            RuleFor(x => x.DistanceSource)
+                .Must(ActivityDistanceSources.SupportedValues.Contains)
+                .WithMessage("DistanceSource contains an unsupported value.");
         }
     }
 }

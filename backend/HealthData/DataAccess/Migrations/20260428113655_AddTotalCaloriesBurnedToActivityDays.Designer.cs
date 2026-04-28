@@ -3,6 +3,7 @@ using System;
 using DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccess.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428113655_AddTotalCaloriesBurnedToActivityDays")]
+    partial class AddTotalCaloriesBurnedToActivityDays
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.14");
@@ -30,13 +33,6 @@ namespace DataAccess.Migrations
                     b.Property<double>("DistanceMeters")
                         .HasColumnType("REAL")
                         .HasColumnName("DistanceMeters");
-
-                    b.Property<string>("DistanceSource")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .IsUnicode(true)
-                        .HasColumnType("TEXT")
-                        .HasColumnName("DistanceSource");
 
                     b.Property<DateTime>("EndTimeUtc")
                         .HasColumnType("TEXT")

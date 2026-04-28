@@ -39,6 +39,8 @@ namespace Logic.Import
 
             var importData = HealthImportHelper.BuildHealthImportData(dto, importedAtUtc);
 
+            ActivityDistanceCalculationHelper.FillMissingDistances(importData.ActivityDays);
+
             ValidateImportBatch(importData.ImportBatch);
 
             var upsertData = BuildHealthImportUpsertData(importData);

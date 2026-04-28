@@ -23,7 +23,10 @@ namespace Logic.Dashboard.Mappers
                 LatestActivityDay = dashboardData.LatestActivityDay == null ? null : new LatestActivityDaySummaryDto
                 {
                     Date = dashboardData.LatestActivityDay.Date,
-                    Steps = dashboardData.LatestActivityDay.Steps
+                    Steps = dashboardData.LatestActivityDay.Steps,
+                    DistanceMeters = dashboardData.LatestActivityDay.DistanceMeters,
+                    DistanceSource = dashboardData.LatestActivityDay.DistanceSource,
+                    TotalCaloriesBurnedKcal = dashboardData.LatestActivityDay.TotalCaloriesBurnedKcal
                 },
 
                 LatestSleepSession = dashboardData.LatestSleepSession == null ? null : new LatestSleepSessionSummaryDto

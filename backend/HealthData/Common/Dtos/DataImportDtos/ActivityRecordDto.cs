@@ -18,5 +18,8 @@ namespace Common.Dtos.DataImportDtos
 
         [JsonPropertyName("distanceMeters")]
         public double DistanceMeters { get; set; }
+
+        [JsonPropertyName("totalCaloriesBurnedKcal")]
+        public double TotalCaloriesBurnedKcal { get; set; }
     }
 }

@@ -19,7 +19,8 @@ namespace Logic.Import.Mappers
                 StartTimeUtc = x.StartTime.UtcDateTime,
                 EndTimeUtc = x.EndTime.UtcDateTime,
                 Steps = x.Steps,
-                DistanceMeters = x.DistanceMeters
+                DistanceMeters = x.DistanceMeters,
+                TotalCaloriesBurnedKcal = x.TotalCaloriesBurnedKcal
             }).ToList();
         }
     }

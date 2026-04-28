@@ -19,6 +19,8 @@ namespace DataAccess.Configurations
             builder.Property(x => x.EndTimeUtc).HasColumnName("EndTimeUtc").IsRequired();
             builder.Property(x => x.Steps).HasColumnName("Steps").IsRequired();
             builder.Property(x => x.DistanceMeters).HasColumnName("DistanceMeters").IsRequired();
+            builder.Property(x => x.DistanceSource).HasColumnName("DistanceSource").HasMaxLength(50).IsUnicode().IsRequired();
+            builder.Property(x => x.TotalCaloriesBurnedKcal).HasColumnName("TotalCaloriesBurnedKcal").IsRequired();
             builder.Property(x => x.LastImportedAtUtc).HasColumnName("LastImportedAtUtc").IsRequired();
             builder.Property(x => x.LastImportBatchId).HasColumnName("LastImportBatchId").IsRequired();
 
