@@ -8,6 +8,9 @@ import ch.claudiowanner.healthdataexporter.model.ExportClusters
 import ch.claudiowanner.healthdataexporter.model.ExportPayload
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityExportCluster
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
+import ch.claudiowanner.healthdataexporter.model.body.BodyExportCluster
+import ch.claudiowanner.healthdataexporter.model.body.HeightExportRecord
+import ch.claudiowanner.healthdataexporter.model.body.WeightExportRecord
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepExportCluster
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepSessionExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportCluster
@@ -63,11 +66,19 @@ class ExportCoordinator(
         ensurePermissionsGranted()
 
         val exportContext = createExportContext(request)
-        val totalSteps = 7
+        val totalSteps = 8
 
         val activityRecords = readActivityRecords(
             request = request,
             endDateExclusive = exportContext.endDateExclusive,
+            totalSteps = totalSteps,
+            onProgress = onProgress
+        )
+
+        val bodyCluster = readBodyCluster(
+            rangeStartInstant = exportContext.rangeStartInstant,
+            bodyLookupStartInstant = exportContext.bodyLookupStartInstant,
+            now = exportContext.now,
             totalSteps = totalSteps,
             onProgress = onProgress
         )
@@ -102,6 +113,7 @@ class ExportCoordinator(
 
         ensureAnyDataFound(
             activityRecords = activityRecords,
+            bodyCluster = bodyCluster,
             sleepSessions = sleepSessions,
             heartRateDailyRecords = heartRateDailyRecords,
             heartRateHourlyRecords = heartRateHourlyRecords,
@@ -113,6 +125,7 @@ class ExportCoordinator(
             now = exportContext.now,
             rangeStartInstant = exportContext.rangeStartInstant,
             activityRecords = activityRecords,
+            bodyCluster = bodyCluster,
             sleepSessions = sleepSessions,
             heartRateDailyRecords = heartRateDailyRecords,
             heartRateHourlyRecords = heartRateHourlyRecords,
@@ -154,11 +167,14 @@ class ExportCoordinator(
         val today = LocalDate.now(zoneId)
         val endDateExclusive = today.plusDays(1)
         val rangeStartInstant = request.startDateInclusive.atStartOfDay(zoneId).toInstant()
+        val bodyLookupStartInstant =
+            ExportConfig.FULL_HISTORY_START_DATE.atStartOfDay(zoneId).toInstant()
 
         return ExportContext(
             now = now,
             endDateExclusive = endDateExclusive,
-            rangeStartInstant = rangeStartInstant
+            rangeStartInstant = rangeStartInstant,
+            bodyLookupStartInstant = bodyLookupStartInstant
         )
     }
 
@@ -172,7 +188,7 @@ class ExportCoordinator(
             ExportProgressUpdate(
                 phase = ExportPhase.READING_ACTIVITY,
                 title = "Reading activity data",
-                message = "Loading steps and distance records from Health Connect.",
+                message = "Loading steps, distance and calories from Health Connect.",
                 progressCurrent = 1,
                 progressTotal = totalSteps
             )
@@ -181,6 +197,39 @@ class ExportCoordinator(
         return healthConnectGateway.readActivityExportRecords(
             startDateInclusive = request.startDateInclusive,
             endDateExclusive = endDateExclusive
+        )
+    }
+
+    private suspend fun readBodyCluster(
+        rangeStartInstant: Instant,
+        bodyLookupStartInstant: Instant,
+        now: Instant,
+        totalSteps: Int,
+        onProgress: (ExportProgressUpdate) -> Unit
+    ): BodyExportCluster {
+        onProgress(
+            ExportProgressUpdate(
+                phase = ExportPhase.READING_BODY,
+                title = "Reading body measurements",
+                message = "Loading weight history and latest known height from Health Connect.",
+                progressCurrent = 2,
+                progressTotal = totalSteps
+            )
+        )
+
+        val weightRecords = healthConnectGateway.readWeightRecords(
+            startInstant = rangeStartInstant,
+            endInstant = now
+        )
+
+        val latestHeight = healthConnectGateway.readLatestHeightRecord(
+            startInstant = bodyLookupStartInstant,
+            endInstant = now
+        )
+
+        return BodyExportCluster(
+            latestHeight = latestHeight,
+            weightRecords = weightRecords
         )
     }
 
@@ -195,7 +244,7 @@ class ExportCoordinator(
                 phase = ExportPhase.READING_SLEEP,
                 title = "Reading sleep data",
                 message = "Loading sleep sessions from Health Connect.",
-                progressCurrent = 2,
+                progressCurrent = 3,
                 progressTotal = totalSteps
             )
         )
@@ -217,7 +266,7 @@ class ExportCoordinator(
                 phase = ExportPhase.READING_HEART_RATE_DAILY,
                 title = "Reading daily heart rate data",
                 message = "Loading daily heart rate summaries from Health Connect.",
-                progressCurrent = 3,
+                progressCurrent = 4,
                 progressTotal = totalSteps
             )
         )
@@ -239,7 +288,7 @@ class ExportCoordinator(
                 phase = ExportPhase.READING_BLOOD_OXYGEN_DAILY,
                 title = "Reading daily blood oxygen data",
                 message = "Loading daily blood oxygen summaries from Health Connect.",
-                progressCurrent = 4,
+                progressCurrent = 5,
                 progressTotal = totalSteps
             )
         )
@@ -261,7 +310,7 @@ class ExportCoordinator(
                 phase = ExportPhase.READING_HEART_RATE_HOURLY,
                 title = "Reading hourly heart rate data",
                 message = "Loading hourly heart rate summaries from Health Connect. This can take some time.",
-                progressCurrent = 5,
+                progressCurrent = 6,
                 progressTotal = totalSteps
             )
         )
@@ -274,19 +323,24 @@ class ExportCoordinator(
 
     private fun ensureAnyDataFound(
         activityRecords: List<ActivityDayExportRecord>,
+        bodyCluster: BodyExportCluster,
         sleepSessions: List<SleepSessionExportRecord>,
         heartRateDailyRecords: List<HeartRateDailyExportRecord>,
         heartRateHourlyRecords: List<HeartRateHourlyExportRecord>,
         bloodOxygenDailyRecords: List<BloodOxygenDailyExportRecord>
     ) {
+        val hasBodyData =
+            bodyCluster.latestHeight != null || bodyCluster.weightRecords.isNotEmpty()
+
         if (
             activityRecords.isEmpty() &&
+            !hasBodyData &&
             sleepSessions.isEmpty() &&
             heartRateDailyRecords.isEmpty() &&
             heartRateHourlyRecords.isEmpty() &&
             bloodOxygenDailyRecords.isEmpty()
         ) {
-            error("No activity, sleep, heart rate, or blood oxygen data found.")
+            error("No activity, body, sleep or vital data found.")
         }
     }
 
@@ -295,6 +349,7 @@ class ExportCoordinator(
         now: Instant,
         rangeStartInstant: Instant,
         activityRecords: List<ActivityDayExportRecord>,
+        bodyCluster: BodyExportCluster,
         sleepSessions: List<SleepSessionExportRecord>,
         heartRateDailyRecords: List<HeartRateDailyExportRecord>,
         heartRateHourlyRecords: List<HeartRateHourlyExportRecord>,
@@ -307,7 +362,7 @@ class ExportCoordinator(
                 phase = ExportPhase.BUILDING_EXPORT,
                 title = "Building export payload",
                 message = "Combining all loaded records into one export file.",
-                progressCurrent = 6,
+                progressCurrent = 7,
                 progressTotal = totalSteps
             )
         )
@@ -337,7 +392,8 @@ class ExportCoordinator(
                     bloodOxygenDaily = BloodOxygenDailyExportCluster(
                         records = bloodOxygenDailyRecords
                     )
-                )
+                ),
+                body = bodyCluster
             )
         )
     }
@@ -352,7 +408,7 @@ class ExportCoordinator(
                 phase = ExportPhase.WRITING_JSON,
                 title = "Writing JSON file",
                 message = "Saving the export to app storage.",
-                progressCurrent = 7,
+                progressCurrent = 8,
                 progressTotal = totalSteps
             )
         )
@@ -370,6 +426,7 @@ class ExportCoordinator(
     private data class ExportContext(
         val now: Instant,
         val endDateExclusive: LocalDate,
-        val rangeStartInstant: Instant
+        val rangeStartInstant: Instant,
+        val bodyLookupStartInstant: Instant
     )
 }

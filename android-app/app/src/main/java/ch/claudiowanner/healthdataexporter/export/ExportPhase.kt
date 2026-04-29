@@ -4,6 +4,7 @@ enum class ExportPhase(val label: String) {
     IDLE("Ready"),
     CHECKING_PERMISSIONS("Checking permissions"),
     READING_ACTIVITY("Reading activity data"),
+    READING_BODY("Reading body measurements"),
     READING_SLEEP("Reading sleep data"),
     READING_HEART_RATE_DAILY("Reading daily heart rate data"),
     READING_BLOOD_OXYGEN_DAILY("Reading daily blood oxygen data"),

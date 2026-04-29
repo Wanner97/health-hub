@@ -53,6 +53,12 @@ class ExportJsonSerializer {
         vitals.add("bloodOxygenDaily", bloodOxygenDaily)
 
         clusters.add("vitals", vitals)
+
+        val body = JsonObject()
+        body.add("latestHeight", gson.toJsonTree(payload.clusters.body.latestHeight))
+        body.add("weightRecords", gson.toJsonTree(payload.clusters.body.weightRecords))
+        clusters.add("body", body)
+
         root.add("clusters", clusters)
 
         return gson.toJson(root)

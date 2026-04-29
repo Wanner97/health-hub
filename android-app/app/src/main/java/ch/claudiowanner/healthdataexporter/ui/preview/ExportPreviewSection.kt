@@ -47,6 +47,11 @@ fun ExportPreviewSection(
                 PreviewSummaryLine("Export type", summary.exportType)
                 PreviewSummaryLine("Range", summary.rangeDescription)
                 PreviewSummaryLine("Activity records", summary.activityRecordCount)
+                PreviewSummaryLine("Weight records", summary.weightRecordCount)
+                PreviewSummaryLine(
+                    "Latest height available",
+                    summary.hasLatestHeight?.let { if (it) "Yes" else "No" }
+                )
                 PreviewSummaryLine("Sleep sessions", summary.sleepSessionCount)
                 PreviewSummaryLine("Heart rate daily records", summary.heartRateDailyCount)
                 PreviewSummaryLine("Heart rate hourly records", summary.heartRateHourlyCount)
@@ -77,7 +82,6 @@ fun ExportPreviewSection(
                         LinearProgressIndicator(
                             modifier = Modifier.fillMaxWidth()
                         )
-
                         Text(
                             text = uiState.previewLoadingMessage ?: "Preparing preview...",
                             style = MaterialTheme.typography.bodySmall,

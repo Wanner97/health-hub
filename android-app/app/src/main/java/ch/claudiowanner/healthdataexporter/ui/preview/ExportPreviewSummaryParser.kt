@@ -5,11 +5,9 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 
 class ExportPreviewSummaryParser {
-
     fun parse(previewContent: String): ExportPreviewSummary? {
         return runCatching {
             val root = JsonParser.parseString(previewContent).asJsonObject
-
             val exportType = root.stringOrNull("exportType")
             val rangeDays = root.intOrNull("rangeDays")
             val clusters = root.objectOrNull("clusters")
@@ -37,6 +35,14 @@ class ExportPreviewSummaryParser {
                 ?.objectOrNull("bloodOxygenDaily")
                 ?.arraySizeOrNull("records")
 
+            val body = clusters?.objectOrNull("body")
+
+            val weightRecordCount = body
+                ?.arraySizeOrNull("weightRecords")
+
+            val hasLatestHeight = body
+                ?.hasNonNull("latestHeight")
+
             ExportPreviewSummary(
                 exportType = exportType,
                 rangeDescription = when {
@@ -48,7 +54,9 @@ class ExportPreviewSummaryParser {
                 sleepSessionCount = sleepCount,
                 heartRateDailyCount = heartRateDailyCount,
                 heartRateHourlyCount = heartRateHourlyCount,
-                bloodOxygenDailyCount = bloodOxygenDailyCount
+                bloodOxygenDailyCount = bloodOxygenDailyCount,
+                weightRecordCount = weightRecordCount,
+                hasLatestHeight = hasLatestHeight
             )
         }.getOrNull()
     }
@@ -71,5 +79,10 @@ class ExportPreviewSummaryParser {
     private fun JsonObject.arraySizeOrNull(name: String): Int? {
         val value = get(name) ?: return null
         return if (value.isJsonArray) value.asJsonArray.size() else null
+    }
+
+    private fun JsonObject.hasNonNull(name: String): Boolean {
+        val value = get(name) ?: return false
+        return !value.isJsonNull
     }
 }

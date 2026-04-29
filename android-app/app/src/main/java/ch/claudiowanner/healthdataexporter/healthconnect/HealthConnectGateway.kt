@@ -3,10 +3,13 @@ package ch.claudiowanner.healthdataexporter.healthconnect
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import ch.claudiowanner.healthdataexporter.healthconnect.activity.ActivityReader
+import ch.claudiowanner.healthdataexporter.healthconnect.body.BodyReader
 import ch.claudiowanner.healthdataexporter.healthconnect.sleep.SleepReader
 import ch.claudiowanner.healthdataexporter.healthconnect.vitals.BloodOxygenReader
 import ch.claudiowanner.healthdataexporter.healthconnect.vitals.HeartRateReader
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
+import ch.claudiowanner.healthdataexporter.model.body.HeightExportRecord
+import ch.claudiowanner.healthdataexporter.model.body.WeightExportRecord
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepSessionExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateDailyExportRecord
@@ -23,6 +26,10 @@ class HealthConnectGateway(
 
     private val activityReader: ActivityReader by lazy {
         ActivityReader(client)
+    }
+
+    private val bodyReader: BodyReader by lazy {
+        BodyReader(client)
     }
 
     private val sleepReader: SleepReader by lazy {
@@ -56,6 +63,26 @@ class HealthConnectGateway(
         return activityReader.readActivityExportRecords(
             startDateInclusive = startDateInclusive,
             endDateExclusive = endDateExclusive
+        )
+    }
+
+    suspend fun readWeightRecords(
+        startInstant: Instant,
+        endInstant: Instant
+    ): List<WeightExportRecord> {
+        return bodyReader.readWeightRecords(
+            startInstant = startInstant,
+            endInstant = endInstant
+        )
+    }
+
+    suspend fun readLatestHeightRecord(
+        startInstant: Instant,
+        endInstant: Instant
+    ): HeightExportRecord? {
+        return bodyReader.readLatestHeightRecord(
+            startInstant = startInstant,
+            endInstant = endInstant
         )
     }
 
