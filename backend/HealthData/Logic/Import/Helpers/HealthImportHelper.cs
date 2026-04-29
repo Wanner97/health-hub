@@ -54,13 +54,25 @@ namespace Logic.Import.Helpers
                 importedAtUtc,
                 dto.Clusters.Vitals?.BloodOxygenDaily);
 
+            var importedHeightMeasurements = BodyImportMapper.MapToHeightMeasurements(
+                dto.Source,
+                importedAtUtc,
+                dto.Clusters.Body);
+
+            var importedWeightMeasurements = BodyImportMapper.MapToWeightMeasurements(
+                dto.Source,
+                importedAtUtc,
+                dto.Clusters.Body);
+
             var importBatch = ImportBatchImportMapper.MapToImportBatch(
                 dto,
                 importedAtUtc,
                 importedActivityDays,
                 importedSleepSessions,
                 importedHeartRateDays,
-                importedBloodOxygenDays);
+                importedBloodOxygenDays,
+                importedHeightMeasurements,
+                importedWeightMeasurements);
 
             return new HealthImportData
             {
@@ -69,7 +81,9 @@ namespace Logic.Import.Helpers
                 ActivityDays = importedActivityDays,
                 SleepSessions = importedSleepSessions,
                 HeartRateDays = importedHeartRateDays,
-                BloodOxygenDays = importedBloodOxygenDays
+                BloodOxygenDays = importedBloodOxygenDays,
+                HeightMeasurements = importedHeightMeasurements,
+                WeightMeasurements = importedWeightMeasurements
             };
         }
 
@@ -79,6 +93,8 @@ namespace Logic.Import.Helpers
             importBatch.SleepSessionEntries = new List<SleepSession>();
             importBatch.HeartRateDayEntries = new List<HeartRateDay>();
             importBatch.BloodOxygenDayEntries = new List<BloodOxygenDay>();
+            importBatch.HeightMeasurementEntries = new List<HeightMeasurement>();
+            importBatch.WeightMeasurementEntries = new List<WeightMeasurement>();
         }
     }
 }

@@ -13,5 +13,9 @@ namespace Common.Dashboard
         public HeartRateDay? LatestHeartRateDay { get; set; }
 
         public BloodOxygenDay? LatestBloodOxygenDay { get; set; }
+
+        public HeightMeasurement? LatestHeightMeasurement { get; set; }
+
+        public WeightMeasurement? LatestWeightMeasurement { get; set; }
     }
 }

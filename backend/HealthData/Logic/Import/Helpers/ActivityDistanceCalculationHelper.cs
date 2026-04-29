@@ -9,9 +9,15 @@ namespace Logic.Import.Helpers
         private const double StepLengthFactor = 0.415d;
         private const double DistanceToleranceMeters = 0.0001d;
 
-        public static void FillMissingDistances(List<ActivityDay> activityDays)
+        public static void FillMissingDistances(
+            List<ActivityDay> activityDays,
+            double? bodyHeightMeters)
         {
-            var defaultStepLengthMeters = CalculateStepLength(DefaultBodyHeightMeters);
+            var effectiveBodyHeightMeters = bodyHeightMeters.HasValue && bodyHeightMeters.Value > 0
+                ? bodyHeightMeters.Value
+                : DefaultBodyHeightMeters;
+
+            var stepLengthMeters = CalculateStepLength(effectiveBodyHeightMeters);
 
             foreach (var activityDay in activityDays)
             {
@@ -19,7 +25,7 @@ namespace Logic.Import.Helpers
                 {
                     activityDay.DistanceMeters = CalculateDistanceMeters(
                         activityDay.Steps,
-                        defaultStepLengthMeters);
+                        stepLengthMeters);
 
                     activityDay.DistanceSource = ActivityDistanceSources.CalculatedFromSteps;
                     continue;

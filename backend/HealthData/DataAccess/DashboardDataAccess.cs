@@ -38,6 +38,14 @@ namespace DataAccess
 
                     LatestBloodOxygenDay = context.BloodOxygenDays
                         .OrderByDescending(x => x.Date)
+                        .FirstOrDefault(),
+
+                    LatestHeightMeasurement = context.HeightMeasurements
+                        .OrderByDescending(x => x.MeasuredAtUtc)
+                        .FirstOrDefault(),
+
+                    LatestWeightMeasurement = context.WeightMeasurements
+                        .OrderByDescending(x => x.MeasuredAtUtc)
                         .FirstOrDefault()
                 };
             }

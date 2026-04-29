@@ -33,5 +33,9 @@
         public List<HeartRateDay> HeartRateDayEntries { get; set; } = new();
 
         public List<BloodOxygenDay> BloodOxygenDayEntries { get; set; } = new();
+
+        public List<HeightMeasurement> HeightMeasurementEntries { get; set; } = new();
+
+        public List<WeightMeasurement> WeightMeasurementEntries { get; set; } = new();
     }
 }

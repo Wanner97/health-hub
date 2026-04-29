@@ -52,6 +52,19 @@ namespace Logic.Dashboard.Mappers
                     MinPercent = dashboardData.LatestBloodOxygenDay.MinPercent,
                     MaxPercent = dashboardData.LatestBloodOxygenDay.MaxPercent,
                     MeasurementCount = dashboardData.LatestBloodOxygenDay.MeasurementCount
+                },
+
+                LatestHeightMeasurement = dashboardData.LatestHeightMeasurement == null ? null : new LatestHeightMeasurementSummaryDto
+                {
+                    HeightCm = dashboardData.LatestHeightMeasurement.HeightCm,
+                    MeasuredAtUtc = dashboardData.LatestHeightMeasurement.MeasuredAtUtc
+                },
+
+                LatestWeightMeasurement = dashboardData.LatestWeightMeasurement == null ? null : new LatestWeightMeasurementSummaryDto
+                {
+                    Date = dashboardData.LatestWeightMeasurement.Date,
+                    WeightKg = dashboardData.LatestWeightMeasurement.WeightKg,
+                    MeasuredAtUtc = dashboardData.LatestWeightMeasurement.MeasuredAtUtc
                 }
             };
         }

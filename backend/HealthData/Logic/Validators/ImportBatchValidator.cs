@@ -26,7 +26,9 @@ namespace Logic.Validators
             RuleFor(x => x.UpdatedRecordCount).GreaterThanOrEqualTo(0);
             RuleFor(x => x.UnchangedRecordCount).GreaterThanOrEqualTo(0);
 
-            RuleFor(x => x).Must(HaveAtLeastOneImportEntry).WithMessage("No import records were found.");
+            RuleFor(x => x)
+                .Must(HaveAtLeastOneImportEntry)
+                .WithMessage("No import records were found.");
 
             RuleFor(x => x.ReceivedRecordCount)
                 .Must((batch, receivedRecordCount) =>
@@ -34,12 +36,11 @@ namespace Logic.Validators
                 .WithMessage("ReceivedRecordCount does not match the number of imported records.");
 
             RuleForEach(x => x.ActivityDayEntries).SetValidator(new ActivityDayValidator(false));
-
             RuleForEach(x => x.SleepSessionEntries).SetValidator(new SleepSessionValidator(false));
-
             RuleForEach(x => x.HeartRateDayEntries).SetValidator(new HeartRateDayValidator(false));
-
             RuleForEach(x => x.BloodOxygenDayEntries).SetValidator(new BloodOxygenDayValidator(false));
+            RuleForEach(x => x.HeightMeasurementEntries).SetValidator(new HeightMeasurementValidator(false));
+            RuleForEach(x => x.WeightMeasurementEntries).SetValidator(new WeightMeasurementValidator(false));
 
             RuleFor(x => x.ActivityDayEntries)
                 .Must(HaveUniqueActivityDates)
@@ -60,6 +61,16 @@ namespace Logic.Validators
                 .Must(HaveUniqueBloodOxygenDates)
                 .When(x => x.BloodOxygenDayEntries != null && x.BloodOxygenDayEntries.Count > 0)
                 .WithMessage("The import contains duplicate blood oxygen dates.");
+
+            RuleFor(x => x.HeightMeasurementEntries)
+                .Must(HaveUniqueHeightMeasuredAtUtcValues)
+                .When(x => x.HeightMeasurementEntries != null && x.HeightMeasurementEntries.Count > 0)
+                .WithMessage("The import contains duplicate height measurement timestamps.");
+
+            RuleFor(x => x.WeightMeasurementEntries)
+                .Must(HaveUniqueWeightMeasuredAtUtcValues)
+                .When(x => x.WeightMeasurementEntries != null && x.WeightMeasurementEntries.Count > 0)
+                .WithMessage("The import contains duplicate weight measurement timestamps.");
         }
 
         private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
@@ -112,6 +123,30 @@ namespace Logic.Validators
 
             return bloodOxygenDayEntries
                 .GroupBy(x => x.Date)
+                .All(g => g.Count() == 1);
+        }
+
+        private static bool HaveUniqueHeightMeasuredAtUtcValues(ICollection<HeightMeasurement>? heightMeasurementEntries)
+        {
+            if (heightMeasurementEntries == null)
+            {
+                return true;
+            }
+
+            return heightMeasurementEntries
+                .GroupBy(x => x.MeasuredAtUtc)
+                .All(g => g.Count() == 1);
+        }
+
+        private static bool HaveUniqueWeightMeasuredAtUtcValues(ICollection<WeightMeasurement>? weightMeasurementEntries)
+        {
+            if (weightMeasurementEntries == null)
+            {
+                return true;
+            }
+
+            return weightMeasurementEntries
+                .GroupBy(x => x.MeasuredAtUtc)
                 .All(g => g.Count() == 1);
         }
     }

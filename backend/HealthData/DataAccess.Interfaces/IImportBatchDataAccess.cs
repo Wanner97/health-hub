@@ -17,6 +17,10 @@ namespace DataAccess.Interfaces
 
         Dictionary<DateOnly, BloodOxygenDay> GetExistingBloodOxygenDays(string source, IEnumerable<DateOnly> dates);
 
+        Dictionary<DateTime, HeightMeasurement> GetExistingHeightMeasurements(string source, IEnumerable<DateTime> measuredAtUtcValues);
+
+        Dictionary<DateTime, WeightMeasurement> GetExistingWeightMeasurements(string source, IEnumerable<DateTime> measuredAtUtcValues);
+
         ImportBatch ApplyImport(ImportBatch importBatch, HealthImportUpsertData upsertData);
     }
 }

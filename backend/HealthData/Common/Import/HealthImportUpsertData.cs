@@ -11,5 +11,9 @@ namespace Common.Import
         public ImportUpsertData<HeartRateDay> HeartRateDays { get; set; } = new();
 
         public ImportUpsertData<BloodOxygenDay> BloodOxygenDays { get; set; } = new();
+
+        public ImportUpsertData<HeightMeasurement> HeightMeasurements { get; set; } = new();
+
+        public ImportUpsertData<WeightMeasurement> WeightMeasurements { get; set; } = new();
     }
 }

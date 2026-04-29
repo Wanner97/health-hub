@@ -16,5 +16,9 @@ namespace Logic.Import.Helpers
         public List<HeartRateDay> HeartRateDays { get; set; } = new();
 
         public List<BloodOxygenDay> BloodOxygenDays { get; set; } = new();
+
+        public List<HeightMeasurement> HeightMeasurements { get; set; } = new();
+
+        public List<WeightMeasurement> WeightMeasurements { get; set; } = new();
     }
 }

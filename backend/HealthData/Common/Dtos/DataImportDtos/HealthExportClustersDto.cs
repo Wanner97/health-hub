@@ -7,5 +7,7 @@
         public SleepClusterDto? Sleep { get; set; }
 
         public VitalsClusterDto? Vitals { get; set; }
+
+        public BodyClusterDto? Body { get; set; }
     }
 }

@@ -101,6 +101,8 @@ namespace Api
             builder.Services.AddScoped<IHeartRateDayDataAccess, HeartRateDayDataAccess>();
             builder.Services.AddScoped<IBloodOxygenDayDataAccess, BloodOxygenDayDataAccess>();
             builder.Services.AddScoped<IDashboardDataAccess, DashboardDataAccess>();
+            builder.Services.AddScoped<IHeightMeasurementDataAccess, HeightMeasurementDataAccess>();
+            builder.Services.AddScoped<IWeightMeasurementDataAccess, WeightMeasurementDataAccess>();
 
             builder.Services.AddScoped<IImportBatchLogic, ImportBatchLogic>();
             builder.Services.AddScoped<IActivityDayReadLogic, ActivityDayReadLogic>();
@@ -108,6 +110,8 @@ namespace Api
             builder.Services.AddScoped<ISleepSessionReadLogic, SleepSessionReadLogic>();
             builder.Services.AddScoped<IHeartRateDayReadLogic, HeartRateDayReadLogic>();
             builder.Services.AddScoped<IBloodOxygenDayReadLogic, BloodOxygenDayReadLogic>();
+            builder.Services.AddScoped<IHeightMeasurementReadLogic, HeightMeasurementReadLogic>();
+            builder.Services.AddScoped<IWeightMeasurementReadLogic, WeightMeasurementReadLogic>();
         }
     }
 }

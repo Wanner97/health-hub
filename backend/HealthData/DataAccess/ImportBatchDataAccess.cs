@@ -99,6 +99,34 @@ namespace DataAccess
             }
         }
 
+        public Dictionary<DateTime, HeightMeasurement> GetExistingHeightMeasurements(
+            string source,
+            IEnumerable<DateTime> measuredAtUtcValues)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                var distinctMeasuredAtUtcValues = measuredAtUtcValues.Distinct().ToList();
+
+                return context.HeightMeasurements
+                    .Where(x => x.Source == source && distinctMeasuredAtUtcValues.Contains(x.MeasuredAtUtc))
+                    .ToDictionary(x => x.MeasuredAtUtc, x => x);
+            }
+        }
+
+        public Dictionary<DateTime, WeightMeasurement> GetExistingWeightMeasurements(
+            string source,
+            IEnumerable<DateTime> measuredAtUtcValues)
+        {
+            using (var context = _dbContextFactory.CreateDbContext())
+            {
+                var distinctMeasuredAtUtcValues = measuredAtUtcValues.Distinct().ToList();
+
+                return context.WeightMeasurements
+                    .Where(x => x.Source == source && distinctMeasuredAtUtcValues.Contains(x.MeasuredAtUtc))
+                    .ToDictionary(x => x.MeasuredAtUtc, x => x);
+            }
+        }
+
         public ImportBatch ApplyImport(ImportBatch importBatch, HealthImportUpsertData upsertData)
         {
             using (var context = _dbContextFactory.CreateDbContext())
@@ -116,6 +144,12 @@ namespace DataAccess
 
                     var insertedBloodOxygenDays = upsertData.BloodOxygenDays.InsertedItems;
                     var updatedBloodOxygenDays = upsertData.BloodOxygenDays.UpdatedItems;
+
+                    var insertedHeightMeasurements = upsertData.HeightMeasurements.InsertedItems;
+                    var updatedHeightMeasurements = upsertData.HeightMeasurements.UpdatedItems;
+
+                    var insertedWeightMeasurements = upsertData.WeightMeasurements.InsertedItems;
+                    var updatedWeightMeasurements = upsertData.WeightMeasurements.UpdatedItems;
 
                     context.ImportBatches.Add(importBatch);
                     context.SaveChanges();
@@ -174,6 +208,34 @@ namespace DataAccess
                         updatedBloodOxygenDay.LastImportBatchId = importBatch.Id;
                         updatedBloodOxygenDay.LastImportBatch = importBatch;
                         updatedBloodOxygenDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var insertedHeightMeasurement in insertedHeightMeasurements)
+                    {
+                        insertedHeightMeasurement.LastImportBatchId = importBatch.Id;
+                        insertedHeightMeasurement.LastImportBatch = importBatch;
+                        insertedHeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var updatedHeightMeasurement in updatedHeightMeasurements)
+                    {
+                        updatedHeightMeasurement.LastImportBatchId = importBatch.Id;
+                        updatedHeightMeasurement.LastImportBatch = importBatch;
+                        updatedHeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var insertedWeightMeasurement in insertedWeightMeasurements)
+                    {
+                        insertedWeightMeasurement.LastImportBatchId = importBatch.Id;
+                        insertedWeightMeasurement.LastImportBatch = importBatch;
+                        insertedWeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
+                    }
+
+                    foreach (var updatedWeightMeasurement in updatedWeightMeasurements)
+                    {
+                        updatedWeightMeasurement.LastImportBatchId = importBatch.Id;
+                        updatedWeightMeasurement.LastImportBatch = importBatch;
+                        updatedWeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
                     }
 
                     if (insertedActivityDays.Count > 0)
@@ -272,6 +334,26 @@ namespace DataAccess
                     if (updatedBloodOxygenDays.Count > 0)
                     {
                         context.BloodOxygenDays.UpdateRange(updatedBloodOxygenDays);
+                    }
+
+                    if (insertedHeightMeasurements.Count > 0)
+                    {
+                        context.HeightMeasurements.AddRange(insertedHeightMeasurements);
+                    }
+
+                    if (updatedHeightMeasurements.Count > 0)
+                    {
+                        context.HeightMeasurements.UpdateRange(updatedHeightMeasurements);
+                    }
+
+                    if (insertedWeightMeasurements.Count > 0)
+                    {
+                        context.WeightMeasurements.AddRange(insertedWeightMeasurements);
+                    }
+
+                    if (updatedWeightMeasurements.Count > 0)
+                    {
+                        context.WeightMeasurements.UpdateRange(updatedWeightMeasurements);
                     }
 
                     context.SaveChanges();

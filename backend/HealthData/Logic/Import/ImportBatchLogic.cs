@@ -15,13 +15,16 @@ namespace Logic.Import
     public class ImportBatchLogic : IImportBatchLogic
     {
         private readonly IImportBatchDataAccess _importBatchDataAccess;
+        private readonly IHeightMeasurementDataAccess _heightMeasurementDataAccess;
         private readonly IVersionManifestProvider _versionManifestProvider;
 
         public ImportBatchLogic(
             IImportBatchDataAccess importBatchDataAccess,
+            IHeightMeasurementDataAccess heightMeasurementDataAccess,
             IVersionManifestProvider versionManifestProvider)
         {
             _importBatchDataAccess = importBatchDataAccess;
+            _heightMeasurementDataAccess = heightMeasurementDataAccess;
             _versionManifestProvider = versionManifestProvider;
         }
 
@@ -39,7 +42,11 @@ namespace Logic.Import
 
             var importData = HealthImportHelper.BuildHealthImportData(dto, importedAtUtc);
 
-            ActivityDistanceCalculationHelper.FillMissingDistances(importData.ActivityDays);
+            var bodyHeightMetersForDistanceCalculation = ResolveBodyHeightMetersForDistanceCalculation(importData);
+
+            ActivityDistanceCalculationHelper.FillMissingDistances(
+                importData.ActivityDays,
+                bodyHeightMetersForDistanceCalculation);
 
             ValidateImportBatch(importData.ImportBatch);
 
@@ -59,34 +66,86 @@ namespace Logic.Import
             new ImportBatchValidator(false, expectedExportVersion).ValidateAndThrow(importBatch);
         }
 
+        private double? ResolveBodyHeightMetersForDistanceCalculation(HealthImportData importData)
+        {
+            var latestImportedHeightMeters = importData.HeightMeasurements
+                .OrderByDescending(x => x.MeasuredAtUtc)
+                .Select(x => (double?)(x.HeightCm / 100.0))
+                .FirstOrDefault();
+
+            if (latestImportedHeightMeters.HasValue)
+            {
+                return latestImportedHeightMeters.Value;
+            }
+
+            var latestStoredHeightMeasurement = _heightMeasurementDataAccess.GetLatestHeightMeasurement();
+
+            if (latestStoredHeightMeasurement != null && latestStoredHeightMeasurement.HeightCm > 0)
+            {
+                return latestStoredHeightMeasurement.HeightCm / 100.0;
+            }
+
+            return null;
+        }
+
         private HealthImportUpsertData BuildHealthImportUpsertData(HealthImportData importData)
         {
-            var existingActivityDaysByDate = _importBatchDataAccess.GetExistingActivityDays(importData.ImportBatch.Source, importData.ActivityDays.Select(x => x.Date));
+            var existingActivityDaysByDate = _importBatchDataAccess.GetExistingActivityDays(
+                importData.ImportBatch.Source,
+                importData.ActivityDays.Select(x => x.Date));
 
-            var existingSleepSessionsByStartTime = _importBatchDataAccess.GetExistingSleepSessions(importData.ImportBatch.Source, importData.SleepSessions.Select(x => x.StartTimeUtc));
+            var existingSleepSessionsByStartTime = _importBatchDataAccess.GetExistingSleepSessions(
+                importData.ImportBatch.Source,
+                importData.SleepSessions.Select(x => x.StartTimeUtc));
 
-            var existingHeartRateDaysByDate = _importBatchDataAccess.GetExistingHeartRateDays(importData.ImportBatch.Source, importData.HeartRateDays.Select(x => x.Date));
+            var existingHeartRateDaysByDate = _importBatchDataAccess.GetExistingHeartRateDays(
+                importData.ImportBatch.Source,
+                importData.HeartRateDays.Select(x => x.Date));
 
-            var existingBloodOxygenDaysByDate = _importBatchDataAccess.GetExistingBloodOxygenDays(importData.ImportBatch.Source, importData.BloodOxygenDays.Select(x => x.Date));
+            var existingBloodOxygenDaysByDate = _importBatchDataAccess.GetExistingBloodOxygenDays(
+                importData.ImportBatch.Source,
+                importData.BloodOxygenDays.Select(x => x.Date));
+
+            var existingHeightMeasurementsByMeasuredAtUtc = _importBatchDataAccess.GetExistingHeightMeasurements(
+                importData.ImportBatch.Source,
+                importData.HeightMeasurements.Select(x => x.MeasuredAtUtc));
+
+            var existingWeightMeasurementsByMeasuredAtUtc = _importBatchDataAccess.GetExistingWeightMeasurements(
+                importData.ImportBatch.Source,
+                importData.WeightMeasurements.Select(x => x.MeasuredAtUtc));
 
             return new HealthImportUpsertData
             {
-                ActivityDays = ActivityImportUpsertDataHelper.BuildUpsertData(importData.ActivityDays, existingActivityDaysByDate),
+                ActivityDays = ActivityImportUpsertDataHelper.BuildUpsertData(
+                    importData.ActivityDays,
+                    existingActivityDaysByDate),
 
-                SleepSessions = SleepImportUpsertDataHelper.BuildUpsertData(importData.SleepSessions, existingSleepSessionsByStartTime),
+                SleepSessions = SleepImportUpsertDataHelper.BuildUpsertData(
+                    importData.SleepSessions,
+                    existingSleepSessionsByStartTime),
 
-                HeartRateDays = HeartRateImportUpsertDataHelper.BuildUpsertData(importData.HeartRateDays, existingHeartRateDaysByDate),
+                HeartRateDays = HeartRateImportUpsertDataHelper.BuildUpsertData(
+                    importData.HeartRateDays,
+                    existingHeartRateDaysByDate),
 
-                BloodOxygenDays = BloodOxygenImportUpsertDataHelper.BuildUpsertData(importData.BloodOxygenDays, existingBloodOxygenDaysByDate)
+                BloodOxygenDays = BloodOxygenImportUpsertDataHelper.BuildUpsertData(
+                    importData.BloodOxygenDays,
+                    existingBloodOxygenDaysByDate),
+
+                HeightMeasurements = HeightImportUpsertDataHelper.BuildUpsertData(
+                    importData.HeightMeasurements,
+                    existingHeightMeasurementsByMeasuredAtUtc),
+
+                WeightMeasurements = WeightImportUpsertDataHelper.BuildUpsertData(
+                    importData.WeightMeasurements,
+                    existingWeightMeasurementsByMeasuredAtUtc)
             };
         }
 
         private static void ApplyImportCounts(ImportBatch importBatch, HealthImportUpsertData upsertData)
         {
             importBatch.InsertedRecordCount = ImportBatchRecordCountHelper.CalculateInsertedRecordCount(upsertData);
-
             importBatch.UpdatedRecordCount = ImportBatchRecordCountHelper.CalculateUpdatedRecordCount(upsertData);
-
             importBatch.UnchangedRecordCount = ImportBatchRecordCountHelper.CalculateUnchangedRecordCount(upsertData);
         }
     }

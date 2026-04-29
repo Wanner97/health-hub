@@ -12,7 +12,9 @@ namespace Logic.Import.Mappers
             List<ActivityDay> activityDays,
             List<SleepSession> sleepSessions,
             List<HeartRateDay> heartRateDays,
-            List<BloodOxygenDay> bloodOxygenDays)
+            List<BloodOxygenDay> bloodOxygenDays,
+            List<HeightMeasurement> heightMeasurements,
+            List<WeightMeasurement> weightMeasurements)
         {
             var importBatch = new ImportBatch
             {
@@ -30,7 +32,9 @@ namespace Logic.Import.Mappers
                 ActivityDayEntries = activityDays,
                 SleepSessionEntries = sleepSessions,
                 HeartRateDayEntries = heartRateDays,
-                BloodOxygenDayEntries = bloodOxygenDays
+                BloodOxygenDayEntries = bloodOxygenDays,
+                HeightMeasurementEntries = heightMeasurements,
+                WeightMeasurementEntries = weightMeasurements
             };
 
             importBatch.ReceivedRecordCount = ImportBatchRecordCountHelper.CalculateReceivedRecordCount(importBatch);
