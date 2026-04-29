@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "suite": {
-    "version": "0.6.0"
+    "version": "0.7.0"
   },
   "services": {
     "android": {
-      "version": "0.6.0",
-      "versionCode": 6
+      "version": "0.7.0",
+      "versionCode": 7
     },
     "backend": {
       "version": "0.6.0"
