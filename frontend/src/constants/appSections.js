@@ -5,4 +5,5 @@ export const APP_SECTIONS = {
   SLEEP_SESSIONS: 'sleepSessions',
   HEART_RATE_DAYS: 'heartRateDays',
   BLOOD_OXYGEN_DAYS: 'bloodOxygenDays',
+  WEIGHT_MEASUREMENTS: 'weightMeasurements',
 };

@@ -7,6 +7,7 @@ import {
   formatCaloriesKcal,
   formatNumber,
   formatPercent,
+  formatWeightKg,
 } from '../number/numberFormatters';
 
 export function buildImportSubtitle(latestImport) {
@@ -84,4 +85,20 @@ export function buildBloodOxygenSubtitle(latestBloodOxygenDay) {
   }
 
   return `am ${formatDate(latestBloodOxygenDay.date)} · Min ${formatPercent(latestBloodOxygenDay.minPercent)} · Max ${formatPercent(latestBloodOxygenDay.maxPercent)} · ${formatNumber(latestBloodOxygenDay.measurementCount)} Messungen`;
+}
+
+export function buildWeightTitle(latestWeightMeasurement) {
+  if (!latestWeightMeasurement) {
+    return 'Keine Gewichtsdaten';
+  }
+
+  return formatWeightKg(latestWeightMeasurement.weightKg);
+}
+
+export function buildWeightSubtitle(latestWeightMeasurement) {
+  if (!latestWeightMeasurement) {
+    return 'Kein aktueller Gewichtsdatensatz vorhanden.';
+  }
+
+  return `am ${formatDate(latestWeightMeasurement.date)}`;
 }

@@ -77,3 +77,11 @@
 .home-card--blood-oxygen:hover {
   border-color: var(--color-accent-blood-oxygen);
 }
+
+.home-card--weight h2 {
+  color: var(--color-accent-weight);
+}
+
+.home-card--weight:hover {
+  border-color: var(--color-accent-weight);
+}

@@ -9,6 +9,7 @@ import './styles/importBatches.css';
 import './styles/sleepSessions.css';
 import './styles/heartRateDays.css';
 import './styles/bloodOxygenDays.css';
+import './styles/weightMeasurements.css';
 import App from './App.jsx';
 
 createRoot(document.getElementById('root')).render(

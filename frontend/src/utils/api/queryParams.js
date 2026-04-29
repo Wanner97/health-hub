@@ -23,3 +23,19 @@ export function buildDateRangeQuery(filters = {}, additionalKeys = []) {
 
   return queryString ? `?${queryString}` : '';
 }
+
+export function buildMeasuredAtUtcRangeQuery(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.fromMeasuredAtUtc) {
+    params.set('fromMeasuredAtUtc', filters.fromMeasuredAtUtc);
+  }
+
+  if (filters.toMeasuredAtUtc) {
+    params.set('toMeasuredAtUtc', filters.toMeasuredAtUtc);
+  }
+
+  const queryString = params.toString();
+
+  return queryString ? `?${queryString}` : '';
+}

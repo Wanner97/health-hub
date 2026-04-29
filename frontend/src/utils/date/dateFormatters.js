@@ -9,6 +9,19 @@ export function formatDate(value) {
   return `${day}.${month}.${year}`;
 }
 
+export function formatShortDateLabel(dateString) {
+  if (!dateString) {
+    return '';
+  }
+
+  const date = new Date(`${dateString}T00:00:00`);
+
+  return new Intl.DateTimeFormat('de-CH', {
+    day: '2-digit',
+    month: '2-digit',
+  }).format(date);
+}
+
 export function formatShortMonth(monthKey) {
   if (!monthKey) {
     return '-';

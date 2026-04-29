@@ -18,3 +18,10 @@ export function formatPercent(value) {
 export function formatCaloriesKcal(value) {
   return `${formatNumber(Math.round(value ?? 0))} kcal`;
 }
+
+export function formatWeightKg(value) {
+  return `${new Intl.NumberFormat('de-CH', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(value ?? 0)} kg`;
+}

@@ -11,6 +11,8 @@ import {
   buildSleepTitle,
   buildActivitySubtitle,
   buildActivityTitle,
+  buildWeightSubtitle,
+  buildWeightTitle,
 } from '../../utils/home/dashboardCardFormatters';
 
 function HomeDashboard({ onSelectSection }) {
@@ -21,6 +23,7 @@ function HomeDashboard({ onSelectSection }) {
   const latestSleepSession = dashboard?.latestSleepSession ?? null;
   const latestHeartRateDay = dashboard?.latestHeartRateDay ?? null;
   const latestBloodOxygenDay = dashboard?.latestBloodOxygenDay ?? null;
+  const latestWeightMeasurement = dashboard?.latestWeightMeasurement ?? null;
 
   return (
     <section className="home-section">
@@ -58,6 +61,23 @@ function HomeDashboard({ onSelectSection }) {
             {isLoading
               ? 'Bitte warten...'
               : buildActivitySubtitle(latestActivityDay)}
+          </p>
+        </button>
+
+        <button
+          type="button"
+          className="home-card home-card--weight"
+          onClick={() => onSelectSection(APP_SECTIONS.WEIGHT_MEASUREMENTS)}
+        >
+          <h2>
+            {isLoading
+              ? 'Gewichtsdaten werden geladen...'
+              : buildWeightTitle(latestWeightMeasurement)}
+          </h2>
+          <p>
+            {isLoading
+              ? 'Bitte warten...'
+              : buildWeightSubtitle(latestWeightMeasurement)}
           </p>
         </button>
 
