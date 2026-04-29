@@ -29,3 +29,22 @@ export function calculateAverageDistanceMeters(activityDays) {
 
   return calculateTotalDistanceMeters(activityDays) / activityDays.length;
 }
+
+export function calculateTotalCaloriesBurnedKcal(activityDays) {
+  if (!activityDays?.length) {
+    return 0;
+  }
+
+  return activityDays.reduce(
+    (sum, day) => sum + (day.totalCaloriesBurnedKcal ?? 0),
+    0
+  );
+}
+
+export function calculateAverageCaloriesBurnedKcal(activityDays) {
+  if (!activityDays?.length) {
+    return 0;
+  }
+
+  return calculateTotalCaloriesBurnedKcal(activityDays) / activityDays.length;
+}

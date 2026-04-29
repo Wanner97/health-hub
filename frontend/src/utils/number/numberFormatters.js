@@ -14,3 +14,7 @@ export function formatKilometersFromMeters(value) {
 export function formatPercent(value) {
   return `${formatNumber(Math.round(value ?? 0))}%`;
 }
+
+export function formatCaloriesKcal(value) {
+  return `${formatNumber(Math.round(value ?? 0))} kcal`;
+}

@@ -1,4 +1,5 @@
 import ActivityBarChart from './ActivityBarChart';
+import ActivityCaloriesChart from './ActivityCaloriesChart';
 import ActivityDaysTable from './ActivityDaysTable';
 import ActivityStatsSummary from './ActivityStatsSummary';
 import PeriodSelector from '../PeriodSelector';
@@ -39,7 +40,7 @@ function ActivityDaysPage({ onBack }) {
       </div>
 
       <h1>Health Hub</h1>
-      <p className="subtitle">Schritte</p>
+      <p className="subtitle">Aktivität</p>
 
       <PeriodSelector
         period={period}
@@ -67,7 +68,10 @@ function ActivityDaysPage({ onBack }) {
           />
 
           {viewMode === VIEW_MODES.STATS && (
-            <ActivityBarChart period={period} data={chartData} />
+            <>
+              <ActivityBarChart period={period} data={chartData} />
+              <ActivityCaloriesChart period={period} data={chartData} />
+            </>
           )}
 
           {viewMode === VIEW_MODES.TABLE && (

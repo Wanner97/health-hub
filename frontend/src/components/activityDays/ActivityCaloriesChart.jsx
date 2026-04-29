@@ -3,10 +3,7 @@ import {
   formatDate,
   formatMonthDetailsLabel,
 } from '../../utils/date/dateFormatters';
-import {
-  formatKilometersFromMeters,
-  formatNumber,
-} from '../../utils/number/numberFormatters';
+import { formatCaloriesKcal } from '../../utils/number/numberFormatters';
 import {
   buildGuideValues,
   getChartMax,
@@ -32,17 +29,13 @@ function getDetailsValue(item, period) {
   }
 
   if (period === PERIODS.TWELVE_MONTHS) {
-    return `Ø ${formatNumber(item.averageSteps)} Schritte / Tag (${formatKilometersFromMeters(
-      item.averageDistanceMeters
-    )} km / Tag)`;
+    return `Ø ${formatCaloriesKcal(item.averageCaloriesBurnedKcal)} / Tag`;
   }
 
-  return `${formatNumber(item.steps)} Schritte (${formatKilometersFromMeters(
-    item.distanceMeters
-  )} km)`;
+  return formatCaloriesKcal(item.totalCaloriesBurnedKcal);
 }
 
-function ActivityBarChart({ period, data }) {
+function ActivityCaloriesChart({ period, data }) {
   const {
     displayedItem,
     handleItemMouseEnter,
@@ -55,16 +48,20 @@ function ActivityBarChart({ period, data }) {
   if (!data?.length) {
     return (
       <section className="chart-section">
-        <h2>Schrittverlauf</h2>
+        <h2>Kalorienverbrauch</h2>
         <p>Keine Daten vorhanden.</p>
       </section>
     );
   }
 
-  const valueKey = period === PERIODS.TWELVE_MONTHS ? 'averageSteps' : 'steps';
+  const valueKey =
+    period === PERIODS.TWELVE_MONTHS
+      ? 'averageCaloriesBurnedKcal'
+      : 'totalCaloriesBurnedKcal';
+
   const maxValue = Math.max(...data.map((item) => item[valueKey] ?? 0), 1);
-  const chartMax = getChartMax(maxValue, 1000);
-  const guideValues = buildGuideValues(chartMax, 1000);
+  const chartMax = getChartMax(maxValue, 100);
+  const guideValues = buildGuideValues(chartMax, 100);
 
   function getBarHeight(value) {
     return `${(value / chartMax) * 100}%`;
@@ -73,7 +70,7 @@ function ActivityBarChart({ period, data }) {
   return (
     <section className="chart-section">
       <div className="chart-header">
-        <h2>Schrittverlauf</h2>
+        <h2>Kalorienverbrauch</h2>
       </div>
 
       <div className="chart-body">
@@ -84,7 +81,7 @@ function ActivityBarChart({ period, data }) {
               className="chart-guide"
               style={{ bottom: `${(value / chartMax) * 100}%` }}
             >
-              <span className="chart-guide-label">{formatNumber(value)}</span>
+              <span className="chart-guide-label">{Math.round(value)}</span>
             </div>
           ))}
 
@@ -134,4 +131,4 @@ function ActivityBarChart({ period, data }) {
   );
 }
 
-export default ActivityBarChart;
+export default ActivityCaloriesChart;

@@ -3,7 +3,11 @@ import {
   formatDateUtcDateOnly,
 } from '../date/dateFormatters';
 import { formatDurationMinutes } from '../duration/durationFormatters';
-import { formatNumber, formatPercent } from '../number/numberFormatters';
+import {
+  formatCaloriesKcal,
+  formatNumber,
+  formatPercent,
+} from '../number/numberFormatters';
 
 export function buildImportSubtitle(latestImport) {
   if (!latestImport) {
@@ -13,17 +17,19 @@ export function buildImportSubtitle(latestImport) {
   return `${formatDateUtcDateOnly(latestImport.importedAtUtc)} · Erhalten ${formatNumber(latestImport.receivedRecordCount)} · Neu ${formatNumber(latestImport.insertedRecordCount)} · Aktualisiert ${formatNumber(latestImport.updatedRecordCount)} · Unverändert ${formatNumber(latestImport.unchangedRecordCount)}`;
 }
 
-export function buildStepsTitle(latestActivityDay) {
+export function buildActivityTitle(latestActivityDay) {
   if (!latestActivityDay) {
-    return 'Keine Schrittedaten';
+    return 'Keine Aktivitätsdaten';
   }
 
-  return `${formatNumber(latestActivityDay.steps)} Schritte`;
+  return `${formatNumber(latestActivityDay.steps)} Schritte · ${formatCaloriesKcal(
+    latestActivityDay.totalCaloriesBurnedKcal
+  )}`;
 }
 
-export function buildStepsSubtitle(latestActivityDay) {
+export function buildActivitySubtitle(latestActivityDay) {
   if (!latestActivityDay) {
-    return 'Kein aktueller Schrittedatensatz vorhanden.';
+    return 'Kein aktueller Aktivitätsdatensatz vorhanden.';
   }
 
   return `am ${formatDate(latestActivityDay.date)}`;

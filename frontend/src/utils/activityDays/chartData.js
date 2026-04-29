@@ -18,6 +18,8 @@ export function buildDailyChartData(activityDays) {
     fullLabel: day.date,
     steps: day.steps ?? 0,
     distanceMeters: day.distanceMeters ?? 0,
+    totalCaloriesBurnedKcal: day.totalCaloriesBurnedKcal ?? 0,
+    distanceSource: day.distanceSource ?? null,
   }));
 }
 
@@ -34,8 +36,10 @@ export function buildMonthlyChartData(activityDays) {
       fullLabel: month.monthKey,
       averageSteps: month.averageSteps,
       averageDistanceMeters: month.averageDistanceMeters,
+      averageCaloriesBurnedKcal: month.averageCaloriesBurnedKcal,
       totalSteps: month.totalSteps,
       totalDistanceMeters: month.totalDistanceMeters,
+      totalCaloriesBurnedKcal: month.totalCaloriesBurnedKcal,
       dayCount: month.dayCount,
     }));
 }

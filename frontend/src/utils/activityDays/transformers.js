@@ -36,6 +36,8 @@ export function fillMissingDays(activityDays, fromString, toString) {
         date: currentKey,
         steps: 0,
         distanceMeters: 0,
+        distanceSource: null,
+        totalCaloriesBurnedKcal: 0,
         startTimeUtc: null,
         endTimeUtc: null,
       }

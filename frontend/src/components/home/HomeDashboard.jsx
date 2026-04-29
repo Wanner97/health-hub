@@ -9,8 +9,8 @@ import {
   buildImportSubtitle,
   buildSleepSubtitle,
   buildSleepTitle,
-  buildStepsSubtitle,
-  buildStepsTitle,
+  buildActivitySubtitle,
+  buildActivityTitle,
 } from '../../utils/home/dashboardCardFormatters';
 
 function HomeDashboard({ onSelectSection }) {
@@ -46,18 +46,18 @@ function HomeDashboard({ onSelectSection }) {
 
         <button
           type="button"
-          className="home-card home-card--steps"
+          className="home-card home-card--activity"
           onClick={() => onSelectSection(APP_SECTIONS.ACTIVITY_DAYS)}
         >
           <h2>
             {isLoading
-              ? 'Schrittedaten werden geladen...'
-              : buildStepsTitle(latestActivityDay)}
+              ? 'Aktivitätsdaten werden geladen...'
+              : buildActivityTitle(latestActivityDay)}
           </h2>
           <p>
             {isLoading
               ? 'Bitte warten...'
-              : buildStepsSubtitle(latestActivityDay)}
+              : buildActivitySubtitle(latestActivityDay)}
           </p>
         </button>
 

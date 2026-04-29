@@ -5,6 +5,7 @@ import {
   formatMonthLabel,
 } from '../../utils/date/dateFormatters';
 import {
+  formatCaloriesKcal,
   formatKilometersFromMeters,
   formatNumber,
 } from '../../utils/number/numberFormatters';
@@ -21,6 +22,7 @@ function ActivityDaysTable({ rows, period }) {
               <th>Monat</th>
               <th>Ø Schritte / Tag</th>
               <th>Ø km / Tag</th>
+              <th>Ø kcal / Tag</th>
               <th>Schritte gesamt</th>
               <th>Tage</th>
             </tr>
@@ -31,6 +33,7 @@ function ActivityDaysTable({ rows, period }) {
                 <td>{formatMonthLabel(month.monthKey)}</td>
                 <td>{formatNumber(month.averageSteps)}</td>
                 <td>{formatKilometersFromMeters(month.averageDistanceMeters)}</td>
+                <td>{formatCaloriesKcal(month.averageCaloriesBurnedKcal)}</td>
                 <td>{formatNumber(month.totalSteps)}</td>
                 <td>{formatNumber(month.dayCount)}</td>
               </tr>
@@ -43,7 +46,7 @@ function ActivityDaysTable({ rows, period }) {
 
   return (
     <section className="table-section">
-      <h2>Schrittübersicht</h2>
+      <h2>Aktivitätsübersicht</h2>
 
       <table>
         <thead>
@@ -51,6 +54,7 @@ function ActivityDaysTable({ rows, period }) {
             <th>Datum</th>
             <th>Schritte</th>
             <th>Distanz (km)</th>
+            <th>Kalorien</th>
             <th>Start (UTC)</th>
             <th>Ende (UTC)</th>
           </tr>
@@ -61,6 +65,7 @@ function ActivityDaysTable({ rows, period }) {
               <td>{formatDate(day.date)}</td>
               <td>{formatNumber(day.steps)}</td>
               <td>{formatKilometersFromMeters(day.distanceMeters)}</td>
+              <td>{formatCaloriesKcal(day.totalCaloriesBurnedKcal)}</td>
               <td>{formatDateTimeUtc(day.startTimeUtc)}</td>
               <td>{formatDateTimeUtc(day.endTimeUtc)}</td>
             </tr>

@@ -1,22 +1,22 @@
 .card h2,
 .table-section h2,
 .chart-header h2 {
-  color: var(--color-accent-steps);
+  color: var(--color-accent-activity);
 }
 
 .chart-guide {
-  border-top-color: var(--color-accent-steps);
+  border-top-color: var(--color-accent-activity);
 }
 
 .chart-guide-label {
-  color: var(--color-accent-steps);
+  color: var(--color-accent-activity);
 }
 
 .bar-column-wrapper.is-active .bar-fill,
 .bar-column-wrapper:hover .bar-fill {
-  background-color: var(--color-accent-steps);
+  background-color: var(--color-accent-activity);
 }
 
 .chart-details-value {
-  color: var(--color-accent-steps);
+  color: var(--color-accent-activity);
 }

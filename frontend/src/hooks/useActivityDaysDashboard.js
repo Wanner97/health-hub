@@ -4,8 +4,10 @@ import { getChartData } from '../utils/activityDays/chartData';
 import { PERIODS } from '../constants/periods';
 import { VIEW_MODES } from '../constants/viewModes';
 import {
+  calculateAverageCaloriesBurnedKcal,
   calculateAverageDistanceMeters,
   calculateAverageSteps,
+  calculateTotalCaloriesBurnedKcal,
   calculateTotalSteps,
 } from '../utils/activityDays/calculations';
 import { getRangeFromPeriod } from '../utils/periods/periodRangeUtils';
@@ -24,6 +26,8 @@ export function useActivityDaysDashboard() {
   const [activityDays, setActivityDays] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const totalCaloriesBurned = calculateTotalCaloriesBurnedKcal(activityDays);
+  const averageCaloriesBurned = calculateAverageCaloriesBurnedKcal(activityDays);
 
   const selectedRange = useMemo(() => {
     return getRangeFromPeriod(period, endDate);
@@ -106,8 +110,10 @@ export function useActivityDaysDashboard() {
     selectedRange,
     dayCount,
     totalSteps,
+    totalCaloriesBurned,
     averageSteps,
     averageDistance,
+    averageCaloriesBurned,
     displayRows,
     chartData,
   };
