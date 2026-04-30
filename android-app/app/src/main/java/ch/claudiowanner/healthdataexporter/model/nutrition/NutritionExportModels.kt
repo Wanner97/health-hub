@@ -5,6 +5,8 @@ data class NutritionExportCluster(
 )
 
 data class NutritionExportRecord(
+    val healthConnectRecordId: String,
+    val date: String,
     val startTime: String,
     val endTime: String,
     val mealType: String,

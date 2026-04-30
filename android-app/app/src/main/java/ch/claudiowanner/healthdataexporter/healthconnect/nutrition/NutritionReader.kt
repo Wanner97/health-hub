@@ -8,6 +8,7 @@ import androidx.health.connect.client.time.TimeRangeFilter
 import ch.claudiowanner.healthdataexporter.model.nutrition.NutritionExportRecord
 import java.time.Duration
 import java.time.Instant
+import java.time.ZoneId
 
 class NutritionReader(
     private val client: HealthConnectClient
@@ -22,6 +23,7 @@ class NutritionReader(
 
         val allResults = mutableListOf<NutritionExportRecord>()
         var chunkStart = startInstant
+        val zoneId = ZoneId.systemDefault()
 
         while (chunkStart < endInstant) {
             val chunkEnd = minOf(chunkStart.plus(Duration.ofDays(365)), endInstant)
@@ -29,7 +31,8 @@ class NutritionReader(
             allResults.addAll(
                 readNutritionRecordsForRange(
                     startInstant = chunkStart,
-                    endInstant = chunkEnd
+                    endInstant = chunkEnd,
+                    zoneId = zoneId
                 )
             )
 
@@ -41,7 +44,8 @@ class NutritionReader(
 
     private suspend fun readNutritionRecordsForRange(
         startInstant: Instant,
-        endInstant: Instant
+        endInstant: Instant,
+        zoneId: ZoneId
     ): List<NutritionExportRecord> {
         val results = mutableListOf<NutritionExportRecord>()
         var pageToken: String? = null
@@ -58,6 +62,8 @@ class NutritionReader(
 
             val mapped = response.records.map { record ->
                 NutritionExportRecord(
+                    healthConnectRecordId = record.metadata.id,
+                    date = record.startTime.atZone(zoneId).toLocalDate().toString(),
                     startTime = record.startTime.toString(),
                     endTime = record.endTime.toString(),
                     mealType = mapMealType(record.mealType),
