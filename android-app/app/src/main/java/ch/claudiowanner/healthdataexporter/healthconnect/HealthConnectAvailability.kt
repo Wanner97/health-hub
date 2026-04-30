@@ -9,6 +9,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.NutritionRecord
 
 object HealthConnectAvailability {
     const val PROVIDER_PACKAGE_NAME = "com.google.android.apps.healthdata"
@@ -25,6 +26,7 @@ object HealthConnectAvailability {
         HealthPermission.getReadPermission(SleepSessionRecord::class),
         HealthPermission.getReadPermission(HeartRateRecord::class),
         HealthPermission.getReadPermission(OxygenSaturationRecord::class),
+        HealthPermission.getReadPermission(NutritionRecord::class),
         READ_HEALTH_DATA_HISTORY
     )
 }

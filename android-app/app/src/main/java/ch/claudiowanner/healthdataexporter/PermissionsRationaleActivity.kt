@@ -32,7 +32,7 @@ class PermissionsRationaleActivity : ComponentActivity() {
                     )
 
                     Text(
-                        text = "This app reads selected health data from Health Connect, including activity, sleep and vital measurements, so you can inspect and export your own data as JSON.",
+                        text = "This app reads selected health data from Health Connect, including activity, sleep, vital measurements, body measurements and nutrition records, so you can inspect and export your own data as JSON.",
                         style = MaterialTheme.typography.bodyLarge
                     )
 

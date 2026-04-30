@@ -7,6 +7,7 @@ import ch.claudiowanner.healthdataexporter.healthconnect.body.BodyReader
 import ch.claudiowanner.healthdataexporter.healthconnect.sleep.SleepReader
 import ch.claudiowanner.healthdataexporter.healthconnect.vitals.BloodOxygenReader
 import ch.claudiowanner.healthdataexporter.healthconnect.vitals.HeartRateReader
+import ch.claudiowanner.healthdataexporter.healthconnect.nutrition.NutritionReader
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
 import ch.claudiowanner.healthdataexporter.model.body.HeightExportRecord
 import ch.claudiowanner.healthdataexporter.model.body.WeightExportRecord
@@ -14,6 +15,7 @@ import ch.claudiowanner.healthdataexporter.model.sleep.SleepSessionExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateDailyExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateHourlyExportRecord
+import ch.claudiowanner.healthdataexporter.model.nutrition.NutritionExportRecord
 import java.time.Instant
 import java.time.LocalDate
 
@@ -42,6 +44,10 @@ class HealthConnectGateway(
 
     private val bloodOxygenReader: BloodOxygenReader by lazy {
         BloodOxygenReader(client)
+    }
+
+    private val nutritionReader: NutritionReader by lazy {
+        NutritionReader(client)
     }
 
     fun getSdkStatus(): Int {
@@ -121,6 +127,16 @@ class HealthConnectGateway(
         endInstant: Instant
     ): List<BloodOxygenDailyExportRecord> {
         return bloodOxygenReader.readBloodOxygenDailyRecords(
+            startInstant = startInstant,
+            endInstant = endInstant
+        )
+    }
+
+    suspend fun readNutritionRecords(
+        startInstant: Instant,
+        endInstant: Instant
+    ): List<NutritionExportRecord> {
+        return nutritionReader.readNutritionRecords(
             startInstant = startInstant,
             endInstant = endInstant
         )

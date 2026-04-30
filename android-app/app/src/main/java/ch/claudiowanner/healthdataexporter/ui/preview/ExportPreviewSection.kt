@@ -47,6 +47,7 @@ fun ExportPreviewSection(
                 PreviewSummaryLine("Export type", summary.exportType)
                 PreviewSummaryLine("Range", summary.rangeDescription)
                 PreviewSummaryLine("Activity records", summary.activityRecordCount)
+                PreviewSummaryLine("Nutrition records", summary.nutritionRecordCount)
                 PreviewSummaryLine("Weight records", summary.weightRecordCount)
                 PreviewSummaryLine(
                     "Latest height available",

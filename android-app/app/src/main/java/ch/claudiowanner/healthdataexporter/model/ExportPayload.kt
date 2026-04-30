@@ -4,6 +4,7 @@ import ch.claudiowanner.healthdataexporter.model.activity.ActivityExportCluster
 import ch.claudiowanner.healthdataexporter.model.body.BodyExportCluster
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepExportCluster
 import ch.claudiowanner.healthdataexporter.model.vitals.VitalsExportCluster
+import ch.claudiowanner.healthdataexporter.model.nutrition.NutritionExportCluster
 
 data class ExportPayload(
     val exportVersion: String,
@@ -20,5 +21,6 @@ data class ExportClusters(
     val activity: ActivityExportCluster,
     val sleep: SleepExportCluster,
     val vitals: VitalsExportCluster,
-    val body: BodyExportCluster
+    val body: BodyExportCluster,
+    val nutrition: NutritionExportCluster
 )

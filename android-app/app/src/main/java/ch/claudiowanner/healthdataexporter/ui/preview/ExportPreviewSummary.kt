@@ -9,5 +9,6 @@ data class ExportPreviewSummary(
     val heartRateHourlyCount: Int? = null,
     val bloodOxygenDailyCount: Int? = null,
     val weightRecordCount: Int? = null,
-    val hasLatestHeight: Boolean? = null
+    val hasLatestHeight: Boolean? = null,
+    val nutritionRecordCount: Int? = null,
 )

@@ -43,6 +43,10 @@ class ExportPreviewSummaryParser {
             val hasLatestHeight = body
                 ?.hasNonNull("latestHeight")
 
+            val nutritionRecordCount = clusters
+                ?.objectOrNull("nutrition")
+                ?.arraySizeOrNull("records")
+
             ExportPreviewSummary(
                 exportType = exportType,
                 rangeDescription = when {
@@ -56,7 +60,8 @@ class ExportPreviewSummaryParser {
                 heartRateHourlyCount = heartRateHourlyCount,
                 bloodOxygenDailyCount = bloodOxygenDailyCount,
                 weightRecordCount = weightRecordCount,
-                hasLatestHeight = hasLatestHeight
+                hasLatestHeight = hasLatestHeight,
+                nutritionRecordCount = nutritionRecordCount
             )
         }.getOrNull()
     }

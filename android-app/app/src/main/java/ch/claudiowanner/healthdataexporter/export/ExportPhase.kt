@@ -9,6 +9,7 @@ enum class ExportPhase(val label: String) {
     READING_HEART_RATE_DAILY("Reading daily heart rate data"),
     READING_BLOOD_OXYGEN_DAILY("Reading daily blood oxygen data"),
     READING_HEART_RATE_HOURLY("Reading hourly heart rate data"),
+    READING_NUTRITION("Reading nutrition data"),
     BUILDING_EXPORT("Building export payload"),
     WRITING_JSON("Writing JSON file"),
     LOADING_EXPORT("Loading export file"),
