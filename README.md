@@ -8,9 +8,7 @@ At the moment, the project is still in active development. The whole workflow cu
 
 ---
 
->[!NOTE]
->
-> **Work in progress**
+> ## Work in progress
 >
 > This repository reflects an unfinished learning project that is still evolving in terms of architecture, features, and data flow.
 >  
@@ -81,13 +79,13 @@ If the project is continued through to a more complete state, the intended direc
 
 ---
 
-## Notes
-
-This repository is public primarily for documentation and portfolio purposes.
-
-It is meant to show how I approach architecture, data handling, service boundaries, and frontend/backend integration while learning and iterating on a real project.
-
-It should be understood as an evolving practice project, not as a finished production-ready product.
+> [!NOTE]
+>
+> This repository is public primarily for documentation and portfolio purposes.
+>
+> It is meant to show how I approach architecture, data handling, service boundaries, and frontend/backend integration while learning and iterating on a real project.
+>
+> It should be understood as an evolving practice project, not as a finished production-ready product.
 
 ---
 
