@@ -14,7 +14,8 @@ namespace Logic.Import.Mappers
             List<HeartRateDay> heartRateDays,
             List<BloodOxygenDay> bloodOxygenDays,
             List<HeightMeasurement> heightMeasurements,
-            List<WeightMeasurement> weightMeasurements)
+            List<WeightMeasurement> weightMeasurements,
+            List<NutritionRecord> nutritionRecords)
         {
             var importBatch = new ImportBatch
             {
@@ -34,7 +35,8 @@ namespace Logic.Import.Mappers
                 HeartRateDayEntries = heartRateDays,
                 BloodOxygenDayEntries = bloodOxygenDays,
                 HeightMeasurementEntries = heightMeasurements,
-                WeightMeasurementEntries = weightMeasurements
+                WeightMeasurementEntries = weightMeasurements,
+                NutritionRecordEntries = nutritionRecords
             };
 
             importBatch.ReceivedRecordCount = ImportBatchRecordCountHelper.CalculateReceivedRecordCount(importBatch);

@@ -19,6 +19,12 @@ namespace DataAccess.Context
         public DbSet<BloodOxygenDay> BloodOxygenDays { get; set; }
         public DbSet<HeightMeasurement> HeightMeasurements { get; set; }
         public DbSet<WeightMeasurement> WeightMeasurements { get; set; }
+        public DbSet<NutritionRecord> NutritionRecords { get; set; }
+        public DbSet<NutritionRecordNutrient> NutritionRecordNutrients { get; set; }
+        public DbSet<NutritionDay> NutritionDays { get; set; }
+        public DbSet<NutritionDayNutrientTotal> NutritionDayNutrientTotals { get; set; }
+        public DbSet<NutritionMealTypeSummary> NutritionMealTypeSummaries { get; set; }
+        public DbSet<NutritionMealTypeNutrientTotal> NutritionMealTypeNutrientTotals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

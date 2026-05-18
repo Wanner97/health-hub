@@ -114,6 +114,10 @@ namespace Logic.Import
                 importData.ImportBatch.Source,
                 importData.WeightMeasurements.Select(x => x.MeasuredAtUtc));
 
+            var existingNutritionRecordsByHealthConnectRecordId = _importBatchDataAccess.GetExistingNutritionRecords(
+                importData.ImportBatch.Source,
+                importData.NutritionRecords.Select(x => x.HealthConnectRecordId));
+
             return new HealthImportUpsertData
             {
                 ActivityDays = ActivityImportUpsertDataHelper.BuildUpsertData(
@@ -138,7 +142,11 @@ namespace Logic.Import
 
                 WeightMeasurements = WeightImportUpsertDataHelper.BuildUpsertData(
                     importData.WeightMeasurements,
-                    existingWeightMeasurementsByMeasuredAtUtc)
+                    existingWeightMeasurementsByMeasuredAtUtc),
+
+                NutritionRecords = NutritionImportUpsertDataHelper.BuildUpsertData(
+                    importData.NutritionRecords,
+                    existingNutritionRecordsByHealthConnectRecordId)
             };
         }
 

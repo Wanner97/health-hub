@@ -1,6 +1,8 @@
-﻿using Common.Dashboard;
+﻿using Common.Constants;
+using Common.Dashboard;
 using Common.Dtos.DataReadDtos.Dashboard;
 using Common.Dtos.DataReadDtos.Dashboard.SummaryDtos;
+using Common.Models;
 
 namespace Logic.Dashboard.Mappers
 {
@@ -65,8 +67,19 @@ namespace Logic.Dashboard.Mappers
                     Date = dashboardData.LatestWeightMeasurement.Date,
                     WeightKg = dashboardData.LatestWeightMeasurement.WeightKg,
                     MeasuredAtUtc = dashboardData.LatestWeightMeasurement.MeasuredAtUtc
+                },
+
+                LatestNutritionDay = dashboardData.LatestNutritionDay == null ? null : new LatestNutritionDaySummaryDto
+                {
+                    Date = dashboardData.LatestNutritionDay.Date,
+                    TotalEnergyKcal = GetNutritionTotalAmount(dashboardData.LatestNutritionDay, NutritionNutrientKeys.EnergyKcal)
                 }
             };
+        }
+
+        private static double GetNutritionTotalAmount(NutritionDay nutritionDay, string nutrientKey)
+        {
+            return nutritionDay.NutrientTotals.FirstOrDefault(x => x.NutrientKey == nutrientKey)?.TotalAmount ?? 0d;
         }
     }
 }

@@ -13,12 +13,10 @@ namespace Logic.Import.Helpers
             {
                 var json = reader.ReadToEnd();
 
-                var dto = JsonSerializer.Deserialize<HealthExportDto>(
-                    json,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    });
+                var dto = JsonSerializer.Deserialize<HealthExportDto>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
 
                 if (dto == null)
                 {
@@ -31,38 +29,22 @@ namespace Logic.Import.Helpers
 
         public static HealthImportData BuildHealthImportData(HealthExportDto dto, DateTime importedAtUtc)
         {
-            var importedActivityDays = ActivityImportMapper.MapToActivityDays(
-                dto.Source,
-                dto.Clusters.Activity);
+            var importedActivityDays = ActivityImportMapper.MapToActivityDays(dto.Source, dto.Clusters.Activity);
 
-            var consolidatedSleepSessionDtos = SleepSessionConsolidationHelper.ConsolidateSleepSessions(
-                dto.Clusters.Sleep?.Sessions ?? new List<SleepSessionDto>());
+            var consolidatedSleepSessionDtos = SleepSessionConsolidationHelper.ConsolidateSleepSessions(dto.Clusters.Sleep?.Sessions ?? new List<SleepSessionDto>());
 
-            var importedSleepSessions = SleepImportMapper.MapToSleepSessions(
-                dto.Source,
-                importedAtUtc,
-                consolidatedSleepSessionDtos);
+            var importedSleepSessions = SleepImportMapper.MapToSleepSessions(dto.Source, importedAtUtc, consolidatedSleepSessionDtos);
 
-            var importedHeartRateDays = HeartRateImportMapper.MapToHeartRateDays(
-                dto.Source,
-                importedAtUtc,
-                dto.Clusters.Vitals?.HeartRateDaily,
-                dto.Clusters.Vitals?.HeartRateHourly);
+            var importedHeartRateDays = HeartRateImportMapper.MapToHeartRateDays(dto.Source, importedAtUtc,
+                dto.Clusters.Vitals?.HeartRateDaily, dto.Clusters.Vitals?.HeartRateHourly);
 
-            var importedBloodOxygenDays = BloodOxygenImportMapper.MapToBloodOxygenDays(
-                dto.Source,
-                importedAtUtc,
-                dto.Clusters.Vitals?.BloodOxygenDaily);
+            var importedBloodOxygenDays = BloodOxygenImportMapper.MapToBloodOxygenDays(dto.Source, importedAtUtc, dto.Clusters.Vitals?.BloodOxygenDaily);
 
-            var importedHeightMeasurements = BodyImportMapper.MapToHeightMeasurements(
-                dto.Source,
-                importedAtUtc,
-                dto.Clusters.Body);
+            var importedHeightMeasurements = BodyImportMapper.MapToHeightMeasurements(dto.Source, importedAtUtc, dto.Clusters.Body);
 
-            var importedWeightMeasurements = BodyImportMapper.MapToWeightMeasurements(
-                dto.Source,
-                importedAtUtc,
-                dto.Clusters.Body);
+            var importedWeightMeasurements = BodyImportMapper.MapToWeightMeasurements(dto.Source, importedAtUtc, dto.Clusters.Body);
+
+            var importedNutritionRecords = NutritionImportMapper.MapToNutritionRecords(dto.Source, importedAtUtc, dto.Clusters.Nutrition);
 
             var importBatch = ImportBatchImportMapper.MapToImportBatch(
                 dto,
@@ -72,7 +54,8 @@ namespace Logic.Import.Helpers
                 importedHeartRateDays,
                 importedBloodOxygenDays,
                 importedHeightMeasurements,
-                importedWeightMeasurements);
+                importedWeightMeasurements,
+                importedNutritionRecords);
 
             return new HealthImportData
             {
@@ -83,7 +66,8 @@ namespace Logic.Import.Helpers
                 HeartRateDays = importedHeartRateDays,
                 BloodOxygenDays = importedBloodOxygenDays,
                 HeightMeasurements = importedHeightMeasurements,
-                WeightMeasurements = importedWeightMeasurements
+                WeightMeasurements = importedWeightMeasurements,
+                NutritionRecords = importedNutritionRecords
             };
         }
 
@@ -95,6 +79,8 @@ namespace Logic.Import.Helpers
             importBatch.BloodOxygenDayEntries = new List<BloodOxygenDay>();
             importBatch.HeightMeasurementEntries = new List<HeightMeasurement>();
             importBatch.WeightMeasurementEntries = new List<WeightMeasurement>();
+            importBatch.NutritionRecordEntries = new List<NutritionRecord>();
+            importBatch.NutritionDayEntries = new List<NutritionDay>();
         }
     }
 }

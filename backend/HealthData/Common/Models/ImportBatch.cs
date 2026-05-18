@@ -37,5 +37,9 @@
         public List<HeightMeasurement> HeightMeasurementEntries { get; set; } = new();
 
         public List<WeightMeasurement> WeightMeasurementEntries { get; set; } = new();
+
+        public List<NutritionRecord> NutritionRecordEntries { get; set; } = new();
+
+        public List<NutritionDay> NutritionDayEntries { get; set; } = new();
     }
 }

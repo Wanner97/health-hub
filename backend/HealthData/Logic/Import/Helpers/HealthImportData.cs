@@ -20,5 +20,7 @@ namespace Logic.Import.Helpers
         public List<HeightMeasurement> HeightMeasurements { get; set; } = new();
 
         public List<WeightMeasurement> WeightMeasurements { get; set; } = new();
+
+        public List<NutritionRecord> NutritionRecords { get; set; } = new();
     }
 }

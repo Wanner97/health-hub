@@ -9,5 +9,7 @@
         public VitalsClusterDto? Vitals { get; set; }
 
         public BodyClusterDto? Body { get; set; }
+
+        public NutritionClusterDto? Nutrition { get; set; }
     }
 }

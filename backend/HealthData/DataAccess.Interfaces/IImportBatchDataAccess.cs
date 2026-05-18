@@ -21,6 +21,8 @@ namespace DataAccess.Interfaces
 
         Dictionary<DateTime, WeightMeasurement> GetExistingWeightMeasurements(string source, IEnumerable<DateTime> measuredAtUtcValues);
 
+        Dictionary<string, NutritionRecord> GetExistingNutritionRecords(string source, IEnumerable<string> healthConnectRecordIds);
+
         ImportBatch ApplyImport(ImportBatch importBatch, HealthImportUpsertData upsertData);
     }
 }

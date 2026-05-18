@@ -46,6 +46,12 @@ namespace DataAccess
 
                     LatestWeightMeasurement = context.WeightMeasurements
                         .OrderByDescending(x => x.MeasuredAtUtc)
+                        .FirstOrDefault(),
+
+                    LatestNutritionDay = context.NutritionDays
+                        .AsNoTracking()
+                        .Include(x => x.NutrientTotals)
+                        .OrderByDescending(x => x.Date)
                         .FirstOrDefault()
                 };
             }

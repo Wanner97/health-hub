@@ -17,5 +17,7 @@ namespace Common.Dtos.DataReadDtos.Dashboard
         public LatestHeightMeasurementSummaryDto? LatestHeightMeasurement { get; set; }
 
         public LatestWeightMeasurementSummaryDto? LatestWeightMeasurement { get; set; }
+
+        public LatestNutritionDaySummaryDto? LatestNutritionDay { get; set; }
     }
 }

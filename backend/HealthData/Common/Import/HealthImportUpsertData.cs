@@ -15,5 +15,7 @@ namespace Common.Import
         public ImportUpsertData<HeightMeasurement> HeightMeasurements { get; set; } = new();
 
         public ImportUpsertData<WeightMeasurement> WeightMeasurements { get; set; } = new();
+
+        public ImportUpsertData<NutritionRecord> NutritionRecords { get; set; } = new();
     }
 }

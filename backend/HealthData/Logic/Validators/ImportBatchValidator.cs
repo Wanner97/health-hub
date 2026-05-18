@@ -41,6 +41,7 @@ namespace Logic.Validators
             RuleForEach(x => x.BloodOxygenDayEntries).SetValidator(new BloodOxygenDayValidator(false));
             RuleForEach(x => x.HeightMeasurementEntries).SetValidator(new HeightMeasurementValidator(false));
             RuleForEach(x => x.WeightMeasurementEntries).SetValidator(new WeightMeasurementValidator(false));
+            RuleForEach(x => x.NutritionRecordEntries).SetValidator(new NutritionRecordValidator(false));
 
             RuleFor(x => x.ActivityDayEntries)
                 .Must(HaveUniqueActivityDates)
@@ -71,6 +72,11 @@ namespace Logic.Validators
                 .Must(HaveUniqueWeightMeasuredAtUtcValues)
                 .When(x => x.WeightMeasurementEntries != null && x.WeightMeasurementEntries.Count > 0)
                 .WithMessage("The import contains duplicate weight measurement timestamps.");
+
+            RuleFor(x => x.NutritionRecordEntries)
+                .Must(HaveUniqueNutritionHealthConnectRecordIds)
+                .When(x => x.NutritionRecordEntries != null && x.NutritionRecordEntries.Count > 0)
+                .WithMessage("The import contains duplicate nutrition health connect record ids.");
         }
 
         private static bool HaveAtLeastOneImportEntry(ImportBatch importBatch)
@@ -147,6 +153,18 @@ namespace Logic.Validators
 
             return weightMeasurementEntries
                 .GroupBy(x => x.MeasuredAtUtc)
+                .All(g => g.Count() == 1);
+        }
+
+        private static bool HaveUniqueNutritionHealthConnectRecordIds(ICollection<NutritionRecord>? nutritionRecordEntries)
+        {
+            if (nutritionRecordEntries == null)
+            {
+                return true;
+            }
+
+            return nutritionRecordEntries
+                .GroupBy(x => x.HealthConnectRecordId)
                 .All(g => g.Count() == 1);
         }
     }

@@ -17,5 +17,7 @@ namespace Common.Dashboard
         public HeightMeasurement? LatestHeightMeasurement { get; set; }
 
         public WeightMeasurement? LatestWeightMeasurement { get; set; }
+
+        public NutritionDay? LatestNutritionDay { get; set; }
     }
 }

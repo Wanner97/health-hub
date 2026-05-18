@@ -54,6 +54,16 @@ namespace DataAccess.Configurations
                 .WithOne(x => x.LastImportBatch)
                 .HasForeignKey(x => x.LastImportBatchId)
                 .IsRequired();
+
+            builder.HasMany(x => x.NutritionRecordEntries)
+                .WithOne(x => x.LastImportBatch)
+                .HasForeignKey(x => x.LastImportBatchId)
+                .IsRequired();
+
+            builder.HasMany(x => x.NutritionDayEntries)
+                .WithOne(x => x.LastImportBatch)
+                .HasForeignKey(x => x.LastImportBatchId)
+                .IsRequired();
         }
     }
 }
