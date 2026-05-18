@@ -44,19 +44,12 @@ fun ExportPreviewSection(
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                PreviewSummaryLine("Export type", summary.exportType)
-                PreviewSummaryLine("Range", summary.rangeDescription)
-                PreviewSummaryLine("Activity records", summary.activityRecordCount)
-                PreviewSummaryLine("Nutrition records", summary.nutritionRecordCount)
-                PreviewSummaryLine("Weight records", summary.weightRecordCount)
-                PreviewSummaryLine(
-                    "Latest height available",
-                    summary.hasLatestHeight?.let { if (it) "Yes" else "No" }
-                )
-                PreviewSummaryLine("Sleep sessions", summary.sleepSessionCount)
-                PreviewSummaryLine("Heart rate daily records", summary.heartRateDailyCount)
-                PreviewSummaryLine("Heart rate hourly records", summary.heartRateHourlyCount)
-                PreviewSummaryLine("Blood oxygen daily records", summary.bloodOxygenDailyCount)
+                summary.items.forEach { item ->
+                    PreviewSummaryLine(
+                        label = item.label,
+                        value = item.value
+                    )
+                }
             }
         }
 
@@ -145,12 +138,8 @@ fun ExportPreviewSection(
 @Composable
 private fun PreviewSummaryLine(
     label: String,
-    value: Any?
+    value: String
 ) {
-    if (value == null) {
-        return
-    }
-
     Text(
         text = "$label: $value",
         style = MaterialTheme.typography.bodySmall,

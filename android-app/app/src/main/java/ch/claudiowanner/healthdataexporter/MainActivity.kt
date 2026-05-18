@@ -6,10 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.core.content.FileProvider
 import androidx.health.connect.client.PermissionController
 import androidx.lifecycle.lifecycleScope
-import ch.claudiowanner.healthdataexporter.config.ExportConfig
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectAvailability
 import ch.claudiowanner.healthdataexporter.ui.ExportScreen
 import ch.claudiowanner.healthdataexporter.ui.ExportViewModel
@@ -77,17 +75,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun shareLatestExport() {
-        val latestFile = viewModel.getLatestExportFileForSharing() ?: return
-
-        val uri = FileProvider.getUriForFile(
-            this,
-            ExportConfig.FILE_PROVIDER_AUTHORITY,
-            latestFile
-        )
+        val shareTarget = viewModel.prepareLatestExportForSharing() ?: return
 
         val shareIntent = Intent(Intent.ACTION_SEND).apply {
             type = "application/json"
-            putExtra(Intent.EXTRA_STREAM, uri)
+            putExtra(Intent.EXTRA_STREAM, shareTarget.uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
 

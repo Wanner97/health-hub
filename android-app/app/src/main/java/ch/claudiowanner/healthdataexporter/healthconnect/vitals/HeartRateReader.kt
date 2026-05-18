@@ -7,6 +7,7 @@ import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateDailyExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.HeartRateHourlyExportRecord
+import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectReadConfig
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -29,7 +30,10 @@ class HeartRateReader(
         var chunkStart = startDateInclusive
 
         while (chunkStart < endDateExclusive) {
-            val chunkEndExclusive = minOf(chunkStart.plusDays(365), endDateExclusive)
+            val chunkEndExclusive = minOf(
+                chunkStart.plusDays(HealthConnectReadConfig.DAILY_AGGREGATION_CHUNK_DAYS),
+                endDateExclusive
+            )
 
             val response = client.aggregateGroupByPeriod(
                 AggregateGroupByPeriodRequest(
@@ -91,7 +95,10 @@ class HeartRateReader(
         var chunkStart = startInstant
 
         while (chunkStart < endInstant) {
-            val chunkEnd = minOf(chunkStart.plus(Duration.ofDays(31)), endInstant)
+            val chunkEnd = minOf(
+                chunkStart.plus(Duration.ofDays(HealthConnectReadConfig.HOURLY_AGGREGATION_CHUNK_DAYS)),
+                endInstant
+            )
 
             val response = client.aggregateGroupByDuration(
                 AggregateGroupByDurationRequest(

@@ -7,6 +7,7 @@ import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
+import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectReadConfig
 import java.time.LocalDate
 import java.time.Period
 import java.time.ZoneId
@@ -27,7 +28,10 @@ class ActivityReader(
 
         var chunkStart = startDateInclusive
         while (chunkStart < endDateExclusive) {
-            val chunkEndExclusive = minOf(chunkStart.plusDays(365), endDateExclusive)
+            val chunkEndExclusive = minOf(
+                chunkStart.plusDays(HealthConnectReadConfig.DAILY_AGGREGATION_CHUNK_DAYS),
+                endDateExclusive
+            )
 
             val chunkResults = readActivityExportRecordsForRange(
                 startDateInclusive = chunkStart,

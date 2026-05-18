@@ -2,10 +2,8 @@ package ch.claudiowanner.healthdataexporter.healthconnect.vitals
 
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.OxygenSaturationRecord
-import androidx.health.connect.client.request.ReadRecordsRequest
-import androidx.health.connect.client.time.TimeRangeFilter
 import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportRecord
-import java.time.Duration
+import ch.claudiowanner.healthdataexporter.healthconnect.common.HealthConnectReadSupport
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -15,27 +13,29 @@ import java.util.TreeMap
 class BloodOxygenReader(
     private val client: HealthConnectClient
 ) {
+    private val readSupport = HealthConnectReadSupport(client)
+
     suspend fun readBloodOxygenDailyRecords(
         startInstant: Instant,
         endInstant: Instant
     ): List<BloodOxygenDailyExportRecord> {
-        require(startInstant < endInstant) {
-            "startInstant must be before endInstant."
-        }
-
         val zoneId = ZoneId.systemDefault()
         val buckets: SortedMap<LocalDate, BloodOxygenDayAccumulator> = TreeMap()
 
-        var chunkStart = startInstant
-        while (chunkStart < endInstant) {
-            val chunkEnd = minOf(chunkStart.plus(Duration.ofDays(365)), endInstant)
-            readChunkIntoBuckets(
-                startInstant = chunkStart,
-                endInstant = chunkEnd,
+        val records = readSupport.readChunkedPagedRecords(
+            recordType = OxygenSaturationRecord::class,
+            startInstant = startInstant,
+            endInstant = endInstant
+        ) { record ->
+            record
+        }
+
+        records.forEach { record ->
+            addRecordToBuckets(
+                record = record,
                 zoneId = zoneId,
                 buckets = buckets
             )
-            chunkStart = chunkEnd
         }
 
         return buckets.map { (date, accumulator) ->
@@ -51,46 +51,28 @@ class BloodOxygenReader(
         }
     }
 
-    private suspend fun readChunkIntoBuckets(
-        startInstant: Instant,
-        endInstant: Instant,
+    private fun addRecordToBuckets(
+        record: OxygenSaturationRecord,
         zoneId: ZoneId,
         buckets: SortedMap<LocalDate, BloodOxygenDayAccumulator>
     ) {
-        var pageToken: String? = null
+        val date = record.time.atZone(zoneId).toLocalDate()
+        val value = record.percentage.value
+        val existing = buckets[date]
 
-        do {
-            val response = client.readRecords(
-                ReadRecordsRequest(
-                    recordType = OxygenSaturationRecord::class,
-                    timeRangeFilter = TimeRangeFilter.between(startInstant, endInstant),
-                    pageSize = 1000,
-                    pageToken = pageToken
-                )
+        if (existing == null) {
+            buckets[date] = BloodOxygenDayAccumulator(
+                minPercent = value,
+                maxPercent = value,
+                sumPercent = value,
+                measurementCount = 1
             )
-
-            response.records.forEach { record ->
-                val date = record.time.atZone(zoneId).toLocalDate()
-                val value = record.percentage.value
-
-                val existing = buckets[date]
-                if (existing == null) {
-                    buckets[date] = BloodOxygenDayAccumulator(
-                        minPercent = value,
-                        maxPercent = value,
-                        sumPercent = value,
-                        measurementCount = 1
-                    )
-                } else {
-                    existing.minPercent = minOf(existing.minPercent, value)
-                    existing.maxPercent = maxOf(existing.maxPercent, value)
-                    existing.sumPercent += value
-                    existing.measurementCount += 1
-                }
-            }
-
-            pageToken = response.pageToken
-        } while (pageToken != null)
+        } else {
+            existing.minPercent = minOf(existing.minPercent, value)
+            existing.maxPercent = maxOf(existing.maxPercent, value)
+            existing.sumPercent += value
+            existing.measurementCount += 1
+        }
     }
 
     private data class BloodOxygenDayAccumulator(

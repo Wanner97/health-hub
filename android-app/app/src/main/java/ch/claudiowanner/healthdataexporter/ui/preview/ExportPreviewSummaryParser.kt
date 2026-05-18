@@ -47,21 +47,28 @@ class ExportPreviewSummaryParser {
                 ?.objectOrNull("nutrition")
                 ?.arraySizeOrNull("records")
 
+            val rangeDescription = when {
+                exportType == ExportType.FULL_HISTORY.jsonValue -> "Full history"
+                rangeDays != null -> "Last $rangeDays days"
+                else -> null
+            }
+
             ExportPreviewSummary(
-                exportType = exportType,
-                rangeDescription = when {
-                    exportType == ExportType.FULL_HISTORY.jsonValue -> "Full history"
-                    rangeDays != null -> "Last $rangeDays days"
-                    else -> null
-                },
-                activityRecordCount = activityCount,
-                sleepSessionCount = sleepCount,
-                heartRateDailyCount = heartRateDailyCount,
-                heartRateHourlyCount = heartRateHourlyCount,
-                bloodOxygenDailyCount = bloodOxygenDailyCount,
-                weightRecordCount = weightRecordCount,
-                hasLatestHeight = hasLatestHeight,
-                nutritionRecordCount = nutritionRecordCount
+                items = buildList {
+                    addSummaryItem("Export type", exportType)
+                    addSummaryItem("Range", rangeDescription)
+                    addSummaryItem("Activity records", activityCount)
+                    addSummaryItem("Nutrition records", nutritionRecordCount)
+                    addSummaryItem("Weight records", weightRecordCount)
+                    addSummaryItem(
+                        "Latest height available",
+                        hasLatestHeight?.let { if (it) "Yes" else "No" }
+                    )
+                    addSummaryItem("Sleep sessions", sleepCount)
+                    addSummaryItem("Heart rate daily records", heartRateDailyCount)
+                    addSummaryItem("Heart rate hourly records", heartRateHourlyCount)
+                    addSummaryItem("Blood oxygen daily records", bloodOxygenDailyCount)
+                }
             )
         }.getOrNull()
     }
@@ -89,5 +96,21 @@ class ExportPreviewSummaryParser {
     private fun JsonObject.hasNonNull(name: String): Boolean {
         val value = get(name) ?: return false
         return !value.isJsonNull
+    }
+
+    private fun MutableList<ExportPreviewSummaryItem>.addSummaryItem(
+        label: String,
+        value: Any?
+    ) {
+        if (value == null) {
+            return
+        }
+
+        add(
+            ExportPreviewSummaryItem(
+                label = label,
+                value = value.toString()
+            )
+        )
     }
 }

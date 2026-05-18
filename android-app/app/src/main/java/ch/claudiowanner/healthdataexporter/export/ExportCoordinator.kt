@@ -9,8 +9,6 @@ import ch.claudiowanner.healthdataexporter.model.ExportPayload
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityExportCluster
 import ch.claudiowanner.healthdataexporter.model.activity.ActivityDayExportRecord
 import ch.claudiowanner.healthdataexporter.model.body.BodyExportCluster
-import ch.claudiowanner.healthdataexporter.model.body.HeightExportRecord
-import ch.claudiowanner.healthdataexporter.model.body.WeightExportRecord
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepExportCluster
 import ch.claudiowanner.healthdataexporter.model.sleep.SleepSessionExportRecord
 import ch.claudiowanner.healthdataexporter.model.vitals.BloodOxygenDailyExportCluster
@@ -70,77 +68,20 @@ class ExportCoordinator(
         val exportContext = createExportContext(request)
         val totalSteps = 9
 
-        val activityRecords = readActivityRecords(
+        val dataSet = readExportDataSet(
             request = request,
-            endDateExclusive = exportContext.endDateExclusive,
+            exportContext = exportContext,
             totalSteps = totalSteps,
             onProgress = onProgress
         )
 
-        val bodyCluster = readBodyCluster(
-            rangeStartInstant = exportContext.rangeStartInstant,
-            bodyLookupStartInstant = exportContext.bodyLookupStartInstant,
-            now = exportContext.now,
-            totalSteps = totalSteps,
-            onProgress = onProgress
-        )
-
-        val sleepSessions = readSleepSessions(
-            rangeStartInstant = exportContext.rangeStartInstant,
-            now = exportContext.now,
-            totalSteps = totalSteps,
-            onProgress = onProgress
-        )
-
-        val heartRateDailyRecords = readHeartRateDailyRecords(
-            request = request,
-            endDateExclusive = exportContext.endDateExclusive,
-            totalSteps = totalSteps,
-            onProgress = onProgress
-        )
-
-        val bloodOxygenDailyRecords = readBloodOxygenDailyRecords(
-            rangeStartInstant = exportContext.rangeStartInstant,
-            now = exportContext.now,
-            totalSteps = totalSteps,
-            onProgress = onProgress
-        )
-
-        val heartRateHourlyRecords = readHeartRateHourlyRecords(
-            rangeStartInstant = exportContext.rangeStartInstant,
-            now = exportContext.now,
-            totalSteps = totalSteps,
-            onProgress = onProgress
-        )
-
-        val nutritionRecords = readNutritionRecords(
-            rangeStartInstant = exportContext.rangeStartInstant,
-            now = exportContext.now,
-            totalSteps = totalSteps,
-            onProgress = onProgress
-        )
-
-        ensureAnyDataFound(
-            activityRecords = activityRecords,
-            bodyCluster = bodyCluster,
-            sleepSessions = sleepSessions,
-            heartRateDailyRecords = heartRateDailyRecords,
-            heartRateHourlyRecords = heartRateHourlyRecords,
-            bloodOxygenDailyRecords = bloodOxygenDailyRecords,
-            nutritionRecords = nutritionRecords
-        )
+        ensureAnyDataFound(dataSet)
 
         val payload = buildPayload(
             request = request,
             now = exportContext.now,
             rangeStartInstant = exportContext.rangeStartInstant,
-            activityRecords = activityRecords,
-            bodyCluster = bodyCluster,
-            sleepSessions = sleepSessions,
-            heartRateDailyRecords = heartRateDailyRecords,
-            heartRateHourlyRecords = heartRateHourlyRecords,
-            bloodOxygenDailyRecords = bloodOxygenDailyRecords,
-            nutritionRecords = nutritionRecords,
+            dataSet = dataSet,
             totalSteps = totalSteps,
             onProgress = onProgress
         )
@@ -186,6 +127,59 @@ class ExportCoordinator(
             endDateExclusive = endDateExclusive,
             rangeStartInstant = rangeStartInstant,
             bodyLookupStartInstant = bodyLookupStartInstant
+        )
+    }
+
+    private suspend fun readExportDataSet(
+        request: ExportRequest,
+        exportContext: ExportContext,
+        totalSteps: Int,
+        onProgress: (ExportProgressUpdate) -> Unit
+    ): ExportDataSet {
+        return ExportDataSet(
+            activityRecords = readActivityRecords(
+                request = request,
+                endDateExclusive = exportContext.endDateExclusive,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            ),
+            bodyCluster = readBodyCluster(
+                rangeStartInstant = exportContext.rangeStartInstant,
+                bodyLookupStartInstant = exportContext.bodyLookupStartInstant,
+                now = exportContext.now,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            ),
+            sleepSessions = readSleepSessions(
+                rangeStartInstant = exportContext.rangeStartInstant,
+                now = exportContext.now,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            ),
+            heartRateDailyRecords = readHeartRateDailyRecords(
+                request = request,
+                endDateExclusive = exportContext.endDateExclusive,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            ),
+            bloodOxygenDailyRecords = readBloodOxygenDailyRecords(
+                rangeStartInstant = exportContext.rangeStartInstant,
+                now = exportContext.now,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            ),
+            heartRateHourlyRecords = readHeartRateHourlyRecords(
+                rangeStartInstant = exportContext.rangeStartInstant,
+                now = exportContext.now,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            ),
+            nutritionRecords = readNutritionRecords(
+                rangeStartInstant = exportContext.rangeStartInstant,
+                now = exportContext.now,
+                totalSteps = totalSteps,
+                onProgress = onProgress
+            )
         )
     }
 
@@ -355,25 +349,20 @@ class ExportCoordinator(
     }
 
     private fun ensureAnyDataFound(
-        activityRecords: List<ActivityDayExportRecord>,
-        bodyCluster: BodyExportCluster,
-        sleepSessions: List<SleepSessionExportRecord>,
-        heartRateDailyRecords: List<HeartRateDailyExportRecord>,
-        heartRateHourlyRecords: List<HeartRateHourlyExportRecord>,
-        bloodOxygenDailyRecords: List<BloodOxygenDailyExportRecord>,
-        nutritionRecords: List<NutritionExportRecord>
+        dataSet: ExportDataSet
     ) {
         val hasBodyData =
-            bodyCluster.latestHeight != null || bodyCluster.weightRecords.isNotEmpty()
+            dataSet.bodyCluster.latestHeight != null ||
+                    dataSet.bodyCluster.weightRecords.isNotEmpty()
 
         if (
-            activityRecords.isEmpty() &&
+            dataSet.activityRecords.isEmpty() &&
             !hasBodyData &&
-            sleepSessions.isEmpty() &&
-            heartRateDailyRecords.isEmpty() &&
-            heartRateHourlyRecords.isEmpty() &&
-            bloodOxygenDailyRecords.isEmpty() &&
-            nutritionRecords.isEmpty()
+            dataSet.sleepSessions.isEmpty() &&
+            dataSet.heartRateDailyRecords.isEmpty() &&
+            dataSet.heartRateHourlyRecords.isEmpty() &&
+            dataSet.bloodOxygenDailyRecords.isEmpty() &&
+            dataSet.nutritionRecords.isEmpty()
         ) {
             error("No activity, body, sleep, vital or nutrition data found.")
         }
@@ -383,13 +372,7 @@ class ExportCoordinator(
         request: ExportRequest,
         now: Instant,
         rangeStartInstant: Instant,
-        activityRecords: List<ActivityDayExportRecord>,
-        bodyCluster: BodyExportCluster,
-        sleepSessions: List<SleepSessionExportRecord>,
-        heartRateDailyRecords: List<HeartRateDailyExportRecord>,
-        heartRateHourlyRecords: List<HeartRateHourlyExportRecord>,
-        bloodOxygenDailyRecords: List<BloodOxygenDailyExportRecord>,
-        nutritionRecords: List<NutritionExportRecord>,
+        dataSet: ExportDataSet,
         totalSteps: Int,
         onProgress: (ExportProgressUpdate) -> Unit
     ): ExportPayload {
@@ -413,25 +396,25 @@ class ExportCoordinator(
             rangeEnd = now.toString(),
             clusters = ExportClusters(
                 activity = ActivityExportCluster(
-                    records = activityRecords
+                    records = dataSet.activityRecords
                 ),
                 sleep = SleepExportCluster(
-                    sessions = sleepSessions
+                    sessions = dataSet.sleepSessions
                 ),
                 vitals = VitalsExportCluster(
                     heartRateDaily = HeartRateDailyExportCluster(
-                        records = heartRateDailyRecords
+                        records = dataSet.heartRateDailyRecords
                     ),
                     heartRateHourly = HeartRateHourlyExportCluster(
-                        records = heartRateHourlyRecords
+                        records = dataSet.heartRateHourlyRecords
                     ),
                     bloodOxygenDaily = BloodOxygenDailyExportCluster(
-                        records = bloodOxygenDailyRecords
+                        records = dataSet.bloodOxygenDailyRecords
                     )
                 ),
-                body = bodyCluster,
+                body = dataSet.bodyCluster,
                 nutrition = NutritionExportCluster(
-                    records = nutritionRecords
+                    records = dataSet.nutritionRecords
                 )
             )
         )

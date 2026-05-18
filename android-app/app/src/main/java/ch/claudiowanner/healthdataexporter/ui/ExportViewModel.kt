@@ -18,12 +18,10 @@ import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectAvailabili
 import ch.claudiowanner.healthdataexporter.healthconnect.HealthConnectGateway
 import ch.claudiowanner.healthdataexporter.serialization.ExportJsonSerializer
 import ch.claudiowanner.healthdataexporter.storage.ExportFileWriter
-import ch.claudiowanner.healthdataexporter.ui.preview.ExportPreviewChunkBuilder
-import ch.claudiowanner.healthdataexporter.ui.preview.ExportPreviewSummaryParser
-import kotlinx.coroutines.Dispatchers
+import ch.claudiowanner.healthdataexporter.ui.preview.ExportPreviewLoader
+import ch.claudiowanner.healthdataexporter.storage.ExportShareProvider
+import ch.claudiowanner.healthdataexporter.storage.ExportShareTarget
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -32,8 +30,8 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
     private val exportFileWriter = ExportFileWriter()
     private val healthConnectGateway = HealthConnectGateway(appContext)
     private val exportJsonSerializer = ExportJsonSerializer()
-    private val exportPreviewSummaryParser = ExportPreviewSummaryParser()
-    private val exportPreviewChunkBuilder = ExportPreviewChunkBuilder()
+    private val exportPreviewLoader = ExportPreviewLoader()
+    private val exportShareProvider = ExportShareProvider(exportFileWriter)
     private val exportCoordinator = ExportCoordinator(
         appContext = appContext,
         healthConnectGateway = healthConnectGateway,
@@ -220,28 +218,31 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    fun getLatestExportFileForSharing(): File? {
+    fun prepareLatestExportForSharing(): ExportShareTarget? {
         setBusyPhase(
             phase = ExportPhase.PREPARING_SHARE,
             title = "Preparing share",
             message = "Loading the latest export file for sharing."
         )
 
-        val latestFile = exportFileWriter.getLatestExportFile(appContext)
+        val result = exportShareProvider.prepareLatestExportForSharing(appContext)
 
-        if (latestFile == null) {
-            setFailureState("No export file found to share.")
-            return null
-        }
+        return result.fold(
+            onSuccess = { shareTarget ->
+                setIdleState(
+                    title = "Share ready",
+                    message = "Opening share sheet for latest export.",
+                    phase = ExportPhase.PREPARING_SHARE,
+                    lastExportPath = shareTarget.file.absolutePath
+                )
 
-        setIdleState(
-            title = "Share ready",
-            message = "Opening share sheet for latest export.",
-            phase = ExportPhase.PREPARING_SHARE,
-            lastExportPath = latestFile.absolutePath
+                shareTarget
+            },
+            onFailure = {
+                setFailureState(it.message ?: "Preparing share failed.")
+                null
+            }
         )
-
-        return latestFile
     }
 
     fun onShareSheetOpened() {
@@ -309,7 +310,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         progressCurrent: Int?,
         progressTotal: Int?
     ) {
-        val previewSummary = exportPreviewSummaryParser.parse(exportPreview)
+        val previewSummary = exportPreviewLoader.parseSummary(exportPreview)
 
         uiState = uiState.copy(
             statusTitle = title,
@@ -327,12 +328,12 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
             lastExportPath = lastExportPath
         )
 
-        val highlightedChunks = withContext(Dispatchers.Default) {
-            exportPreviewChunkBuilder.build(exportPreview)
-        }
+        val previewLoadResult = exportPreviewLoader.load(exportPreview)
 
         uiState = uiState.copy(
-            previewHighlightedFullChunks = highlightedChunks,
+            previewSummary = previewLoadResult.summary ?: uiState.previewSummary,
+            previewFullText = previewLoadResult.fullText,
+            previewHighlightedFullChunks = previewLoadResult.highlightedChunks,
             isPreviewLoading = false,
             previewLoadingMessage = null
         )
@@ -380,7 +381,7 @@ class ExportViewModel(application: Application) : AndroidViewModel(application) 
         progressCurrent: Int? = null,
         progressTotal: Int? = null
     ) {
-        val previewSummary = exportPreview?.let { exportPreviewSummaryParser.parse(it) }
+        val previewSummary = exportPreview?.let { exportPreviewLoader.parseSummary(it) }
 
         uiState = uiState.copy(
             statusTitle = title,
