@@ -6,6 +6,7 @@ import ImportBatchesPage from './components/importBatches/ImportBatchesPage';
 import SleepSessionsPage from './components/sleepSessions/SleepSessionsPage';
 import BloodOxygenDaysPage from './components/bloodOxygenDays/BloodOxygenDaysPage';
 import WeightMeasurementsPage from './components/weightMeasurements/WeightMeasurementsPage';
+import NutritionDaysPage from './components/nutritionDays/NutritionDaysPage';
 import { APP_SECTIONS } from './constants/appSections';
 
 function App() {
@@ -44,6 +45,10 @@ function App() {
 
         {currentSection === APP_SECTIONS.WEIGHT_MEASUREMENTS && (
           <WeightMeasurementsPage onBack={goHome} />
+        )}
+
+        {currentSection === APP_SECTIONS.NUTRITION_DAYS && (
+          <NutritionDaysPage onBack={goHome} />
         )}
       </div>
     </main>

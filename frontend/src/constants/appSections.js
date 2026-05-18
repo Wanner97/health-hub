@@ -6,4 +6,5 @@ export const APP_SECTIONS = {
   HEART_RATE_DAYS: 'heartRateDays',
   BLOOD_OXYGEN_DAYS: 'bloodOxygenDays',
   WEIGHT_MEASUREMENTS: 'weightMeasurements',
+  NUTRITION_DAYS: 'nutritionDays',
 };

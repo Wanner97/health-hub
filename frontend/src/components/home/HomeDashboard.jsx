@@ -13,6 +13,8 @@ import {
   buildActivityTitle,
   buildWeightSubtitle,
   buildWeightTitle,
+  buildNutritionSubtitle,
+  buildNutritionTitle,
 } from '../../utils/home/dashboardCardFormatters';
 
 function HomeDashboard({ onSelectSection }) {
@@ -24,6 +26,7 @@ function HomeDashboard({ onSelectSection }) {
   const latestHeartRateDay = dashboard?.latestHeartRateDay ?? null;
   const latestBloodOxygenDay = dashboard?.latestBloodOxygenDay ?? null;
   const latestWeightMeasurement = dashboard?.latestWeightMeasurement ?? null;
+  const latestNutritionDay = dashboard?.latestNutritionDay ?? null;
 
   return (
     <section className="home-section">
@@ -61,6 +64,23 @@ function HomeDashboard({ onSelectSection }) {
             {isLoading
               ? 'Bitte warten...'
               : buildActivitySubtitle(latestActivityDay)}
+          </p>
+        </button>
+
+        <button
+          type="button"
+          className="home-card home-card--nutrition"
+          onClick={() => onSelectSection(APP_SECTIONS.NUTRITION_DAYS)}
+        >
+          <h2>
+            {isLoading
+              ? 'Ernährungsdaten werden geladen...'
+              : buildNutritionTitle(latestNutritionDay)}
+          </h2>
+          <p>
+            {isLoading
+              ? 'Bitte warten...'
+              : buildNutritionSubtitle(latestNutritionDay)}
           </p>
         </button>
 

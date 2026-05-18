@@ -25,3 +25,10 @@ export function formatWeightKg(value) {
     maximumFractionDigits: 1,
   }).format(value ?? 0)} kg`;
 }
+
+export function formatGrams(value) {
+  return `${new Intl.NumberFormat('de-CH', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(value ?? 0)} g`;
+}

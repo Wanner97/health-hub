@@ -102,3 +102,19 @@ export function buildWeightSubtitle(latestWeightMeasurement) {
 
   return `am ${formatDate(latestWeightMeasurement.date)}`;
 }
+
+export function buildNutritionTitle(latestNutritionDay) {
+  if (!latestNutritionDay) {
+    return 'Keine Ernährungsdaten';
+  }
+
+  return formatCaloriesKcal(latestNutritionDay.totalEnergyKcal);
+}
+
+export function buildNutritionSubtitle(latestNutritionDay) {
+  if (!latestNutritionDay) {
+    return 'Kein aktueller Ernährungsdatensatz vorhanden.';
+  }
+
+  return `am ${formatDate(latestNutritionDay.date)}`;
+}

@@ -85,3 +85,11 @@
 .home-card--weight:hover {
   border-color: var(--color-accent-weight);
 }
+
+.home-card--nutrition h2 {
+  color: var(--color-accent-nutrition);
+}
+
+.home-card--nutrition:hover {
+  border-color: var(--color-accent-nutrition);
+}

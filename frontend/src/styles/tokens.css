@@ -17,12 +17,17 @@
   --color-accent-sleep: #93c5fd;
   --color-accent-blood-oxygen: #4fd1a6;
   --color-accent-weight: #c084fc;
+  --color-accent-nutrition: #fad84e;
 
   --color-sleep-awake: #f59e0b;
   --color-sleep-rem: #98f0fc;
   --color-sleep-light: #21bcff;
   --color-sleep-deep: #006fca;
   --color-sleep-unknown: #6b7280;
+
+  --color-nutrition-carbs: #30ca70;
+  --color-nutrition-fat: #d97706;
+  --color-nutrition-protein: #15a6fa;
 
   --color-bar: #c0c0c0;
 
