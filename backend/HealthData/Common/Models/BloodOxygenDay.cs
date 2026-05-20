@@ -1,6 +1,6 @@
 ﻿namespace Common.Models
 {
-    public class BloodOxygenDay
+    public class BloodOxygenDay : IImportTrackedEntity
     {
         public int Id { get; set; }
 

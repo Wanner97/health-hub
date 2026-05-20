@@ -18,7 +18,7 @@ namespace DataAccess
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                var query = context.WeightMeasurements.AsQueryable();
+                var query = context.WeightMeasurements.AsNoTracking().AsQueryable();
 
                 if (fromMeasuredAtUtc.HasValue)
                 {

@@ -17,14 +17,17 @@ namespace Logic.Import
         private readonly IImportBatchDataAccess _importBatchDataAccess;
         private readonly IHeightMeasurementDataAccess _heightMeasurementDataAccess;
         private readonly IVersionManifestProvider _versionManifestProvider;
+        private readonly IHealthImportExistingDataLoader _healthImportExistingDataLoader;
 
         public ImportBatchLogic(
             IImportBatchDataAccess importBatchDataAccess,
             IHeightMeasurementDataAccess heightMeasurementDataAccess,
+            IHealthImportExistingDataLoader healthImportExistingDataLoader,
             IVersionManifestProvider versionManifestProvider)
         {
             _importBatchDataAccess = importBatchDataAccess;
             _heightMeasurementDataAccess = heightMeasurementDataAccess;
+            _healthImportExistingDataLoader = healthImportExistingDataLoader;
             _versionManifestProvider = versionManifestProvider;
         }
 
@@ -90,31 +93,31 @@ namespace Logic.Import
 
         private HealthImportUpsertData BuildHealthImportUpsertData(HealthImportData importData)
         {
-            var existingActivityDaysByDate = _importBatchDataAccess.GetExistingActivityDays(
+            var existingActivityDaysByDate = _healthImportExistingDataLoader.GetExistingActivityDays(
                 importData.ImportBatch.Source,
                 importData.ActivityDays.Select(x => x.Date));
 
-            var existingSleepSessionsByStartTime = _importBatchDataAccess.GetExistingSleepSessions(
+            var existingSleepSessionsByStartTime = _healthImportExistingDataLoader.GetExistingSleepSessions(
                 importData.ImportBatch.Source,
                 importData.SleepSessions.Select(x => x.StartTimeUtc));
 
-            var existingHeartRateDaysByDate = _importBatchDataAccess.GetExistingHeartRateDays(
+            var existingHeartRateDaysByDate = _healthImportExistingDataLoader.GetExistingHeartRateDays(
                 importData.ImportBatch.Source,
                 importData.HeartRateDays.Select(x => x.Date));
 
-            var existingBloodOxygenDaysByDate = _importBatchDataAccess.GetExistingBloodOxygenDays(
+            var existingBloodOxygenDaysByDate = _healthImportExistingDataLoader.GetExistingBloodOxygenDays(
                 importData.ImportBatch.Source,
                 importData.BloodOxygenDays.Select(x => x.Date));
 
-            var existingHeightMeasurementsByMeasuredAtUtc = _importBatchDataAccess.GetExistingHeightMeasurements(
+            var existingHeightMeasurementsByMeasuredAtUtc = _healthImportExistingDataLoader.GetExistingHeightMeasurements(
                 importData.ImportBatch.Source,
                 importData.HeightMeasurements.Select(x => x.MeasuredAtUtc));
 
-            var existingWeightMeasurementsByMeasuredAtUtc = _importBatchDataAccess.GetExistingWeightMeasurements(
+            var existingWeightMeasurementsByMeasuredAtUtc = _healthImportExistingDataLoader.GetExistingWeightMeasurements(
                 importData.ImportBatch.Source,
                 importData.WeightMeasurements.Select(x => x.MeasuredAtUtc));
 
-            var existingNutritionRecordsByHealthConnectRecordId = _importBatchDataAccess.GetExistingNutritionRecords(
+            var existingNutritionRecordsByHealthConnectRecordId = _healthImportExistingDataLoader.GetExistingNutritionRecords(
                 importData.ImportBatch.Source,
                 importData.NutritionRecords.Select(x => x.HealthConnectRecordId));
 

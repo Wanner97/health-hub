@@ -21,30 +21,37 @@ namespace DataAccess
                 return new HomepageDashboardData
                 {
                     LatestImportBatch = context.ImportBatches
+                        .AsNoTracking()
                         .OrderByDescending(x => x.ImportedAtUtc)
                         .FirstOrDefault(),
 
                     LatestActivityDay = context.ActivityDays
+                        .AsNoTracking()
                         .OrderByDescending(x => x.Date)
                         .FirstOrDefault(),
 
                     LatestSleepSession = context.SleepSessions
+                        .AsNoTracking()
                         .OrderByDescending(x => x.StartTimeUtc)
                         .FirstOrDefault(),
 
                     LatestHeartRateDay = context.HeartRateDays
+                        .AsNoTracking()
                         .OrderByDescending(x => x.Date)
                         .FirstOrDefault(),
 
                     LatestBloodOxygenDay = context.BloodOxygenDays
+                        .AsNoTracking()
                         .OrderByDescending(x => x.Date)
                         .FirstOrDefault(),
 
                     LatestHeightMeasurement = context.HeightMeasurements
+                        .AsNoTracking()
                         .OrderByDescending(x => x.MeasuredAtUtc)
                         .FirstOrDefault(),
 
                     LatestWeightMeasurement = context.WeightMeasurements
+                        .AsNoTracking()
                         .OrderByDescending(x => x.MeasuredAtUtc)
                         .FirstOrDefault(),
 

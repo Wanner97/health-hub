@@ -18,7 +18,7 @@ namespace DataAccess
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                var query = context.BloodOxygenDays.AsQueryable();
+                var query = context.BloodOxygenDays.AsNoTracking().AsQueryable();
 
                 if (from.HasValue)
                 {

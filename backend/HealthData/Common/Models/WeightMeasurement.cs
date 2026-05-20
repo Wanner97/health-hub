@@ -1,6 +1,6 @@
 ﻿namespace Common.Models
 {
-    public class WeightMeasurement
+    public class WeightMeasurement : IImportTrackedEntity
     {
         public int Id { get; set; }
 

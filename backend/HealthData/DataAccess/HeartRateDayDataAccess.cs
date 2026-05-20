@@ -18,7 +18,7 @@ namespace DataAccess
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                IQueryable<HeartRateDay> query = context.HeartRateDays;
+                IQueryable<HeartRateDay> query = context.HeartRateDays.AsNoTracking();
 
                 if (includeHourlyRecords)
                 {

@@ -1,6 +1,6 @@
 ﻿namespace Common.Models
 {
-    public class NutritionRecord
+    public class NutritionRecord : IImportTrackedEntity
     {
         public int Id { get; set; }
 

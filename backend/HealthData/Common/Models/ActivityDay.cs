@@ -2,7 +2,7 @@
 
 namespace Common.Models
 {
-    public class ActivityDay
+    public class ActivityDay : IImportTrackedEntity
     {
         public int Id { get; set; }
 

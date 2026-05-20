@@ -1,6 +1,7 @@
 ﻿using Common.Import;
 using Common.Models;
 using DataAccess.Context;
+using DataAccess.Import;
 using DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,7 +30,7 @@ namespace DataAccess
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                var query = context.ImportBatches.AsQueryable();
+                var query = context.ImportBatches.AsNoTracking().AsQueryable();
 
                 if (from.HasValue)
                 {
@@ -49,395 +50,37 @@ namespace DataAccess
             }
         }
 
-        public Dictionary<DateOnly, ActivityDay> GetExistingActivityDays(string source, IEnumerable<DateOnly> dates)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctDates = dates.Distinct().ToList();
-
-                return context.ActivityDays
-                    .Where(x => x.Source == source && distinctDates.Contains(x.Date))
-                    .ToDictionary(x => x.Date, x => x);
-            }
-        }
-
-        public Dictionary<DateTime, SleepSession> GetExistingSleepSessions(string source, IEnumerable<DateTime> startTimes)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctStartTimes = startTimes.Distinct().ToList();
-
-                return context.SleepSessions
-                    .Include(x => x.SleepStages)
-                    .Where(x => x.Source == source && distinctStartTimes.Contains(x.StartTimeUtc))
-                    .ToDictionary(x => x.StartTimeUtc, x => x);
-            }
-        }
-
-        public Dictionary<DateOnly, HeartRateDay> GetExistingHeartRateDays(string source, IEnumerable<DateOnly> dates)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctDates = dates.Distinct().ToList();
-
-                return context.HeartRateDays
-                    .Include(x => x.HourlyRecords)
-                    .Where(x => x.Source == source && distinctDates.Contains(x.Date))
-                    .ToDictionary(x => x.Date, x => x);
-            }
-        }
-
-        public Dictionary<DateOnly, BloodOxygenDay> GetExistingBloodOxygenDays(string source, IEnumerable<DateOnly> dates)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctDates = dates.Distinct().ToList();
-
-                return context.BloodOxygenDays
-                    .Where(x => x.Source == source && distinctDates.Contains(x.Date))
-                    .ToDictionary(x => x.Date, x => x);
-            }
-        }
-
-        public Dictionary<DateTime, HeightMeasurement> GetExistingHeightMeasurements(
-            string source,
-            IEnumerable<DateTime> measuredAtUtcValues)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctMeasuredAtUtcValues = measuredAtUtcValues.Distinct().ToList();
-
-                return context.HeightMeasurements
-                    .Where(x => x.Source == source && distinctMeasuredAtUtcValues.Contains(x.MeasuredAtUtc))
-                    .ToDictionary(x => x.MeasuredAtUtc, x => x);
-            }
-        }
-
-        public Dictionary<DateTime, WeightMeasurement> GetExistingWeightMeasurements(string source, IEnumerable<DateTime> measuredAtUtcValues)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctMeasuredAtUtcValues = measuredAtUtcValues.Distinct().ToList();
-
-                return context.WeightMeasurements
-                    .Where(x => x.Source == source && distinctMeasuredAtUtcValues.Contains(x.MeasuredAtUtc))
-                    .ToDictionary(x => x.MeasuredAtUtc, x => x);
-            }
-        }
-
-        public Dictionary<string, NutritionRecord> GetExistingNutritionRecords(string source, IEnumerable<string> healthConnectRecordIds)
-        {
-            using (var context = _dbContextFactory.CreateDbContext())
-            {
-                var distinctHealthConnectRecordIds = healthConnectRecordIds
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .Distinct()
-                    .ToList();
-
-                return context.NutritionRecords
-                    .Include(x => x.Nutrients)
-                    .Where(x => x.Source == source && distinctHealthConnectRecordIds.Contains(x.HealthConnectRecordId))
-                    .ToDictionary(x => x.HealthConnectRecordId, x => x);
-            }
-        }
-
         public ImportBatch ApplyImport(ImportBatch importBatch, HealthImportUpsertData upsertData)
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
                 using (var transaction = context.Database.BeginTransaction())
                 {
-                    var insertedActivityDays = upsertData.ActivityDays.InsertedItems;
-                    var updatedActivityDays = upsertData.ActivityDays.UpdatedItems;
-
-                    var insertedSleepSessions = upsertData.SleepSessions.InsertedItems;
-                    var updatedSleepSessions = upsertData.SleepSessions.UpdatedItems;
-
-                    var insertedHeartRateDays = upsertData.HeartRateDays.InsertedItems;
-                    var updatedHeartRateDays = upsertData.HeartRateDays.UpdatedItems;
-
-                    var insertedBloodOxygenDays = upsertData.BloodOxygenDays.InsertedItems;
-                    var updatedBloodOxygenDays = upsertData.BloodOxygenDays.UpdatedItems;
-
-                    var insertedHeightMeasurements = upsertData.HeightMeasurements.InsertedItems;
-                    var updatedHeightMeasurements = upsertData.HeightMeasurements.UpdatedItems;
-
-                    var insertedWeightMeasurements = upsertData.WeightMeasurements.InsertedItems;
-                    var updatedWeightMeasurements = upsertData.WeightMeasurements.UpdatedItems;
-
-                    var insertedNutritionRecords = upsertData.NutritionRecords.InsertedItems;
-                    var updatedNutritionRecords = upsertData.NutritionRecords.UpdatedItems;
-
                     context.ImportBatches.Add(importBatch);
                     context.SaveChanges();
 
-                    foreach (var insertedActivityDay in insertedActivityDays)
-                    {
-                        insertedActivityDay.LastImportBatchId = importBatch.Id;
-                        insertedActivityDay.LastImportBatch = importBatch;
-                        insertedActivityDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
+                    SetImportMetadataForAllItems(upsertData, importBatch);
 
-                    foreach (var updatedActivityDay in updatedActivityDays)
-                    {
-                        updatedActivityDay.LastImportBatchId = importBatch.Id;
-                        updatedActivityDay.LastImportBatch = importBatch;
-                        updatedActivityDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
+                    ApplyActivityDayUpserts(context, upsertData.ActivityDays);
+                    ApplySleepSessionUpserts(context, upsertData.SleepSessions);
+                    ApplyHeartRateDayUpserts(context, upsertData.HeartRateDays);
+                    ApplyBloodOxygenDayUpserts(context, upsertData.BloodOxygenDays);
+                    ApplyHeightMeasurementUpserts(context, upsertData.HeightMeasurements);
+                    ApplyWeightMeasurementUpserts(context, upsertData.WeightMeasurements);
 
-                    foreach (var insertedSleepSession in insertedSleepSessions)
-                    {
-                        insertedSleepSession.LastImportBatchId = importBatch.Id;
-                        insertedSleepSession.LastImportBatch = importBatch;
-                        insertedSleepSession.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
+                    var originalUpdatedNutritionRecordDates = ApplyNutritionRecordUpserts(context, upsertData.NutritionRecords);
 
-                    foreach (var updatedSleepSession in updatedSleepSessions)
-                    {
-                        updatedSleepSession.LastImportBatchId = importBatch.Id;
-                        updatedSleepSession.LastImportBatch = importBatch;
-                        updatedSleepSession.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var insertedHeartRateDay in insertedHeartRateDays)
-                    {
-                        insertedHeartRateDay.LastImportBatchId = importBatch.Id;
-                        insertedHeartRateDay.LastImportBatch = importBatch;
-                        insertedHeartRateDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var updatedHeartRateDay in updatedHeartRateDays)
-                    {
-                        updatedHeartRateDay.LastImportBatchId = importBatch.Id;
-                        updatedHeartRateDay.LastImportBatch = importBatch;
-                        updatedHeartRateDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var insertedBloodOxygenDay in insertedBloodOxygenDays)
-                    {
-                        insertedBloodOxygenDay.LastImportBatchId = importBatch.Id;
-                        insertedBloodOxygenDay.LastImportBatch = importBatch;
-                        insertedBloodOxygenDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var updatedBloodOxygenDay in updatedBloodOxygenDays)
-                    {
-                        updatedBloodOxygenDay.LastImportBatchId = importBatch.Id;
-                        updatedBloodOxygenDay.LastImportBatch = importBatch;
-                        updatedBloodOxygenDay.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var insertedHeightMeasurement in insertedHeightMeasurements)
-                    {
-                        insertedHeightMeasurement.LastImportBatchId = importBatch.Id;
-                        insertedHeightMeasurement.LastImportBatch = importBatch;
-                        insertedHeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var updatedHeightMeasurement in updatedHeightMeasurements)
-                    {
-                        updatedHeightMeasurement.LastImportBatchId = importBatch.Id;
-                        updatedHeightMeasurement.LastImportBatch = importBatch;
-                        updatedHeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var insertedWeightMeasurement in insertedWeightMeasurements)
-                    {
-                        insertedWeightMeasurement.LastImportBatchId = importBatch.Id;
-                        insertedWeightMeasurement.LastImportBatch = importBatch;
-                        insertedWeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var updatedWeightMeasurement in updatedWeightMeasurements)
-                    {
-                        updatedWeightMeasurement.LastImportBatchId = importBatch.Id;
-                        updatedWeightMeasurement.LastImportBatch = importBatch;
-                        updatedWeightMeasurement.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var insertedNutritionRecord in insertedNutritionRecords)
-                    {
-                        insertedNutritionRecord.LastImportBatchId = importBatch.Id;
-                        insertedNutritionRecord.LastImportBatch = importBatch;
-                        insertedNutritionRecord.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    foreach (var updatedNutritionRecord in updatedNutritionRecords)
-                    {
-                        updatedNutritionRecord.LastImportBatchId = importBatch.Id;
-                        updatedNutritionRecord.LastImportBatch = importBatch;
-                        updatedNutritionRecord.LastImportedAtUtc = importBatch.ImportedAtUtc;
-                    }
-
-                    if (insertedActivityDays.Count > 0)
-                    {
-                        context.ActivityDays.AddRange(insertedActivityDays);
-                    }
-
-                    if (updatedActivityDays.Count > 0)
-                    {
-                        context.ActivityDays.UpdateRange(updatedActivityDays);
-                    }
-
-                    if (insertedSleepSessions.Count > 0)
-                    {
-                        context.SleepSessions.AddRange(insertedSleepSessions);
-                    }
-
-                    if (updatedSleepSessions.Count > 0)
-                    {
-                        var updatedSleepSessionIds = updatedSleepSessions
-                            .Select(x => x.Id)
-                            .ToList();
-
-                        var existingSleepStages = context.SleepStages
-                            .Where(x => updatedSleepSessionIds.Contains(x.SleepSessionId));
-
-                        context.SleepStages.RemoveRange(existingSleepStages);
-
-                        var replacementSleepStages = new List<SleepStage>();
-
-                        foreach (var updatedSleepSession in updatedSleepSessions)
-                        {
-                            var newSleepStages = updatedSleepSession.SleepStages.ToList();
-
-                            updatedSleepSession.SleepStages = new List<SleepStage>();
-
-                            context.SleepSessions.Update(updatedSleepSession);
-
-                            foreach (var newSleepStage in newSleepStages)
-                            {
-                                newSleepStage.SleepSessionId = updatedSleepSession.Id;
-                                replacementSleepStages.Add(newSleepStage);
-                            }
-                        }
-
-                        if (replacementSleepStages.Count > 0)
-                        {
-                            context.SleepStages.AddRange(replacementSleepStages);
-                        }
-                    }
-
-                    if (insertedHeartRateDays.Count > 0)
-                    {
-                        context.HeartRateDays.AddRange(insertedHeartRateDays);
-                    }
-
-                    if (updatedHeartRateDays.Count > 0)
-                    {
-                        var updatedHeartRateDayIds = updatedHeartRateDays
-                            .Select(x => x.Id)
-                            .ToList();
-
-                        var existingHourlyRecords = context.HeartRateHourlyRecords
-                            .Where(x => updatedHeartRateDayIds.Contains(x.HeartRateDayId));
-
-                        context.HeartRateHourlyRecords.RemoveRange(existingHourlyRecords);
-
-                        var replacementHourlyRecords = new List<HeartRateHourlyRecord>();
-
-                        foreach (var updatedHeartRateDay in updatedHeartRateDays)
-                        {
-                            var newHourlyRecords = updatedHeartRateDay.HourlyRecords.ToList();
-
-                            updatedHeartRateDay.HourlyRecords = new List<HeartRateHourlyRecord>();
-
-                            context.HeartRateDays.Update(updatedHeartRateDay);
-
-                            foreach (var newHourlyRecord in newHourlyRecords)
-                            {
-                                newHourlyRecord.HeartRateDayId = updatedHeartRateDay.Id;
-                                replacementHourlyRecords.Add(newHourlyRecord);
-                            }
-                        }
-
-                        if (replacementHourlyRecords.Count > 0)
-                        {
-                            context.HeartRateHourlyRecords.AddRange(replacementHourlyRecords);
-                        }
-                    }
-
-                    if (insertedBloodOxygenDays.Count > 0)
-                    {
-                        context.BloodOxygenDays.AddRange(insertedBloodOxygenDays);
-                    }
-
-                    if (updatedBloodOxygenDays.Count > 0)
-                    {
-                        context.BloodOxygenDays.UpdateRange(updatedBloodOxygenDays);
-                    }
-
-                    if (insertedHeightMeasurements.Count > 0)
-                    {
-                        context.HeightMeasurements.AddRange(insertedHeightMeasurements);
-                    }
-
-                    if (updatedHeightMeasurements.Count > 0)
-                    {
-                        context.HeightMeasurements.UpdateRange(updatedHeightMeasurements);
-                    }
-
-                    if (insertedWeightMeasurements.Count > 0)
-                    {
-                        context.WeightMeasurements.AddRange(insertedWeightMeasurements);
-                    }
-
-                    if (updatedWeightMeasurements.Count > 0)
-                    {
-                        context.WeightMeasurements.UpdateRange(updatedWeightMeasurements);
-                    }
-
-                    if (insertedNutritionRecords.Count > 0)
-                    {
-                        context.NutritionRecords.AddRange(insertedNutritionRecords);
-                    }
-
-                    var originalUpdatedNutritionRecordDates = new List<DateOnly>();
-
-                    if (updatedNutritionRecords.Count > 0)
-                    {
-                        var updatedNutritionRecordIds = updatedNutritionRecords
-                            .Select(x => x.Id)
-                            .ToList();
-
-                        originalUpdatedNutritionRecordDates = context.NutritionRecords
-                            .Where(x => updatedNutritionRecordIds.Contains(x.Id))
-                            .Select(x => x.Date)
-                            .ToList();
-
-                        var existingNutritionRecordNutrients = context.NutritionRecordNutrients
-                            .Where(x => updatedNutritionRecordIds.Contains(x.NutritionRecordId));
-
-                        context.NutritionRecordNutrients.RemoveRange(existingNutritionRecordNutrients);
-
-                        var replacementNutritionRecordNutrients = new List<NutritionRecordNutrient>();
-
-                        foreach (var updatedNutritionRecord in updatedNutritionRecords)
-                        {
-                            var newNutritionRecordNutrients = updatedNutritionRecord.Nutrients.ToList();
-
-                            updatedNutritionRecord.Nutrients = new List<NutritionRecordNutrient>();
-
-                            context.NutritionRecords.Update(updatedNutritionRecord);
-
-                            foreach (var newNutritionRecordNutrient in newNutritionRecordNutrients)
-                            {
-                                newNutritionRecordNutrient.NutritionRecordId = updatedNutritionRecord.Id;
-                                replacementNutritionRecordNutrients.Add(newNutritionRecordNutrient);
-                            }
-                        }
-
-                        if (replacementNutritionRecordNutrients.Count > 0)
-                        {
-                            context.NutritionRecordNutrients.AddRange(replacementNutritionRecordNutrients);
-                        }
-                    }
-
-                    var affectedNutritionDates = GetAffectedNutritionDates(insertedNutritionRecords, updatedNutritionRecords, originalUpdatedNutritionRecordDates);
+                    var affectedNutritionDates = NutritionDayAggregationHelper.GetAffectedNutritionDates(
+                        upsertData.NutritionRecords.InsertedItems,
+                        upsertData.NutritionRecords.UpdatedItems,
+                        originalUpdatedNutritionRecordDates);
 
                     context.SaveChanges();
 
-                    RecalculateNutritionDays(context, importBatch, affectedNutritionDates);
+                    NutritionDayAggregationHelper.RecalculateNutritionDays(
+                        context,
+                        importBatch,
+                        affectedNutritionDates);
 
                     context.SaveChanges();
 
@@ -448,150 +91,232 @@ namespace DataAccess
             }
         }
 
-        private static List<DateOnly> GetAffectedNutritionDates(List<NutritionRecord> insertedNutritionRecords, List<NutritionRecord> updatedNutritionRecords, List<DateOnly> originalUpdatedNutritionRecordDates)
+        private static void SetImportMetadataForAllItems(HealthImportUpsertData upsertData, ImportBatch importBatch)
         {
-            return insertedNutritionRecords
-                .Select(x => x.Date)
-                .Concat(updatedNutritionRecords.Select(x => x.Date))
-                .Concat(originalUpdatedNutritionRecordDates)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
+            SetImportMetadata(upsertData.ActivityDays.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.ActivityDays.UpdatedItems, importBatch);
+
+            SetImportMetadata(upsertData.SleepSessions.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.SleepSessions.UpdatedItems, importBatch);
+
+            SetImportMetadata(upsertData.HeartRateDays.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.HeartRateDays.UpdatedItems, importBatch);
+
+            SetImportMetadata(upsertData.BloodOxygenDays.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.BloodOxygenDays.UpdatedItems, importBatch);
+
+            SetImportMetadata(upsertData.HeightMeasurements.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.HeightMeasurements.UpdatedItems, importBatch);
+
+            SetImportMetadata(upsertData.WeightMeasurements.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.WeightMeasurements.UpdatedItems, importBatch);
+
+            SetImportMetadata(upsertData.NutritionRecords.InsertedItems, importBatch);
+            SetImportMetadata(upsertData.NutritionRecords.UpdatedItems, importBatch);
         }
 
-        private static List<NutritionDayNutrientTotal> BuildNutritionDayNutrientTotals(List<NutritionRecord> nutritionRecords)
+        private static void ApplyActivityDayUpserts(AppDbContext context, ImportUpsertData<ActivityDay> upsertData)
         {
-            return nutritionRecords
-                .SelectMany(x => x.Nutrients)
-                .GroupBy(x => x.NutrientKey)
-                .Select(group => new NutritionDayNutrientTotal
-                {
-                    NutrientKey = group.Key,
-                    TotalAmount = group.Sum(x => x.Amount),
-                    Unit = group.First().Unit
-                })
-                .OrderBy(x => x.NutrientKey)
-                .ToList();
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.ActivityDays.AddRange(upsertData.InsertedItems);
+            }
+
+            if (upsertData.UpdatedItems.Count > 0)
+            {
+                context.ActivityDays.UpdateRange(upsertData.UpdatedItems);
+            }
         }
 
-        private static List<NutritionMealTypeSummary> BuildNutritionMealTypeSummaries(List<NutritionRecord> nutritionRecords)
+        private static void ApplySleepSessionUpserts(AppDbContext context, ImportUpsertData<SleepSession> upsertData)
         {
-            return nutritionRecords
-                .GroupBy(x => x.MealType)
-                .Select(mealTypeGroup => new NutritionMealTypeSummary
-                {
-                    MealType = mealTypeGroup.Key,
-                    RecordCount = mealTypeGroup.Count(),
-                    NutrientTotals = mealTypeGroup
-                        .SelectMany(x => x.Nutrients)
-                        .GroupBy(x => x.NutrientKey)
-                        .Select(nutrientGroup => new NutritionMealTypeNutrientTotal
-                        {
-                            NutrientKey = nutrientGroup.Key,
-                            TotalAmount = nutrientGroup.Sum(x => x.Amount),
-                            Unit = nutrientGroup.First().Unit
-                        })
-                        .OrderBy(x => x.NutrientKey)
-                        .ToList()
-                })
-                .OrderBy(x => x.MealType)
-                .ToList();
-        }
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.SleepSessions.AddRange(upsertData.InsertedItems);
+            }
 
-        private void RecalculateNutritionDays(AppDbContext context, ImportBatch importBatch, IReadOnlyCollection<DateOnly> affectedDates)
-        {
-            if (affectedDates.Count == 0)
+            if (upsertData.UpdatedItems.Count == 0)
             {
                 return;
             }
 
-            foreach (var affectedDate in affectedDates)
-            {
-                RecalculateNutritionDay(context, importBatch, affectedDate);
-            }
-        }
-
-        private void RecalculateNutritionDay(AppDbContext context, ImportBatch importBatch, DateOnly affectedDate)
-        {
-            var nutritionRecordsForDay = context.NutritionRecords
-                .Include(x => x.Nutrients)
-                .Where(x => x.Source == importBatch.Source && x.Date == affectedDate)
-                .OrderBy(x => x.StartTimeUtc)
+            var updatedSleepSessionIds = upsertData.UpdatedItems
+                .Select(x => x.Id)
                 .ToList();
 
-            var existingNutritionDay = context.NutritionDays
-                .Include(x => x.NutrientTotals)
-                .Include(x => x.MealTypeSummaries)
-                    .ThenInclude(x => x.NutrientTotals)
-                .FirstOrDefault(x => x.Source == importBatch.Source && x.Date == affectedDate);
+            var existingSleepStages = context.SleepStages
+                .Where(x => updatedSleepSessionIds.Contains(x.SleepSessionId));
 
-            if (existingNutritionDay != null)
-            {
-                RemoveExistingNutritionDayAggregates(context, existingNutritionDay);
-                context.SaveChanges();
-            }
+            context.SleepStages.RemoveRange(existingSleepStages);
 
-            if (nutritionRecordsForDay.Count == 0)
+            var replacementSleepStages = new List<SleepStage>();
+
+            foreach (var updatedSleepSession in upsertData.UpdatedItems)
             {
-                if (existingNutritionDay != null)
+                var newSleepStages = updatedSleepSession.SleepStages.ToList();
+
+                updatedSleepSession.SleepStages = new List<SleepStage>();
+
+                context.SleepSessions.Update(updatedSleepSession);
+
+                foreach (var newSleepStage in newSleepStages)
                 {
-                    context.NutritionDays.Remove(existingNutritionDay);
+                    newSleepStage.SleepSessionId = updatedSleepSession.Id;
+                    replacementSleepStages.Add(newSleepStage);
                 }
-
-                return;
             }
 
-            var nutritionDay = existingNutritionDay ?? new NutritionDay
+            if (replacementSleepStages.Count > 0)
             {
-                Source = importBatch.Source,
-                Date = affectedDate
-            };
-
-            nutritionDay.RecordCount = nutritionRecordsForDay.Count;
-            nutritionDay.LastCalculatedAtUtc = importBatch.ImportedAtUtc;
-            nutritionDay.LastImportBatchId = importBatch.Id;
-            nutritionDay.LastImportBatch = importBatch;
-            nutritionDay.NutrientTotals = BuildNutritionDayNutrientTotals(nutritionRecordsForDay);
-            nutritionDay.MealTypeSummaries = BuildNutritionMealTypeSummaries(nutritionRecordsForDay);
-
-            foreach (var nutritionRecord in nutritionRecordsForDay)
-            {
-                nutritionRecord.NutritionDay = nutritionDay;
-            }
-
-            if (existingNutritionDay == null)
-            {
-                context.NutritionDays.Add(nutritionDay);
-            }
-            else
-            {
-                context.NutritionDays.Update(nutritionDay);
+                context.SleepStages.AddRange(replacementSleepStages);
             }
         }
 
-        private static void RemoveExistingNutritionDayAggregates(AppDbContext context, NutritionDay existingNutritionDay)
+        private static void ApplyHeartRateDayUpserts(AppDbContext context, ImportUpsertData<HeartRateDay> upsertData)
         {
-            var existingMealTypeNutrientTotals = existingNutritionDay.MealTypeSummaries
-                .SelectMany(x => x.NutrientTotals)
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.HeartRateDays.AddRange(upsertData.InsertedItems);
+            }
+
+            if (upsertData.UpdatedItems.Count == 0)
+            {
+                return;
+            }
+
+            var updatedHeartRateDayIds = upsertData.UpdatedItems
+                .Select(x => x.Id)
                 .ToList();
 
-            if (existingMealTypeNutrientTotals.Count > 0)
+            var existingHourlyRecords = context.HeartRateHourlyRecords
+                .Where(x => updatedHeartRateDayIds.Contains(x.HeartRateDayId));
+
+            context.HeartRateHourlyRecords.RemoveRange(existingHourlyRecords);
+
+            var replacementHourlyRecords = new List<HeartRateHourlyRecord>();
+
+            foreach (var updatedHeartRateDay in upsertData.UpdatedItems)
             {
-                context.NutritionMealTypeNutrientTotals.RemoveRange(existingMealTypeNutrientTotals);
+                var newHourlyRecords = updatedHeartRateDay.HourlyRecords.ToList();
+
+                updatedHeartRateDay.HourlyRecords = new List<HeartRateHourlyRecord>();
+
+                context.HeartRateDays.Update(updatedHeartRateDay);
+
+                foreach (var newHourlyRecord in newHourlyRecords)
+                {
+                    newHourlyRecord.HeartRateDayId = updatedHeartRateDay.Id;
+                    replacementHourlyRecords.Add(newHourlyRecord);
+                }
             }
 
-            if (existingNutritionDay.MealTypeSummaries.Count > 0)
+            if (replacementHourlyRecords.Count > 0)
             {
-                context.NutritionMealTypeSummaries.RemoveRange(existingNutritionDay.MealTypeSummaries);
+                context.HeartRateHourlyRecords.AddRange(replacementHourlyRecords);
+            }
+        }
+
+        private static void ApplyBloodOxygenDayUpserts(AppDbContext context, ImportUpsertData<BloodOxygenDay> upsertData)
+        {
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.BloodOxygenDays.AddRange(upsertData.InsertedItems);
             }
 
-            if (existingNutritionDay.NutrientTotals.Count > 0)
+            if (upsertData.UpdatedItems.Count > 0)
             {
-                context.NutritionDayNutrientTotals.RemoveRange(existingNutritionDay.NutrientTotals);
+                context.BloodOxygenDays.UpdateRange(upsertData.UpdatedItems);
+            }
+        }
+
+        private static void ApplyHeightMeasurementUpserts(AppDbContext context, ImportUpsertData<HeightMeasurement> upsertData)
+        {
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.HeightMeasurements.AddRange(upsertData.InsertedItems);
             }
 
-            existingNutritionDay.MealTypeSummaries = new List<NutritionMealTypeSummary>();
-            existingNutritionDay.NutrientTotals = new List<NutritionDayNutrientTotal>();
+            if (upsertData.UpdatedItems.Count > 0)
+            {
+                context.HeightMeasurements.UpdateRange(upsertData.UpdatedItems);
+            }
+        }
+
+        private static void ApplyWeightMeasurementUpserts(AppDbContext context, ImportUpsertData<WeightMeasurement> upsertData)
+        {
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.WeightMeasurements.AddRange(upsertData.InsertedItems);
+            }
+
+            if (upsertData.UpdatedItems.Count > 0)
+            {
+                context.WeightMeasurements.UpdateRange(upsertData.UpdatedItems);
+            }
+        }
+
+        private static List<DateOnly> ApplyNutritionRecordUpserts(AppDbContext context, ImportUpsertData<NutritionRecord> upsertData)
+        {
+            if (upsertData.InsertedItems.Count > 0)
+            {
+                context.NutritionRecords.AddRange(upsertData.InsertedItems);
+            }
+
+            var originalUpdatedNutritionRecordDates = new List<DateOnly>();
+
+            if (upsertData.UpdatedItems.Count == 0)
+            {
+                return originalUpdatedNutritionRecordDates;
+            }
+
+            var updatedNutritionRecordIds = upsertData.UpdatedItems
+                .Select(x => x.Id)
+                .ToList();
+
+            originalUpdatedNutritionRecordDates = context.NutritionRecords
+                .Where(x => updatedNutritionRecordIds.Contains(x.Id))
+                .Select(x => x.Date)
+                .ToList();
+
+            var existingNutritionRecordNutrients = context.NutritionRecordNutrients
+                .Where(x => updatedNutritionRecordIds.Contains(x.NutritionRecordId));
+
+            context.NutritionRecordNutrients.RemoveRange(existingNutritionRecordNutrients);
+
+            var replacementNutritionRecordNutrients = new List<NutritionRecordNutrient>();
+
+            foreach (var updatedNutritionRecord in upsertData.UpdatedItems)
+            {
+                var newNutritionRecordNutrients = updatedNutritionRecord.Nutrients.ToList();
+
+                updatedNutritionRecord.Nutrients = new List<NutritionRecordNutrient>();
+
+                context.NutritionRecords.Update(updatedNutritionRecord);
+
+                foreach (var newNutritionRecordNutrient in newNutritionRecordNutrients)
+                {
+                    newNutritionRecordNutrient.NutritionRecordId = updatedNutritionRecord.Id;
+                    replacementNutritionRecordNutrients.Add(newNutritionRecordNutrient);
+                }
+            }
+
+            if (replacementNutritionRecordNutrients.Count > 0)
+            {
+                context.NutritionRecordNutrients.AddRange(replacementNutritionRecordNutrients);
+            }
+
+            return originalUpdatedNutritionRecordDates;
+        }
+
+        private static void SetImportMetadata<T>(IEnumerable<T> items, ImportBatch importBatch)
+            where T : IImportTrackedEntity
+        {
+            foreach (var item in items)
+            {
+                item.LastImportBatchId = importBatch.Id;
+                item.LastImportBatch = importBatch;
+                item.LastImportedAtUtc = importBatch.ImportedAtUtc;
+            }
         }
     }
 }

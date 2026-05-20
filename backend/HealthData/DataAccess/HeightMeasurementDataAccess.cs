@@ -18,7 +18,7 @@ namespace DataAccess
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                var query = context.HeightMeasurements.AsQueryable();
+                var query = context.HeightMeasurements.AsNoTracking().AsQueryable();
 
                 if (fromMeasuredAtUtc.HasValue)
                 {

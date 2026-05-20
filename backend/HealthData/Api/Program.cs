@@ -2,6 +2,7 @@ using Api.ExceptionHandling;
 using Common.Versioning;
 using DataAccess;
 using DataAccess.Context;
+using DataAccess.Import;
 using DataAccess.Interfaces;
 using Logic.Dashboard;
 using Logic.Import;
@@ -96,6 +97,7 @@ namespace Api
                 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IImportBatchDataAccess, ImportBatchDataAccess>();
+            builder.Services.AddScoped<IHealthImportExistingDataLoader, HealthImportExistingDataLoader>();
             builder.Services.AddScoped<IActivityDayDataAccess, ActivityDayDataAccess>();
             builder.Services.AddScoped<ISleepSessionDataAccess, SleepSessionDataAccess>();
             builder.Services.AddScoped<IHeartRateDayDataAccess, HeartRateDayDataAccess>();

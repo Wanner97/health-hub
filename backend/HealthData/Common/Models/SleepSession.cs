@@ -1,6 +1,6 @@
 ﻿namespace Common.Models
 {
-    public class SleepSession
+    public class SleepSession : IImportTrackedEntity
     {
         public int Id { get; set; }
 

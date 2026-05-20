@@ -19,6 +19,8 @@ namespace DataAccess
             using (var context = _dbContextFactory.CreateDbContext())
             {
                 var query = context.SleepSessions
+                    .AsNoTracking()
+                    .AsSplitQuery()
                     .Include(x => x.SleepStages)
                     .AsQueryable();
 

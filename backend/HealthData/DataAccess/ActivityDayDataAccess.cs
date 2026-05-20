@@ -28,7 +28,7 @@ namespace DataAccess
         {
             using (var context = _dbContextFactory.CreateDbContext())
             {
-                var query = context.ActivityDays.AsQueryable();
+                var query = context.ActivityDays.AsNoTracking().AsQueryable();
 
                 if (from.HasValue)
                 {
